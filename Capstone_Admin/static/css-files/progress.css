@@ -1,0 +1,36 @@
+.status-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 20px;
+}
+
+.status-bar-fill {
+    height: 100%;
+    text-align: center;
+    color: white;
+    line-height: 20px;
+    border-radius: 5px;
+}
+
+.order-status-bar {
+    background-color: #4caf50;
+}
+
+.product-status-bar {
+    background-color: #2196f3;
+}
+
+    #progress-pic-10,
+    #progress-pic-20,
+    #progress-pic-30,
+    #progress-pic-40,
+    #progress-pic-50,
+    #progress-pic-60,
+    #progress-pic-70,
+    #progress-pic-80,
+    #progress-pic-90,
+    #progress-pic-100 {
+        display: none;
+    }
