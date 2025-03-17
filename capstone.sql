@@ -58,7 +58,7 @@ CREATE TABLE `tbl_cart` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`),
   CONSTRAINT `tbl_cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_cart` */
 
@@ -186,11 +186,9 @@ CREATE TABLE `tbl_order_request` (
   CONSTRAINT `tbl_order_request_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_3` FOREIGN KEY (`Customization_ID`) REFERENCES `tbl_customizations_temp` (`Temp_Customization_ID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_order_request` */
-
-insert  into `tbl_order_request`(`Request_ID`,`User_ID`,`Product_ID`,`Customization_ID`,`Quantity`,`Order_Type`,`Order_Status`,`Total_Price`,`Request_Date`) values (4,'0001',4,NULL,1,'ready_made',0,'1500.00','2025-03-17 14:21:25'),(5,'0001',4,NULL,1,'ready_made',0,'1500.00','2025-03-17 14:23:14'),(6,'0001',4,NULL,1,'ready_made',0,'1500.00','2025-03-17 14:26:03'),(7,'0001',4,NULL,1,'ready_made',0,'1500.00','2025-03-17 14:49:54');
 
 /*Table structure for table `tbl_preorder` */
 
@@ -250,7 +248,7 @@ CREATE TABLE `tbl_prod_info` (
 
 /*Data for the table `tbl_prod_info` */
 
-insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (4,'Sofa','A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.','sofa','L Shape Sofa 6-7 seater - L: 9 ft // W: 3 ft // H: 3.5 ft','brown','98','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','1500','','2025-03-13 14:44:34','2025-03-13 14:46:20','../uploads/product/3d/Sofa(Commission).glb','readymade'),(5,'Bed','A cozy and supportive sleeping solution designed for restful nights. Comes in different sizes and styles to match your comfort and décor preferences.','bedframe','Bed Frame - King 76x80 in.','Blue','','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-03-13 14:45:14','2025-03-13 14:45:14','../uploads/product/3d/Bed(Commission).glb','readymade'),(6,'Dining Set','A functional and elegant ensemble of a dining table and chairs, ideal for family meals and gatherings. Available in various materials and designs to complement your dining space.A functional and elegant ensemble of a dining table and chairs, ideal for family meals and gatherings. Available in various materials and designs to complement your dining space.','salaset','Sala Set 8x8 ft.','Brown','','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','1500','','2025-03-13 14:45:51','2025-03-13 14:45:51','../uploads/product/3d/Dining(Commission).glb','readymade');
+insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (4,'Sofa','A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.','sofa','L Shape Sofa 6-7 seater - L: 9 ft // W: 3 ft // H: 3.5 ft','brown','98','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','1500','','2025-03-13 14:44:34','2025-03-13 14:46:20','../uploads/product/3d/Sofa(Commission).glb','readymade'),(5,'Bed','A cozy and supportive sleeping solution designed for restful nights. Comes in different sizes and styles to match your comfort and décor preferences.','','Bed Frame - King 76x80 in.','Blue','15','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-03-13 14:45:14','2025-03-17 14:54:25','../uploads/product/3d/Bed(Commission).glb','readymade'),(6,'Dining Set','A functional and elegant ensemble of a dining table and chairs, ideal for family meals and gatherings. Available in various materials and designs to complement your dining space.A functional and elegant ensemble of a dining table and chairs, ideal for family meals and gatherings. Available in various materials and designs to complement your dining space.','salaset','Sala Set 8x8 ft.','Brown','','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','1500','','2025-03-13 14:45:51','2025-03-13 14:45:51','../uploads/product/3d/Dining(Commission).glb','readymade');
 
 /*Table structure for table `tbl_progress` */
 
@@ -341,9 +339,11 @@ CREATE TABLE `tbl_ready_made_orders` (
   KEY `User_ID` (`User_ID`),
   CONSTRAINT `tbl_ready_made_orders_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`),
   CONSTRAINT `tbl_ready_made_orders_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_ready_made_orders` */
+
+insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (3,4,'0001',1,'1500.00',100,'2025-03-17 15:48:46',90,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'');
 
 /*Table structure for table `tbl_reviews` */
 
