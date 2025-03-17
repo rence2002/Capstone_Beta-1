@@ -1,0 +1,118 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('./static/images/log-in_bg.png') center/cover no-repeat;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.wrapper {
+    max-width: 450px;
+    width: 100%;
+    background: rgba(17, 25, 40, 0.85);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #fff;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.input-field {
+    position: relative;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.input-field input,
+.input-field select,
+.input-field textarea {
+    width: 100%;
+    height: 40px;
+    background: transparent;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+    color: #fff;
+    outline: none;
+}
+
+.input-field label {
+    position: absolute;
+    top: 12px;
+    left: 10px;
+    font-size: 14px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.input-field input:focus ~ label,
+.input-field input:valid ~ label {
+    top: -12px;
+    left: 5px;
+    font-size: 12px;
+    color: #f1c40f;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.button-container button, .btn-link {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.button-container button:hover, .btn-link:hover {
+    background: #f1c40f;
+    color: #fff;
+}
+
+.submit {
+    background: #07c007;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.g-recaptcha {
+    margin-top: 10px;
+}
+
+.btn-secondary {
+    background-color: black;
+}
+
+.reset {
+    background: #fd150d;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: 0.3s;
+    margin-top: 10px;
+}

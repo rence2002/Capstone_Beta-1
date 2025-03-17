@@ -1,0 +1,26 @@
+.container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid #dee2e6;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #e9ecef;
+}
+.button-container {
+    margin-top: 20px;
+    text-align: center;
+}
