@@ -59,6 +59,12 @@ function fetchOrderRequest($pdo, $requestID) {
 }
 
 function processReadyMade($pdo, $orderRequest) {
+    // Fetch the product name from tbl_prod_info
+    $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+    $stmt->execute([$orderRequest['Product_ID']]);
+    $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+    $productName = $productInfo['Product_Name'] ?? 'N/A'; // Default to 'N/A' if not found
+
     // Insert into tbl_ready_made_orders
     $stmt = $pdo->prepare("
         INSERT INTO tbl_ready_made_orders 
@@ -73,7 +79,7 @@ function processReadyMade($pdo, $orderRequest) {
     ]);
 
     // Insert into tbl_progress
-    insertIntoProgress($pdo, $orderRequest, 'ready_made', 10, 90);
+    insertIntoProgress($pdo, $orderRequest, 'ready_made', 10, 90, $productName);
 }
 
 function processPreOrder($pdo, $orderRequest) {
@@ -206,7 +212,7 @@ function moveToPermanentCustomizations($pdo, $customization, $newProductID) {
     return $pdo->lastInsertId();
 }
 
-function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $productStatus) {
+function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $productStatus, $productName = 'N/A') {
     $stmt = $pdo->prepare("
         INSERT INTO tbl_progress 
         (User_ID, Product_ID, Product_Name, Order_Type, Order_Status, Product_Status, Quantity, Total_Price)
@@ -215,7 +221,7 @@ function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $prod
     $stmt->execute([
         $orderRequest['User_ID'],
         $orderRequest['Product_ID'],
-        $orderRequest['Product_Name'] ?? 'N/A', // Default to 'N/A' if Product_Name is not available
+        $productName, // Use the product name passed as a parameter
         $orderType,
         $orderStatus,
         $productStatus,

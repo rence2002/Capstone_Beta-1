@@ -170,8 +170,9 @@ function calculatePercentage($status) {
             <h4>PROGRESS LIST <a href="create-progress-form.php">Create New Progress</a></h4>
             <!-- Add Back to Dashboard button -->
             <div class="button-container">
-                    <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-                </div>
+                <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
+                <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a>
+            </div>
                 <table>
             <table width="100%" border="1" cellspacing="5">
                 <tr>
@@ -223,7 +224,7 @@ function calculatePercentage($status) {
                         <td style="text-align: center;"><a class="buttonView" href="read-one-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a></td>
                         <?php if($row['Order_Status'] != 100): ?>
                             <td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Edit</a></td>
-                            <td style="text-align: center;"><a class="buttonDelete" href="delete-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Delete</a></td>
+                            
                         <?php else: ?>
                             <td style="text-align: center;"></td>
                             <td style="text-align: center;"></td>

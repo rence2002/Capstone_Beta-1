@@ -74,6 +74,19 @@ $stmt->bindParam(':productStatus', $productStatus, PDO::PARAM_INT);
 $stmt->bindParam(':readyMadeOrderID', $readyMadeOrderID, PDO::PARAM_INT);
 $stmt->execute();
 
+// After successfully updating the ready-made order
+$stmt->execute();
+
+// Update tbl_progress with the new statuses for ready_made
+$progressUpdateQuery = "UPDATE tbl_progress 
+                        SET Order_Status = :orderStatus, Product_Status = :productStatus 
+                        WHERE Product_ID = :productID AND Order_Type = 'ready_made'";
+$progressStmt = $pdo->prepare($progressUpdateQuery);
+$progressStmt->bindParam(':orderStatus', $orderStatus, PDO::PARAM_INT);
+$progressStmt->bindParam(':productStatus', $productStatus, PDO::PARAM_INT);
+$progressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+$progressStmt->execute();
+
 // If order is at least 100% complete, update or insert into purchase history
 if ($orderStatus == 100 && $moveToHistory == true) {
     $orderType = 'ready_made';

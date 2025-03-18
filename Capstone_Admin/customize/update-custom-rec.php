@@ -115,6 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':customizationID', $customizationID);
 
         if ($stmt->execute()) {
+            // Update tbl_progress with the new statuses
+            $progressUpdateQuery = "UPDATE tbl_progress 
+                                    SET Order_Status = :orderStatus, Product_Status = :productStatus 
+                                    WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
+            $progressStmt = $pdo->prepare($progressUpdateQuery);
+            $progressStmt->bindParam(':orderStatus', $bindParams[':Order_Status'], PDO::PARAM_INT);
+            $progressStmt->bindParam(':productStatus', $bindParams[':Product_Status'], PDO::PARAM_INT);
+            $progressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
+            $progressStmt->execute();
+
             header("Location: read-all-custom-form.php?message=Record updated successfully");
             exit();
         } else {

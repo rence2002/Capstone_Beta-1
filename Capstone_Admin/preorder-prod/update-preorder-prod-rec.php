@@ -43,6 +43,7 @@ try {
         $stmt->bindParam(":preorderStatus", $preorderStatus, PDO::PARAM_INT);
         $stmt->bindParam(":productStatus", $productStatus, PDO::PARAM_INT);
 
+        // After successfully updating the preorder record
         if ($stmt->execute()) {
             // INSERT or UPDATE PURCHASE HISTORY
             $purchaseHistoryQuery = "INSERT INTO tbl_purchase_history 
@@ -62,6 +63,16 @@ try {
             $purchaseHistoryStmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
             $purchaseHistoryStmt->bindParam(':status', $preorderStatus, PDO::PARAM_INT);
             $purchaseHistoryStmt->execute();
+
+            // Update tbl_progress with the new statuses for pre_order
+            $progressUpdateQuery = "UPDATE tbl_progress 
+                                    SET Order_Status = :orderStatus, Product_Status = :productStatus 
+                                    WHERE Product_ID = :productID AND Order_Type = 'pre_order'";
+            $progressStmt = $pdo->prepare($progressUpdateQuery);
+            $progressStmt->bindParam(':orderStatus', $preorderStatus, PDO::PARAM_INT);
+            $progressStmt->bindParam(':productStatus', $productStatus, PDO::PARAM_INT);
+            $progressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+            $progressStmt->execute();
 
             // Redirect to the list page after successful update
             header("Location: read-all-preorder-prod-form.php");

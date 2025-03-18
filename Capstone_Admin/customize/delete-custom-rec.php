@@ -28,10 +28,18 @@ $profilePicPath = $admin['PicPath'] ? htmlspecialchars($admin['PicPath']) : '/Ca
 
 // Check if 'id' parameter is set in the URL
 if (isset($_GET['id'])) {
-    // Prepare the delete statement
+    $customizationID = (int) $_GET['id'];
+
+    // Delete associated progress record
+    $deleteProgressQuery = "DELETE FROM tbl_progress WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = ?)";
+    $progressStmt = $pdo->prepare($deleteProgressQuery);
+    $progressStmt->bindValue(1, $customizationID, PDO::PARAM_INT);
+    $progressStmt->execute();
+
+    // Prepare the delete statement for customization
     $query = "DELETE FROM tbl_customizations WHERE Customization_ID = ?";
     $stmt = $pdo->prepare($query);
-    $stmt->bindValue(1, $_GET['id'], PDO::PARAM_INT);
+    $stmt->bindValue(1, $customizationID, PDO::PARAM_INT);
     
     // Execute the statement with confirmation
     if ($stmt->execute()) {
