@@ -24,59 +24,24 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
-// Fetch all related records, excluding those with Order_Status = 100
+// Fetch all progress records from tbl_progress
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
     SELECT
-        'custom' AS Order_Type,
-        c.Customization_ID AS ID,
-        c.Furniture_Type AS Product_Name,
+        Progress_ID AS ID,
+        Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        c.Order_Status,
-        c.Product_Status,
-        0.00 as Total_Price,
-        c.Last_Update AS Last_Update
-    FROM tbl_customizations c
-    JOIN tbl_user_info u ON c.User_ID = u.User_ID
-    WHERE c.Order_Status != 100 AND
-    (u.First_Name LIKE :search
+        Order_Type,
+        Order_Status,
+        Product_Status,
+        Total_Price,
+        LastUpdate
+    FROM tbl_progress p
+    JOIN tbl_user_info u ON p.User_ID = u.User_ID
+    WHERE (u.First_Name LIKE :search
     OR u.Last_Name LIKE :search
-    OR c.Furniture_Type LIKE :search)
-    UNION
-    SELECT
-        'pre_order' AS Order_Type,
-        po.Preorder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        po.Preorder_Status AS Order_Status,
-        po.Product_Status,
-        po.Total_Price,
-        po.Order_Date AS Last_Update
-    FROM tbl_preorder po
-    JOIN tbl_user_info u ON po.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-    WHERE po.Preorder_Status != 100 AND
-    (u.First_Name LIKE :search
-    OR u.Last_Name LIKE :search
-    OR pr.Product_Name LIKE :search)
-    UNION
-    SELECT
-        'ready_made' AS Order_Type,
-        rmo.ReadyMadeOrder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        rmo.Order_Status,
-        rmo.Product_Status,
-        rmo.Total_Price,
-        rmo.Order_Date AS Last_Update
-    FROM tbl_ready_made_orders rmo
-    JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-     WHERE rmo.Order_Status != 100 AND
-    (u.First_Name LIKE :search
-    OR u.Last_Name LIKE :search
-    OR pr.Product_Name LIKE :search)
-    ORDER BY Last_Update DESC
+    OR p.Product_Name LIKE :search)
+    ORDER BY LastUpdate DESC
 ";
 
 $stmt = $pdo->prepare($query);
@@ -133,10 +98,8 @@ function calculatePercentage($status) {
     <script src="../static/js/dashboard.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
     <link href="../static/css-files/progress.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
 
 </head>

@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stopReason = $_POST['Stop_Reason'];
     $productName = $_POST['Product_Name'];
     $productID = $_POST['Product_ID'];
+    $userID = $_POST['User_ID']; // Assuming you have User_ID in the form
 
     // Validate inputs
     if (empty($progressID) || empty($orderType) || empty($orderStatus) || empty($productStatus)) {
@@ -147,6 +148,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     if ($stmt->execute($params)) {
+        // Insert into tbl_purchase_history if order status and product status are both 100
+        if ($orderStatus == 100 && $productStatus == 100) {
+            $insertHistoryQuery = "INSERT INTO tbl_purchase_history (User_ID, Product_ID, Product_Name, Quantity, Total_Price, Order_Type, Order_Status, Product_Status)
+                                   VALUES (:user_id, :product_id, :product_name, 1, :total_price, :order_type, 100, 100)";
+            $insertHistoryStmt = $pdo->prepare($insertHistoryQuery);
+            $insertHistoryStmt->execute([
+                ':user_id' => $userID,
+                ':product_id' => $productID,
+                ':product_name' => $productName,
+                ':total_price' => $totalPrice,
+                ':order_type' => $orderType
+            ]);
+        }
+
         header("Location: read-all-progress-form.php?message=update_success");
         exit();
     } else {

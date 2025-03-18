@@ -39,7 +39,8 @@ if (isset($_GET['id'])) {
                 u.Last_Name, 
                 p.Product_Name, 
                 p.Category AS Furniture_Type,
-                p.GLB_File_URL
+                p.GLB_File_URL,
+                orq.Order_Status AS Request_Status
             FROM tbl_order_request orq
             JOIN tbl_user_info u ON orq.User_ID = u.User_ID
             LEFT JOIN tbl_prod_info p ON orq.Product_ID = p.Product_ID
@@ -56,7 +57,7 @@ if (isset($_GET['id'])) {
             $furnitureType = htmlspecialchars($orderRequest['Furniture_Type']);
             $quantity = htmlspecialchars($orderRequest['Quantity']);
             $orderType = htmlspecialchars($orderRequest['Order_Type']);
-            $status = htmlspecialchars($orderRequest['Status']);
+            $status = htmlspecialchars($orderRequest['Request_Status']); // Use the alias
             $totalPrice = htmlspecialchars($orderRequest['Total_Price']);
             $requestDate = htmlspecialchars($orderRequest['Request_Date']);
             $glbFileURL = htmlspecialchars($orderRequest['GLB_File_URL']);

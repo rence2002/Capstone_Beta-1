@@ -59,6 +59,7 @@ function fetchOrderRequest($pdo, $requestID) {
 }
 
 function processReadyMade($pdo, $orderRequest) {
+    // Insert into tbl_ready_made_orders
     $stmt = $pdo->prepare("
         INSERT INTO tbl_ready_made_orders 
         (Product_ID, User_ID, Quantity, Total_Price, Order_Status, Product_Status)
@@ -70,13 +71,17 @@ function processReadyMade($pdo, $orderRequest) {
         $orderRequest['Quantity'],
         $orderRequest['Total_Price']
     ]);
+
+    // Insert into tbl_progress
+    insertIntoProgress($pdo, $orderRequest, 'ready_made', 10, 90);
 }
 
 function processPreOrder($pdo, $orderRequest) {
+    // Insert into tbl_preorder
     $stmt = $pdo->prepare("
         INSERT INTO tbl_preorder 
-        (Product_ID, User_ID, Quantity, Total_Price, Preorder_Status)
-        VALUES (?, ?, ?, ?, 10)
+        (Product_ID, User_ID, Quantity, Total_Price, Preorder_Status, Product_Status)
+        VALUES (?, ?, ?, ?, 10, 0)
     ");
     $stmt->execute([
         $orderRequest['Product_ID'],
@@ -84,6 +89,9 @@ function processPreOrder($pdo, $orderRequest) {
         $orderRequest['Quantity'],
         $orderRequest['Total_Price']
     ]);
+
+    // Insert into tbl_progress
+    insertIntoProgress($pdo, $orderRequest, 'pre_order', 10, 0);
 }
 
 function processCustomOrder($pdo, $orderRequest, $requestID) {
@@ -100,8 +108,14 @@ function processCustomOrder($pdo, $orderRequest, $requestID) {
     // 2. Move to permanent customizations
     $newCustomizationID = moveToPermanentCustomizations($pdo, $customization, $newProductID);
 
-    // 3. Create progress entry
-    createProgressEntry($pdo, $customization, $newProductID, $orderRequest['Order_Status']);
+    // 3. Insert into tbl_progress
+    insertIntoProgress($pdo, [
+        'User_ID' => $customization['User_ID'],
+        'Product_ID' => $newProductID,
+        'Product_Name' => 'Custom ' . $customization['Furniture_Type'],
+        'Quantity' => 1,
+        'Total_Price' => 0.00
+    ], 'custom', 10, 0);
 
     // 4. Cleanup temporary data
     cleanupTemporaryData($pdo, $orderRequest['Customization_ID']);
@@ -182,16 +196,21 @@ function moveToPermanentCustomizations($pdo, $customization, $newProductID) {
     return $pdo->lastInsertId();
 }
 
-function createProgressEntry($pdo, $customization, $newProductID, $orderStatus) {
+function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $productStatus) {
     $stmt = $pdo->prepare("
-        INSERT INTO tbl_progress
-        (User_ID, Product_ID, Order_Status, Quantity, Total_Price)
-        VALUES (?, ?, ?, 1, 0.00)
+        INSERT INTO tbl_progress 
+        (User_ID, Product_ID, Product_Name, Order_Type, Order_Status, Product_Status, Quantity, Total_Price)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->execute([
-        $customization['User_ID'],
-        $newProductID,
-        $orderStatus
+        $orderRequest['User_ID'],
+        $orderRequest['Product_ID'],
+        $orderRequest['Product_Name'] ?? 'N/A', // Default to 'N/A' if Product_Name is not available
+        $orderType,
+        $orderStatus,
+        $productStatus,
+        $orderRequest['Quantity'],
+        $orderRequest['Total_Price']
     ]);
 }
 

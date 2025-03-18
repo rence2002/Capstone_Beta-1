@@ -41,7 +41,7 @@ $query = "
     FROM tbl_customizations c
     JOIN tbl_user_info u ON c.User_ID = u.User_ID
     LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
-    WHERE c.Order_Status = 100 AND
+    WHERE c.Order_Status = 100 AND c.Product_Status = 100 AND
     (u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR c.Furniture_Type LIKE :search)
@@ -59,7 +59,7 @@ $query = "
     FROM tbl_preorder po
     JOIN tbl_user_info u ON po.User_ID = u.User_ID
     JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-    WHERE po.Preorder_Status = 100 AND
+    WHERE po.Preorder_Status = 100 AND po.Product_Status = 100 AND
     (u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR pr.Product_Name LIKE :search)
@@ -77,7 +77,7 @@ $query = "
     FROM tbl_ready_made_orders rmo
     JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
     JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-    WHERE rmo.Order_Status = 100 AND
+    WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100 AND
     (u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR pr.Product_Name LIKE :search)
@@ -119,6 +119,19 @@ $productStatusLabels = [
     100 => 'Sold / Installed',
 ];
 
+// Function to insert data into tbl_purchase_history
+function insertIntoPurchaseHistory($pdo, $orderType, $id, $userId, $productName, $price) {
+    $query = "INSERT INTO tbl_purchase_history (User_ID, Product_ID, Product_Name, Quantity, Total_Price, Order_Type, Order_Status, Product_Status)
+              VALUES (:user_id, :product_id, :product_name, 1, :total_price, :order_type, 100, 100)";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':user_id', $userId, PDO::PARAM_STR);
+    $stmt->bindParam(':product_id', $id, PDO::PARAM_INT);
+    $stmt->bindParam(':product_name', $productName, PDO::PARAM_STR);
+    $stmt->bindParam(':total_price', $price, PDO::PARAM_STR);
+    $stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
+    $stmt->execute();
+}
+
 // Function to automatically delete data if status changes
 function deleteIfStatusChanged($pdo, $orderType, $id, $currentStatus) {
     $tableName = "";
@@ -142,13 +155,26 @@ function deleteIfStatusChanged($pdo, $orderType, $id, $currentStatus) {
     }
 
     // Check if the status has changed
-    $checkQuery = "SELECT $statusColumn FROM $tableName WHERE $idColumn = :id";
+    $checkQuery = "SELECT $statusColumn, User_ID FROM $tableName WHERE $idColumn = :id";
     $stmt = $pdo->prepare($checkQuery);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($row && $row[$statusColumn] != $currentStatus) {
+        // Insert into purchase history if status is 100
+        if ($currentStatus == 100) {
+            $productQuery = "SELECT Product_Name, Price FROM tbl_prod_info WHERE Product_ID = :product_id";
+            $productStmt = $pdo->prepare($productQuery);
+            $productStmt->bindParam(':product_id', $id, PDO::PARAM_INT);
+            $productStmt->execute();
+            $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($product) {
+                insertIntoPurchaseHistory($pdo, $orderType, $id, $row['User_ID'], $product['Product_Name'], $product['Price']);
+            }
+        }
+
         // Delete the record
         $deleteQuery = "DELETE FROM $tableName WHERE $idColumn = :id";
         $stmt = $pdo->prepare($deleteQuery);
