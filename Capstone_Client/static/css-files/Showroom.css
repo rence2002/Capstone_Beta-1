@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Helps manage padding and margin */
+}
+
+body {
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  background-image: url('/images/Designer.jpeg');
+  background-size: cover;
+  background-position: center; 
+  background-attachment: fixed; 
+  background-repeat: no-repeat; 
+  overflow: hidden;
+}
+
+.main {
+  position: relative;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Hide overflow */
+}
+.background-button{
+  margin-right: 10px; 
+  text-align: center;
+
+}
+#open-btn {
+  background-color: rgba(255, 255, 255, 0.8); /* Light background for contrast */
+  color: #000; /* Text color */
+  padding: 10px 15px; /* Padding */
+  border-radius: 5px; /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+  transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
+  z-index: 2;
+  font-size: 16px;
+  cursor:pointer;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+}
+
+#open-btn:hover {
+  background-color: rgba(255, 255, 255, 1); /* Highlight on hover */
+  transform: scale(1.05); /* Slightly grow on hover */
+}
+
+
+
+/* Styles for the bottom sidenav */
+.sidenav {
+  height: 250px; /* Fixed height */
+  width: 100%; /* Full width */
+  position: fixed; 
+  z-index: 2; /* Above everything else */
+  bottom: 0; /* Align to bottom */
+  left: 0; /* Align to left */
+  background-color: #111; /* Background color */
+  overflow-y: hidden; /* Hide vertical overflow */
+  transition: 0.5s; /* Smooth transition */
+  padding-top: 20px; /* Padding for top spacing */
+  display: flex;
+  bottom: -250px; /* Hide off-screen */
+  width: -100%;
+}
+
+
+.sidenav a {
+  padding: 10px 20px; /* Adjusted padding for links */
+  text-decoration: none;
+  font-size: 20px; /* Font size for links */
+  color: #818181; /* Link color */
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1; /* Hover color */
+}
+
+.sidenav button {
+  background-color: #444; /* Dark background for buttons */
+  color: white; /* White text */
+  border: none; /* Remove border */
+  padding: 10px 15px; /* Padding */
+  margin: 5px; /* Margin */
+  font-size: 16px; /* Font size */
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s; /* Smooth background transition */
+}
+
+.sidenav button:hover {
+  background-color: #555; /* Lighter background on hover */
+}
+
+#measure-button {
+  background-color: green; /* Button background color */
+  color: white; /* Button text color */
+  border: none; /* No border */
+  padding: 10px 20px; /* Padding for button */
+  font-size: 16px; /* Font size for button */
+  margin: 10px; /* Margin for button */
+  cursor: pointer; /* Pointer cursor for button */
+}
+
+#measure-button:hover {
+  background-color: darkgreen; /* Button hover color */
+}
+
+.sidenav .closebtn {
+  position: absolute; /* Positioning for close button */
+  top: 5px; /* Position from the top */
+  right: 5px; /* Position from the right */
+  font-size: 36px; /* Font size for close button */
+  color: #ffffff; /* Color for close button */
+  cursor: pointer; /* Pointer cursor for close button */
+}
+
+.closebtn {
+  position: sticky; /* Make the button sticky */
+  top: 20px; /* Adjust this value as needed for vertical positioning */
+  left: 5px; /* Adjust this value for horizontal positioning */
+  color: #ffffff; /* Color for close button */
+  cursor: pointer; /* Pointer cursor for close button */
+}
+
+.click-image{
+  margin-top: 20px;
+  width: 150px;
+  height: 150px;
+}
+
+
+@media screen and (max-height: 450px) {
+  .sidenav {
+    padding-top: 15px; /* Adjust padding for smaller screens */
+  }
+  .sidenav a {
+    font-size: 18px; /* Font size for links in smaller screens */
+  }
+}
+
+.demo {
+  height: calc(100vh - 250px); /* Height for 3D model area */
+  width: 100%;
+  position: relative; /* Position content above the background */
+  z-index: auto; /* Ensure it's above the background */
+}
+
+.three-d {
+  height: 85vh; /* Adjust the height of each model viewer */
+  width: 100%; /* Adjust the width of each model viewer */ /* Space around models */
+  flex-shrink: 0; /* Prevent models from shrinking *//* Ensure model viewers are on top */
+}
+
+.icons {
+  margin-top: 20px; /* Space above social icons */
+}
+
+.icons i {
+  margin: 0 10px; /* Space between icons */
+  font-size: 20px; /* Icon size */
+  color: white; /* Icon color */
+}
+
+#place-button {
+  position: absolute;
+  bottom: 20px;
+  left: calc(50% - 50px);
+  width: 100px;
+  height: 35px;
+  display: none; /* Initially hidden */
+}
+
+#VRButton {
+  margin-bottom: 70px !important; /* Margin adjustment */
+}

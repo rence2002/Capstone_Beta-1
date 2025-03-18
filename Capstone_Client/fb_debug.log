@@ -1,0 +1,4 @@
+[2025-03-05 02:54:20] handleFacebookLogin function called
+[2025-03-05 02:54:20] Login URL: https://www.facebook.com/v18.0/dialog/oauth?client_id=631112039629385&redirect_uri=http%3A%2F%2Flocalhost%2FCapstone_Client%2Findex.php&scope=email
+[2025-03-05 03:01:09] handleFacebookLogin function called
+[2025-03-05 03:01:09] Login URL: https://www.facebook.com/v18.0/dialog/oauth?client_id=631112039629385&redirect_uri=http%3A%2F%2Flocalhost%2FCapstone_Client%2Findex.php&scope=email

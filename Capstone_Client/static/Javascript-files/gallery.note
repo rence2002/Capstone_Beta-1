@@ -1,0 +1,236 @@
+document.addEventListener('DOMContentLoaded', function() {
+  let previewContainer = document.querySelector('.products-preview');
+  let previewBox = previewContainer.querySelectorAll('.preview');
+
+  // Add event listener for all products
+  document.querySelectorAll('.products-container .product').forEach(product => {
+    product.addEventListener('click', (event) => {
+
+      // Check if the clicked element is inside the model-viewer
+      if (event.target.closest('model-viewer')) {
+        // If the click is within the model-viewer, return early and don't trigger preview
+        return;
+      }
+
+      // If the click is outside model-viewer, show the preview container
+      previewContainer.style.display = 'flex';
+      let name = product.getAttribute('data-name');
+      previewBox.forEach(preview => {
+        let target = preview.getAttribute('data-target');
+        if (name === target) {
+          preview.classList.add('active');
+
+          // Initialize Swiper for the active preview
+          var swiper = new Swiper(preview.querySelector('.swiper-container'), {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            pagination: {
+              el: preview.querySelector('.swiper-pagination'),
+              clickable: true,
+            },
+            navigation: {
+              nextEl: preview.querySelector('.swiper-button-next'),
+              prevEl: preview.querySelector('.swiper-button-prev'),
+            },
+            on: {
+              slideChange: function () {
+                var slides = preview.querySelectorAll('.swiper-slide');
+                slides.forEach(slide => {
+                  slide.style.opacity = '0';
+                });
+                if (swiper.activeIndex !== undefined && slides[swiper.activeIndex]) {
+                  slides[swiper.activeIndex].style.opacity = '1';
+                } else {
+                  console.error("Active slide index is out of bounds:", swiper.activeIndex);
+                }
+              }
+            }
+          });
+
+          // Trigger slideChange initially to ensure the first slide is visible
+          swiper.emit('slideChange');
+        }
+      });
+    });
+  });
+
+  // Close button logic for the preview box
+  previewBox.forEach(close => {
+    close.querySelector('.fa-times').onclick = () => {
+      close.classList.remove('active');
+      previewContainer.style.display = 'none';
+    };
+  });
+});
+
+//customized
+document.getElementById('print-button').addEventListener('click', function () {
+  // Furniture section
+const furniture = document.getElementById('furniture') ? document.getElementById('furniture').value : '';
+const furnitureImage = document.getElementById('image-preview')?.querySelector('img')?.src || '';
+const furnitureInfo = document.getElementById('furniture-info') ? document.getElementById('furniture-info').value : '';
+
+// Color section
+const color = document.getElementById('color') ? document.getElementById('color').value : '';
+const colorImage = document.getElementById('color-image-preview')?.querySelector('img')?.src || '';
+const colorInfo = document.getElementById('color-info') ? document.getElementById('color-info').value : '';
+
+// Sizes section
+const sizes = document.getElementById('sizes') ? document.getElementById('sizes').value : '';
+const sizesImage = document.getElementById('sizes-image-preview')?.querySelector('img')?.src || '';
+const sizesInfo = document.getElementById('sizes-info') ? document.getElementById('sizes-info').value : '';
+
+// Texture section
+const texture = document.getElementById('texture') ? document.getElementById('texture').value : '';
+const textureImage = document.getElementById('texture-image-preview')?.querySelector('img')?.src || '';
+const textureInfo = document.getElementById('texture-info') ? document.getElementById('texture-info').value : '';
+
+// Foam section
+const foam = document.getElementById('foam') ? document.getElementById('foam').value : '';
+const foamImage = document.getElementById('foam-image-preview')?.querySelector('img')?.src || '';
+const foamInfo = document.getElementById('foam-info') ? document.getElementById('foam-info').value : '';
+
+// Wood section
+const wood = document.getElementById('wood') ? document.getElementById('wood').value : '';
+const woodImage = document.getElementById('wood-image-preview')?.querySelector('img')?.src || '';
+const woodInfo = document.getElementById('wood-info') ? document.getElementById('wood-info').value : '';
+
+// Cover section
+const cover = document.getElementById('cover') ? document.getElementById('cover').value : '';
+const coverImage = document.getElementById('cover-image-preview')?.querySelector('img')?.src || '';
+const coverInfo = document.getElementById('cover-info') ? document.getElementById('cover-info').value : '';
+
+// Design section
+const design = document.getElementById('design') ? document.getElementById('design').value : '';
+const designImage = document.getElementById('design-image-preview')?.querySelector('img')?.src || '';
+const designInfo = document.getElementById('design-info') ? document.getElementById('design-info').value : '';
+
+// Tiles section
+const tiles = document.getElementById('tiles') ? document.getElementById('tiles').value : '';
+const tilesImage = document.getElementById('tiles-image-preview')?.querySelector('img')?.src || '';
+const tilesInfo = document.getElementById('tiles-info') ? document.getElementById('tiles-info').value : '';
+
+// Metal section
+const metal = document.getElementById('metal') ? document.getElementById('metal').value : '';
+const metalImage = document.getElementById('metal-image-preview')?.querySelector('img')?.src || '';
+const metalInfo = document.getElementById('metal-info') ? document.getElementById('metal-info').value : '';
+
+
+  // Debugging logs
+  console.log('Furniture:', furniture);
+  console.log('Furniture Image:', furnitureImage);
+  console.log('Furniture Info:', furnitureInfo);
+  console.log('Color:', color);
+  console.log('Color Image:', colorImage);
+  console.log('Color Info:', colorInfo);
+
+  // Display the summary
+  const summaryDisplay = document.getElementById('summary-display');
+  summaryDisplay.classList.add('show');
+  summaryDisplay.style.transform = 'scale(1)';
+
+const summaryContent = document.getElementById('summary-content');
+summaryContent.innerHTML = `<strong>Furniture: </strong>${furniture}<br>
+                            <strong>Furniture Information: </strong>${furnitureInfo}<br>
+                            <strong>Color: </strong>${color}<br>
+                            <strong>Color Information: </strong>${colorInfo}<br>
+                            <strong>Sizes: </strong>${sizes}<br>
+                            <strong>Sizes Image:</strong><br>
+                            ${sizesImage ? `<img src="${sizesImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Texture: </strong>${texture}<br>
+                            <strong>Texture Image:</strong><br>
+                            ${textureImage ? `<img src="${textureImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Foam: </strong>${foam}<br>
+                            <strong>Foam Image:</strong><br>
+                            ${foamImage ? `<img src="${foamImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Wood: </strong>${wood}<br>
+                            <strong>Wood Image:</strong><br>
+                            ${woodImage ? `<img src="${woodImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Cover: </strong>${cover}<br>
+                            <strong>Cover Image:</strong><br>
+                            ${coverImage ? `<img src="${coverImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Design: </strong>${design}<br>
+                            <strong>Design Image:</strong><br>
+                            ${designImage ? `<img src="${designImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Tiles: </strong>${tiles}<br>
+                            <strong>Tiles Image:</strong><br>
+                            ${tilesImage ? `<img src="${tilesImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}
+                            <strong>Metal: </strong>${metal}<br>
+                            <strong>Metal Image:</strong><br>
+                            ${metalImage ? `<img src="${metalImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>` : ''}`;
+
+
+  // Add images if available
+  if (furnitureImage) {
+    summaryContent.innerHTML += `<strong>Furniture Image:</strong><br>
+                                 <img src="${furnitureImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (colorImage) {
+    summaryContent.innerHTML += `<strong>Color Image:</strong><br>
+                                 <img src="${colorImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (sizesImage) {
+    summaryContent.innerHTML += `<strong>Sizes Image:</strong><br>
+                                 <img src="${sizesImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (textureImage) {
+    summaryContent.innerHTML += `<strong>Texture Image:</strong><br>
+                                 <img src="${textureImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (foamImage) {
+    summaryContent.innerHTML += `<strong>Foam Image:</strong><br>
+                                 <img src="${foamImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (woodImage) {
+    summaryContent.innerHTML += `<strong>Wood Image:</strong><br>
+                                 <img src="${woodImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (coverImage) {
+    summaryContent.innerHTML += `<strong>Cover Image:</strong><br>
+                                 <img src="${coverImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (designImage) {
+    summaryContent.innerHTML += `<strong>Design Image:</strong><br>
+                                 <img src="${designImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (tilesImage) {
+    summaryContent.innerHTML += `<strong>Tiles Image:</strong><br>
+                                 <img src="${tilesImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+  if (metalImage) {
+    summaryContent.innerHTML += `<strong>Metal Image:</strong><br>
+                                 <img src="${metalImage}" style="max-width:100px; border-radius:8px; margin-top:10px;"><br>`;
+  }
+
+  // Show the "Save" and "Cancel" buttons
+  const saveButton = document.getElementById('save-button');
+  saveButton.style.display = 'inline-block';
+
+  const cancelButton = document.getElementById('cancel-button');
+  cancelButton.style.display = 'inline-block';
+
+  // Save button functionality
+  saveButton.onclick = function () {
+    setTimeout(function () {
+      html2canvas(summaryDisplay).then(function (canvas) {
+        const imageData = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = imageData;
+        link.download = 'summary.png'; // Save as PNG
+        link.click();
+      });
+    }, 500); // Delay for image render
+  };
+
+  // Cancel button functionality
+  cancelButton.onclick = function () {
+    summaryDisplay.style.transform = 'scale(0)';
+    summaryDisplay.classList.remove('show');
+    setTimeout(function () {
+      summaryDisplay.style.display = 'none'; // Completely hide popup
+      summaryContent.innerHTML = ''; // Reset summary content
+      saveButton.style.display = 'none'; // Hide save button
+      cancelButton.style.display = 'none'; // Hide cancel button
+    }, 300);
+  };
+});
