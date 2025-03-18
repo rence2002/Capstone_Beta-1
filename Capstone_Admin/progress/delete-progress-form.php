@@ -106,6 +106,13 @@ if (!$progress) {
     exit();
 }
 
+if (empty($progress['Product_Name'])) {
+    $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+    $stmt->execute([$progress['Product_ID']]);
+    $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+    $progress['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
+}
+
 ?>
 
 <!DOCTYPE html>

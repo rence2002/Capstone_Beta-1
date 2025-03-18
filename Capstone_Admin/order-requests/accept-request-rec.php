@@ -105,6 +105,9 @@ function processCustomOrder($pdo, $orderRequest, $requestID) {
     // 1. Create custom product
     $newProductID = createCustomProduct($pdo, $customization, $requestID);
 
+    // Fetch the product name from tbl_prod_info
+    $productName = fetchProductName($pdo, $newProductID);
+
     // 2. Move to permanent customizations
     $newCustomizationID = moveToPermanentCustomizations($pdo, $customization, $newProductID);
 
@@ -112,7 +115,7 @@ function processCustomOrder($pdo, $orderRequest, $requestID) {
     insertIntoProgress($pdo, [
         'User_ID' => $customization['User_ID'],
         'Product_ID' => $newProductID,
-        'Product_Name' => 'Custom ' . $customization['Furniture_Type'],
+        'Product_Name' => $productName,
         'Quantity' => 1,
         'Total_Price' => 0.00
     ], 'custom', 10, 0);
@@ -137,6 +140,13 @@ function createCustomProduct($pdo, $customization, $requestID) {
     $description = 'Custom order from request #' . $requestID;
     $stmt->execute([$productName, $description]);
     return $pdo->lastInsertId();
+}
+
+function fetchProductName($pdo, $productID) {
+    $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+    $stmt->execute([$productID]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['Product_Name'] ?? 'N/A';
 }
 
 function moveToPermanentCustomizations($pdo, $customization, $newProductID) {

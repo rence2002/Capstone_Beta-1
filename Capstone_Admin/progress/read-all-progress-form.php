@@ -184,6 +184,15 @@ function calculatePercentage($status) {
                     <th colspan="3" style="text-align: center;">ACTIONS</th>
                 </tr>
                 <?php foreach ($rows as $row): ?>
+                    <?php
+                    // Fetch Product_Name dynamically if missing
+                    if (empty($row['Product_Name'])) {
+                        $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+                        $stmt->execute([$row['Product_ID']]);
+                        $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $row['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
+                    }
+                    ?>
                     <tr>
                         <td>
                             <?= htmlspecialchars($row['Order_Type']) ?>
