@@ -54,6 +54,7 @@ try {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined:wght@100;200;300;400;500;600;700;800;900&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Round:wght@100;200;300;400;500;600;700;800;900&display=swap">
+
 </head>
 
 <body>
@@ -159,20 +160,17 @@ try {
             <div class="cus-boxed">
                 <!-- Sizes Selection -->
                 <label for="sizes">Select standard sizes:</label>
-                <select id="sizes" name="sizes">
+                <select id="sizes" name="sizes" onchange="toggleCustomField(this, 'sizes-custom-info')">
                     <option value="" disabled selected>Select one</option>
                 </select>
-                
-                <!-- Additional Information -->
-                <label for="sizes-info">Add own sizes:</label>
-                <input type="text" id="sizes-info" name="sizes-info" placeholder="Width-Length-Height" style="width: 100%; margin-top: 10px; height:30px;">
-            </div>
+                <input type="text" id="sizes-custom-info" name="sizes-custom-info" placeholder="Enter custom size" style="display: none; width: 100%; margin-top: 10px; height:30px;">
+                 </div>
 
             <!-- Color Section -->
             <div class="cus-boxed">
                 <!-- Color Selection -->
                 <label for="color">Select a color:</label>
-                <select id="color" name="color">
+                <select id="color" name="color" onchange="toggleCustomField(this, 'color-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="natural_oak">Natural Oak</option>
                     <option value="dark_walnut">Dark Walnut</option>
@@ -194,23 +192,23 @@ try {
                     <option value="gunmetal">Gunmetal</option>
                     <option value="brushed_gold">Brushed Gold</option>
                     <option value="brushed_silver">Brushed Silver</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="color-custom-info" name="color-custom-info" placeholder="Enter custom color" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Color -->
                 <label class="upload-file" for="color-file-upload">Upload a file:</label>
-                <input type="file" id="color-file-upload" name="color-file-upload" accept="image/*">
-                <div id="color-image-preview" style="margin-top: 10px;"></div>
-
-                <!-- Additional Information -->
-                <label for="color-info">Additional Information:</label>
-                <input type="text" id="color-info" name="color-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
-            </div>
+-                <input type="file" id="color-file-upload" name="color-file-upload" accept="image/*">
++                <input type="file" id="color-file-upload" name="color-file-upload" accept="image/*" style="display: none;">
+                 <div id="color-image-preview" style="margin-top: 10px;"></div>
+ 
+                 </div>
 
             <!-- Texture Section -->
             <div class="cus-boxed">
                 <!-- Texture Selection -->
                 <label for="texture">Select a texture:</label>
-                <select id="texture" name="texture">
+                <select id="texture" name="texture" onchange="toggleCustomField(this, 'texture-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="matte">Matte</option>
                     <option value="glossy">Glossy</option>
@@ -232,13 +230,16 @@ try {
                     <option value="patina">Patina</option>
                     <option value="raw_unfinished">Raw / Unfinished</option>
                     <option value="polished">Polished</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="texture-custom-info" name="texture-custom-info" placeholder="Enter custom texture" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Texture -->
                 <label class="texture-image-preview" for="texture-file-upload">Upload a file:</label>
-                <input type="file" id="texture-file-upload" name="texture-file-upload" accept="image/*">
-                <div id="texture-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="texture-file-upload" name="texture-file-upload" accept="image/*">
++                <input type="file" id="texture-file-upload" name="texture-file-upload" accept="image/*" style="display: none;">
+                 <div id="texture-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="texture-info">Additional Information:</label>
                 <input type="text" id="texture-info" name="texture-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -248,18 +249,21 @@ try {
             <div class="cus-boxed">
                 <!-- Woods Selection -->
                 <label for="woods">Select a wood type:</label>
-                <select id="woods" name="woods">
+                <select id="woods" name="woods" onchange="toggleCustomField(this, 'woods-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="mahogany">Mahogany</option>
                     <option value="tangile">Tangile</option>
                     <option value="nara">Nara</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="woods-custom-info" name="woods-custom-info" placeholder="Enter custom wood type" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Wood -->
                 <label class="wood-image-preview" for="wood-file-upload">Upload a file:</label>
-                <input type="file" id="wood-file-upload" name="wood-file-upload" accept="image/*">
-                <div id="wood-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="wood-file-upload" name="wood-file-upload" accept="image/*">
++                <input type="file" id="wood-file-upload" name="wood-file-upload" accept="image/*" style="display: none;">
+                 <div id="wood-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="wood-info">Additional Information:</label>
                 <input type="text" id="wood-info" name="wood-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -269,16 +273,19 @@ try {
             <div class="cus-boxed">
                 <!-- Foam Selection -->
                 <label for="foam">Select a foam:</label>
-                <select id="foam" name="foam">
+                <select id="foam" name="foam" onchange="toggleCustomField(this, 'foam-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="uratex">Uratex</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="foam-custom-info" name="foam-custom-info" placeholder="Enter custom foam" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Foam -->
                 <label class="foam-image-preview" for="foam-file-upload">Upload a file:</label>
-                <input type="file" id="foam-file-upload" name="foam-file-upload" accept="image/*">
-                <div id="foam-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="foam-file-upload" name="foam-file-upload" accept="image/*">
++                <input type="file" id="foam-file-upload" name="foam-file-upload" accept="image/*" style="display: none;">
+                 <div id="foam-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="foam-info">Additional Information:</label>
                 <input type="text" id="foam-info" name="foam-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -288,7 +295,7 @@ try {
             <div class="cus-boxed">
                 <!-- Cover Selection -->
                 <label for="cover">Select a cover type:</label>
-                <select id="cover" name="cover">
+                <select id="cover" name="cover" onchange="toggleCustomField(this, 'cover-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="velvet">Velvet</option>
                     <option value="linen">Linen Type</option>
@@ -297,13 +304,16 @@ try {
                     <option value="germanleather">German Leather</option>
                     <option value="koreanleather">Korean Leather</option>
                     <option value="italianleather">Italian Leather</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="cover-custom-info" name="cover-custom-info" placeholder="Enter custom cover" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
-                <!-- File Upload for Cover -->
-                <label class="cover-image-preview" for="cover-file-upload">Upload a file:</label>
-                <input type="file" id="cover-file-upload" name="cover-file-upload" accept="image/*">
-                <div id="cover-image-preview" style="margin-top: 10px;"></div>
-
+                 <!-- File Upload for Cover -->
+                 <label class="cover-image-preview" for="cover-file-upload">Upload a file:</label>
+-                <input type="file" id="cover-file-upload" name="cover-file-upload" accept="image/*">
++                <input type="file" id="cover-file-upload" name="cover-file-upload" accept="image/*" style="display: none;">
+                 <div id="cover-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="cover-info">Additional Information:</label>
                 <input type="text" id="cover-info" name="cover-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -313,7 +323,7 @@ try {
             <div class="cus-boxed">
                 <!-- Design Selection -->
                 <label for="design">Select a design:</label>
-                <select id="design" name="design">
+                <select id="design" name="design" onchange="toggleCustomField(this, 'design-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="modern">Modern</option>
                     <option value="contemporary">Contemporary</option>
@@ -330,13 +340,16 @@ try {
                     <option value="eclectic">Eclectic</option>
                     <option value="shabbychic">Shabby Chic</option>
                     <option value="asianinspired">Asian Inspired</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="design-custom-info" name="design-custom-info" placeholder="Enter custom design" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Design -->
                 <label class="design-image-preview" for="design-file-upload">Upload a file:</label>
-                <input type="file" id="design-file-upload" name="design-file-upload" accept="image/*">
-                <div id="design-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="design-file-upload" name="design-file-upload" accept="image/*">
++                <input type="file" id="design-file-upload" name="design-file-upload" accept="image/*" style="display: none;">
+                 <div id="design-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="design-info">Additional Information:</label>
                 <input type="text" id="design-info" name="design-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -346,19 +359,22 @@ try {
             <div class="cus-boxed">
                 <!-- Tile Selection -->
                 <label for="tile">Select a tile type:</label>
-                <select id="tile" name="tile">
+                <select id="tile" name="tile" onchange="toggleCustomField(this, 'tile-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="marble">Marble</option>
                     <option value="porcelain">Porcelain</option>
                     <option value="quartz">Quartz</option>
                     <option value="granite">Granite</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="tile-custom-info" name="tile-custom-info" placeholder="Enter custom tile" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Tile -->
                 <label class="tile-image-preview" for="tile-file-upload">Upload a file:</label>
-                <input type="file" id="tile-file-upload" name="tile-file-upload" accept="image/*">
-                <div id="tile-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="tile-file-upload" name="tile-file-upload" accept="image/*">
++                <input type="file" id="tile-file-upload" name="tile-file-upload" accept="image/*" style="display: none;">
+                 <div id="tile-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="tile-info">Additional Information:</label>
                 <input type="text" id="tile-info" name="tile-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
@@ -368,27 +384,31 @@ try {
             <div class="cus-boxed">
                 <!-- Metal Selection -->
                 <label for="metal">Select a metal type:</label>
-                <select id="metal" name="metal">
+                <select id="metal" name="metal" onchange="toggleCustomField(this, 'metal-custom-info')">
                     <option value="" disabled selected>Select one</option>
                     <option value="flat">Flat Bar</option>
                     <option value="tubular">Tubular</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <input type="text" id="metal-custom-info" name="metal-custom-info" placeholder="Enter custom metal" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Metal -->
                 <label class="metal-image-preview" for="metal-file-upload">Upload a file:</label>
-                <input type="file" id="metal-file-upload" name="metal-file-upload" accept="image/*">
-                <div id="metal-image-preview" style="margin-top: 10px;"></div>
-
+-                <input type="file" id="metal-file-upload" name="metal-file-upload" accept="image/*">
++                <input type="file" id="metal-file-upload" name="metal-file-upload" accept="image/*" style="display: none;">
+                 <div id="metal-image-preview" style="margin-top: 10px;"></div>
+ 
                 <!-- Additional Information -->
                 <label for="metal-info">Additional Information:</label>
                 <input type="text" id="metal-info" name="metal-info" placeholder="Enter any details here" style="width: 100%; margin-top: 10px; height:30px;">
             </div>
 
-            <!-- Submit Button -->
+            <!-- Print and Reset Buttons -->
             <div class="cus-boxed">
-                   <button type="submit" id="submit-customization">Submit Customization</button>
-            </div>
-        </div>
+                 <button type="button" id="print-button">Print</button>
+                 <button type="button" id="reset-button" onclick="resetFields()">Reset</button>
+-            </div>
+-        </div>
 
         <script>
         $(document).ready(function() {
@@ -400,12 +420,14 @@ try {
                 if (furnitureType === 'chair') {
                     sizesOptions = `
                         <option value="chair-stan">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
+                        <option value="custom">Custom</option>
                     `;
                 } else if (furnitureType === 'table') {
                     sizesOptions = `
                         <option value="table1">Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.</option>
                         <option value="table2">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
                         <option value="table3">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="custom">Custom</option>
                     `;
                 } else if (furnitureType === 'salaset') {
                     sizesOptions = `
@@ -413,6 +435,7 @@ try {
                         <option value="salaset2">Sala Set 9x9 ft.</option>
                         <option value="salaset3">Sala Set 10x10 ft.</option>
                         <option value="salaset4">Sala Set 10x11 ft.</option>
+                        <option value="custom">Custom</option>
                     `;
                 } else if (furnitureType === 'bedframe') {
                     sizesOptions = `
@@ -423,85 +446,43 @@ try {
                         <option value="bedframe5">Bed Frame - Full   54x75 in.</option>
                         <option value="bedframe6">Bed Frame - Twin XL   38x80 in.</option>
                         <option value="bedframe7">Bed Frame - Twin   38x75 in.</option>
+                        <option value="custom">Custom</option>
                     `;
                 } else if (furnitureType === 'sofa') {
                     sizesOptions = `
                         <option value="sofa1">Sofa - 3 Seater - L: 7 ft. // W: 35 in. // H: 34 in.</option>
                         <option value="sofa2">Sofa - 2 Seater - L: 5 ft. // W: 35 in. // H: 34 in.</option>
                         <option value="sofa3">Sofa - 1 Seater - L: 3 ft. // W: 35 in. // H: 34 in.</option>
+                        <option value="custom">Custom</option>
                     `;
                 }
 
                 $('#sizes').html(sizesOptions);
             });
 
-            // Get the modal
-            var modal = document.getElementById("successModal");
-            var span = document.getElementsByClassName("close")[0];
-
-            // Handle form submission with AJAX
-            $('#customization-form').submit(function(event) {
-                event.preventDefault();
-                var formData = new FormData(this);
-
-                $.ajax({
-                    url: 'gallery-custom-rec.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#modal-message').html(`
-                                <h2>Success!</h2>
-                                <p>${response.message}</p>
-                            `);
-                            modal.style.display = "block";
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error);
-                    }
-                });
-            });
-
-            // Modal close button handler
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            // Close modal when clicking outside
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
+            // Show custom size input field when "Custom" is selected
+            $('#sizes').change(function() {
+                if ($(this).val() === 'custom') {
+                    $('#sizes-custom-info').show();
+                } else {
+                    $('#sizes-custom-info').hide();
                 }
-            }
-
-            // Button handlers
-            $(".continue-shopping-btn").click(function() {
-                window.location.href = 'gallery.php';
-            });
-
-            $(".view-cart-btn").click(function() {
-                window.location.href = 'cart.php';
             });
         });
+
+        // Show additional information fields when "Custom" is selected
+        function toggleCustomField(selectElement, fieldId) {
+            const customField = document.getElementById(fieldId);
+            if (selectElement.value === 'custom') {
+                customField.style.display = 'block';
+            } else {
+                customField.style.display = 'none';
+            }
+        }
         </script>
+        
     </main>
-    <!-- The Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modal-message" class="success-message-container"></div>
-            <div class="button-container">
-                <button class="continue-shopping-btn">Continue Shopping</button>
-                <button class="view-cart-btn">View Cart</button>
-            </div>
-        </div>
-    </div>
+    
     <footer class="footer">
         <div class="footer-row">
             <div class="footer-col">
@@ -548,6 +529,8 @@ try {
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="../static/Javascript-files/script.js">
+    <script src="../static/Javascript-files/customization.js"></script>
+
     </script>
 </body>
 

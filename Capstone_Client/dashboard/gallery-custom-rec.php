@@ -27,14 +27,13 @@ function uploadImage($file, $uploadDir) {
 
     // Check if file already exists
     if (file_exists($targetFile)) {
-       $baseName = pathinfo($file["name"], PATHINFO_FILENAME);
+        $baseName = pathinfo($file["name"], PATHINFO_FILENAME);
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
         $i = 1;
         while (file_exists($targetDir . $baseName . "_" . $i . "." . $extension)) {
             $i++;
         }
         $targetFile = $targetDir . $baseName . "_" . $i . "." . $extension;
-
     }
 
     // Check file size
@@ -50,7 +49,6 @@ function uploadImage($file, $uploadDir) {
     // Check if $uploadOk is set to 0 by an error
     if ($uploadOk == 0) {
         return null;
-    // if everything is ok, try to upload file
     } else {
         if (move_uploaded_file($file["tmp_name"], $targetFile)) {
             return $targetFile;
@@ -71,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $colorInfo = $_POST['color-info'] ?? null;
     $texture = $_POST['texture'] ?? null;
     $textureInfo = $_POST['texture-info'] ?? null;
-    $woodType = $_POST['woods'] ?? null; // Corrected from woodType to woods
+    $woodType = $_POST['woods'] ?? null;
     $woodInfo = $_POST['wood-info'] ?? null;
     $foamType = $_POST['foam'] ?? null;
     $foamInfo = $_POST['foam-info'] ?? null;
@@ -93,13 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $designImageURL = isset($_FILES['design-file-upload']) && $_FILES['design-file-upload']['error'] === UPLOAD_ERR_OK ? uploadImage($_FILES['design-file-upload'], '../uploads/custom/') : null;
     $tileImageURL = isset($_FILES['tile-file-upload']) && $_FILES['tile-file-upload']['error'] === UPLOAD_ERR_OK ? uploadImage($_FILES['tile-file-upload'], '../uploads/custom/') : null;
     $metalImageURL = isset($_FILES['metal-file-upload']) && $_FILES['metal-file-upload']['error'] === UPLOAD_ERR_OK ? uploadImage($_FILES['metal-file-upload'], '../uploads/custom/') : null;
-
-    // Check if furniture type is null
-    if ($furnitureType === null) {
-       echo json_encode(['success' => false, 'message' => 'Furniture Type cannot be null.']);
-       exit; // Stop execution if null.
-    }
-
 
     // Insert into tbl_customizations_temp
     try {
@@ -136,8 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $customizationId = $pdo->lastInsertId();
     } catch (PDOException $e) {
-       echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-       exit;
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit;
     }
 
     // Insert into tbl_order_request
@@ -148,30 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
     } catch (PDOException $e) {
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-       exit;
+        exit;
     }
 
-    // success page url
-    $successPageURL = "gallery-custom-success.php";
-
-    // Build the success message HTML
-    $successMessage = <<<HTML
-        <div class="success-message-container">
-            <h2>Your Custom Order Is Being Processed!</h2>
-            <p>Thank you for your request. We're now working on your custom furniture order.</p>
-            <p>What would you like to do next?</p>
-            <div class="button-container">
-              <button class="continue-shopping-btn" data-action="continue-shopping">Continue Shopping</button>
-              <button class="view-cart-btn" data-action="view-cart">View Cart</button>
-              <button class="redirect-success" data-action="redirect-success">View Order</button>
-            </div>
-        </div>
-    HTML;
-
+    // Return success response
     echo json_encode([
         'success' => true,
-        'message' => $successMessage,
-        'redirect' => $successPageURL,
+        'message' => 'Your customization has been submitted successfully!',
     ]);
 }
 ?>
