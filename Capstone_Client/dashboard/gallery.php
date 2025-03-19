@@ -58,24 +58,35 @@ try {
 </head>
 
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="home.php" class="logo">
-                <img src="../static/images/rm raw png.png" alt="" class="logo">
-            </a>
+<header>
+    <nav class="navbar">
+      <a href="home.php" class="logo">
+        <img src="../static/images/rm raw png.png" alt=""  class="logo">
+      </a>
+        <ul class="menu-links">
+            <li class="dropdown">
+                <a href="home.php" class=" dropdown-toggle">Home</a>
+                <ul class="dropdown-menu">
+                    <li><a href="#about-section">About</a></li>
+                    <li><a href="#contact-section">Contacts</a></li>
+                    <li><a href="#offers-section">Offers</a></li>
+                </ul>
+            </li>
+            <li><a href="Review.php">Reviews</a></li>
+            <li><a href="../dashboard/gallery.php" class="active">Gallery</a></li>
+            <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="Review.php">Reviews</a></li>
-                <li><a href="gallery.php" class="active">Gallery</a></li>
-                <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
-                <li><a href="profile.php" class="profile" id="sign_in">Profile</a></li>
-                <li><a href="logout.php" class="profile" id="sign_in">Logout</a></li>
-                <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-            </ul>
-            <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-        </nav>
-    </header>
-
+            <li class="dropdown">
+            <a href="profile.php" class="profile" id="sign_in">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="logout.php">Logout</a></li>
+                </ul>
+            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+        </ul>
+        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+    </nav>
+</header>
     <main>
         <div class="hero-section">
             <div class="content">
@@ -194,14 +205,13 @@ try {
                     <option value="brushed_silver">Brushed Silver</option>
                     <option value="custom">Custom</option>
                 </select>
-                <input type="text" id="color-custom-info" name="color-custom-info" placeholder="Enter custom color" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                 
                 <!-- File Upload for Color -->
                 <label class="upload-file" for="color-file-upload">Upload a file:</label>
 -                <input type="file" id="color-file-upload" name="color-file-upload" accept="image/*">
 +                <input type="file" id="color-file-upload" name="color-file-upload" accept="image/*" style="display: none;">
                  <div id="color-image-preview" style="margin-top: 10px;"></div>
- 
+                 <input type="text" id="color-custom-info" name="color-custom-info" placeholder="Enter custom color" style="display: none; width: 100%; margin-top: 10px; height:30px;">
                  </div>
 
             <!-- Texture Section -->
@@ -404,7 +414,7 @@ try {
             </div>
 
             <!-- Print and Reset Buttons -->
-            <div class="cus-boxed">
+           <div class="cus-boxed">
                  <button type="button" id="print-button">Print</button>
                  <button type="button" id="reset-button" onclick="resetFields()">Reset</button>
 -            </div>

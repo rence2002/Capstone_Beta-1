@@ -2,7 +2,7 @@
 session_start();
 
 $orderStatusMap = [
-    0   => 'Order Received',
+    0   => 'Order Approved',
     10  => 'Order Confirmed',
     20  => 'Design Finalization',
     30  => 'Material Preparation',
@@ -14,6 +14,21 @@ $orderStatusMap = [
     90  => 'Ready for Delivery',
     100 => 'Delivered / Completed'
 ];
+
+$orderIcons = [
+    0   => "<i class='fas fa-receipt'></i>",              // Order Received
+    10  => "<i class='fas fa-check-circle'></i>",         // Order Confirmed
+    20  => "<i class='fas fa-palette'></i>",              // Design Finalization
+    30  => "<i class='fas fa-boxes'></i>",               // Material Preparation
+    40  => "<i class='fas fa-industry'></i>",            // Production Started
+    50  => "<i class='fas fa-cogs'></i>",                // Mid-Production
+    60  => "<i class='fas fa-brush'></i>",               // Finishing Process
+    70  => "<i class='fas fa-search'></i>",              // Quality Check
+    80  => "<i class='fas fa-tools'></i>",               // Final Assembly
+    90  => "<i class='fas fa-truck'></i>",               // Ready for Delivery
+    100 => "<i class='fas fa-flag-checkered'></i>"       // Delivered / Completed
+];
+
 
 $productStatusLabels = [
     0   => 'Concept Stage',
@@ -28,6 +43,21 @@ $productStatusLabels = [
     90  => 'Final Inspection & Packaging',
     100 => 'Completed'
 ];
+
+$productIcons = [
+    0   => "<i class='fas fa-lightbulb'></i>",           // Concept Stage
+    10  => "<i class='fas fa-pencil-ruler'></i>",        // Design Approved
+    20  => "<i class='fas fa-cube'></i>",               // Material Sourcing
+    30  => "<i class='fas fa-cut'></i>",                // Cutting & Shaping
+    40  => "<i class='fas fa-tools'></i>",              // Structural Assembly
+    50  => "<i class='fas fa-paint-brush'></i>",        // Detailing & Refinements
+    60  => "<i class='fas fa-spray-can'></i>",          // Sanding & Pre-Finishing
+    70  => "<i class='fas fa-paint-roller'></i>",       // Varnishing/Painting
+    80  => "<i class='fas fa-clock'></i>",              // Drying & Curing
+    90  => "<i class='fas fa-box'></i>",                // Final Inspection & Packaging
+    100 => "<i class='fas fa-check'></i>"               // Completed
+];
+
 
 // Check if the user is logged in, if not then redirect him to login page
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
@@ -108,6 +138,7 @@ try {
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Google Icons Link -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
@@ -120,40 +151,51 @@ try {
 </head>
 
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="home.php" class="logo">
-                <img src="../static/images/rm raw png.png" alt="" class="logo">
-            </a>
+<header>
+    <nav class="navbar">
+      <a href="home.php" class="logo">
+        <img src="../static/images/rm raw png.png" alt=""  class="logo">
+      </a>
+        <ul class="menu-links">
+            <li class="dropdown">
+                <a href="home.php" class="">Home</a>
+                <ul class="dropdown-menu">
+                    <li><a href="#about-section">About</a></li>
+                    <li><a href="#contact-section">Contacts</a></li>
+                    <li><a href="#offers-section">Offers</a></li>
+                </ul>
+            </li>
+            <li><a href="Review.php">Reviews</a></li>
+            <li><a href="../dashboard/gallery.php">Gallery</a></li>
+            <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="Review.php">Reviews</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-                <li><a href="cart.php" class="cart" id="cart">Cart</a>
-                </li>
-                <li><a href="profile.php" class="profile activecon" id="sign_in">Profile</a></li>
-                 
-                <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-            </ul>
-            <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-        </nav>
-    </header>
+            <li class="dropdown">
+            <a href="profile.php" class="profile activecon" id="sign_in">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="logout.php">Logout</a></li>
+                </ul>
+            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+        </ul>
+        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+    </nav>
+</header>
 
     <main>
         <div class="container-profile">
             <div class="profile-icon-con">
                 <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/profile-icon.png'; ?>" alt="Profile Icon">
                 <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
-                <a class="ep--edit" href="edit-profile.php">Settings</a>
+                <a class="ep--edit" href="edit-profile.php"></a>
             </div>
-            <div class="logout-con">
+            <!-- <div class="logout-con">
                 <a href="logout.php" class="logout-btn">
                     <i class="fa fa-sign-out-alt"></i> Logout
                 </a>
-            </div>
+            </div> -->
         </div>
 
-        <div class="section-container">
+        <!-- <div class="section-container">
             <div class="section-header" onclick="toggleSection('progress-steps')">
                 <h2>Order Progress</h2>
                 <span class="toggle-icon">▼</span>
@@ -167,14 +209,98 @@ try {
                             <h3><?= $progress['Product_Name'] ?> - <?= $orderStatusMap[$progress['Order_Status']] ?></h3>
                             <ol class="stepper">
                                 <?php foreach ($productStatusLabels as $status => $label): ?>
-                                    <li class="<?= $progress['Product_Status'] == $status ? 'active' : '' ?>" data-toggle="modal" data-target="#progressModal" data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>"><?= $label ?></li>
+                                    <li class="updates_text<?= $progress['Product_Status'] == $status ? 'active' : '' ?>" data-toggle="modal" data-target="#progressModal" data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>"><?= $label ?></li>
                                 <?php endforeach; ?>
                             </ol>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </div>
+        </div> -->
+
+
+        <div class="section-container">
+    <div class="section-header" onclick="toggleSection('order-status')">
+        <h2>Order Status (Furniture Update)</h2>
+        <span class="toggle-icon">▼</span>
+    </div>
+    <div id="order-status" class="section-content">
+        <?php if (empty($progressData)): ?>
+            <p>No available data</p>
+        <?php else: ?>
+            <?php foreach ($progressData as $progress): ?>
+                <div class="progress-item">
+                    <h3><?= $progress['Product_Name'] ?> - <?= $orderStatusMap[$progress['Order_Status']] ?></h3>
+                    <div class="stepper-container">
+                        <ol class="stepper">
+                            <?php 
+                            $isActive = true; // Track passed steps
+                            foreach ($orderStatusMap as $status => $label): 
+                                $stepClass = ($progress['Order_Status'] == $status) ? 'active' : ($isActive ? 'active' : '');
+                                if ($progress['Order_Status'] == $status) {
+                                    $isActive = false; // Stop marking future steps active
+                                }
+                            ?>
+                                <li class="updates_text <?= $stepClass ?>" 
+                                    data-toggle="modal" 
+                                    data-target="#progressModal" 
+                                    data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>">
+                                    <span class="step-icon">
+                                        <?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?>
+                                    </span>
+                                    <span class="step-label"><?= $label ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Product Status Section -->
+<div class="section-container">
+    <div class="section-header" onclick="toggleSection('product-status')">
+        <h2>Product Status</h2>
+        <span class="toggle-icon">▼</span>
+    </div>
+    <div id="product-status" class="section-content">
+        <?php if (empty($progressData)): ?>
+            <p>No available data</p>
+        <?php else: ?>
+            <?php foreach ($progressData as $progress): ?>
+                <div class="progress-item">
+                    <h3><?= $progress['Product_Name'] ?></h3>
+                    <div class="stepper-container">
+                        <ol class="stepper">
+                            <?php 
+                            $isActive = true; // Track passed steps
+                            foreach ($productStatusLabels as $status => $label): 
+                                $stepClass = ($progress['Product_Status'] == $status) ? 'active' : ($isActive ? 'active' : '');
+                                if ($progress['Product_Status'] == $status) {
+                                    $isActive = false; // Stop marking future steps active
+                                }
+                            ?>
+                                <li class="updates_text <?= $stepClass ?>" 
+                                    data-toggle="modal" 
+                                    data-target="#progressModal" 
+                                    data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>">
+                                    <span class="step-icon">
+                                        <?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?>
+                                    </span>
+                                    <span class="step-label"><?= $label ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+
 
         <div class="section-container">
             <div class="section-header" onclick="toggleSection('purchase-history')">

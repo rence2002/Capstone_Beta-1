@@ -45,8 +45,13 @@ $userId = $_SESSION["user_id"];
             <li><a href="Review.php">Reviews</a></li>
             <li><a href="../dashboard/gallery.php">Gallery</a></li>
             <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
-            <li><a href="profile.php" class="profile" id="sign_in">Profile</a></li>
-             <li><a href="logout.php" class="profile" id="sign_in">Logout</a></li>
+            <ul class="menu-links">
+            <li class="dropdown">
+            <a href="profile.php" class="profile" id="sign_in">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="logout.php">Logout</a></li>
+                </ul>
             <span id="close-menu-btn" class="material-symbols-outlined">close</span>
         </ul>
         <span id="hamburger-btn" class="material-symbols-outlined">menu</span>

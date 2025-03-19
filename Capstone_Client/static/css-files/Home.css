@@ -610,6 +610,45 @@ a.button:hover {
 }
 /* END FOOTER */
 
+
+.profile-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;  /* Start positioning from the middle */
+  transform: translateX(-50%);  /* Shift it back by 50% of its own width */
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 110px;
+  list-style: none;
+  padding: 5px 0;
+  border-radius: 5px;
+  text-align: center;
+}
+
+
+.dropdown-menu li {
+    padding: 8px 15px;
+}
+
+.dropdown-menu li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+.dropdown-menu li:hover {
+    background-color: #f1f1f1;
+}
+
+
+
 /* RESPONSIVE */
 @media screen and (max-width: 750px) {
 

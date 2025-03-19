@@ -4,21 +4,26 @@ $(document).ready(function() {
         const customField = document.getElementById(customFieldId);
         const imageUpload = document.getElementById(imageUploadId);
         const imagePreview = document.getElementById(imagePreviewId);
+        const infoField = document.getElementById(customFieldId + '-info'); // Get additional info field
 
         if (selectElement.value === 'custom') {
             if (customField) customField.style.display = 'block';
             if (imageUpload) imageUpload.style.display = 'block';
             if (imagePreview) imagePreview.style.display = 'block';
+            if (infoField) infoField.style.display = 'block'; // Show additional info
         } else {
             if (customField) customField.style.display = 'none';
             if (imageUpload) imageUpload.style.display = 'none';
-            if (imagePreview) imagePreview.style.display = 'none';
-            if (imagePreview) imagePreview.innerHTML = ''; // Clear the preview if hidden
+            if (imagePreview) {
+                imagePreview.style.display = 'none';
+                imagePreview.innerHTML = ''; // Clear the preview if hidden
+            }
+            if (infoField) infoField.style.display = 'none'; // Hide additional info
         }
     }
 
-    // Handle furniture type change
-    $('#furniture').change(function() {
+     // Handle furniture type change (unchanged)
+     $('#furniture').change(function() {
         var furnitureType = $(this).val();
         var sizesOptions = '';
 
@@ -67,50 +72,30 @@ $(document).ready(function() {
         $('#sizes').trigger('change');
     });
 
-    // Show custom size input field when "Custom" is selected
+    // Show custom size input field when "Custom" is selected (unchanged)
     $('#sizes').change(function() {
         toggleCustomElements(this, 'sizes-custom-info', null, null);
     });
+// Modified handlers for Color, Texture, etc.  These now also handle file uploads
+handleCustomSelectChange('#color', 'color-custom-info', 'color-file-upload', 'color-image-preview');
+handleCustomSelectChange('#texture', 'texture-custom-info', 'texture-file-upload', 'texture-image-preview');
+handleCustomSelectChange('#woods', 'woods-custom-info', 'wood-file-upload', 'wood-image-preview');
+handleCustomSelectChange('#foam', 'foam-custom-info', 'foam-file-upload', 'foam-image-preview');
+handleCustomSelectChange('#cover', 'cover-custom-info', 'cover-file-upload', 'cover-image-preview');
+handleCustomSelectChange('#design', 'design-custom-info', 'design-file-upload', 'design-image-preview');
+handleCustomSelectChange('#tile', 'tile-custom-info', 'tile-file-upload', 'tile-image-preview');
+handleCustomSelectChange('#metal', 'metal-custom-info', 'metal-file-upload', 'metal-image-preview');
 
-    // Color
-    $('#color').change(function() {
-        toggleCustomElements(this, 'color-custom-info', 'color-file-upload', 'color-image-preview');
-    });
 
-    // Texture
-    $('#texture').change(function() {
-        toggleCustomElements(this, 'texture-custom-info', 'texture-file-upload', 'texture-image-preview');
+function handleCustomSelectChange(selector, customFieldId, imageUploadId, imagePreviewId) {
+    $(selector).change(function() {
+        toggleCustomElements(this, customFieldId, imageUploadId, imagePreviewId);
+        // Show/hide upload based on file selection
+        $(`#${imageUploadId}`).change(function() {
+            $(`#${imagePreviewId}`).show();
+        });
     });
-
-    // Wood
-    $('#woods').change(function() {
-        toggleCustomElements(this, 'woods-custom-info', 'wood-file-upload', 'wood-image-preview');
-    });
-
-    // Foam
-    $('#foam').change(function() {
-        toggleCustomElements(this, 'foam-custom-info', 'foam-file-upload', 'foam-image-preview');
-    });
-
-    // Cover
-    $('#cover').change(function() {
-        toggleCustomElements(this, 'cover-custom-info', 'cover-file-upload', 'cover-image-preview');
-    });
-
-    // Design
-    $('#design').change(function() {
-        toggleCustomElements(this, 'design-custom-info', 'design-file-upload', 'design-image-preview');
-    });
-
-    // Tile
-    $('#tile').change(function() {
-        toggleCustomElements(this, 'tile-custom-info', 'tile-file-upload', 'tile-image-preview');
-    });
-
-    // Metal
-    $('#metal').change(function() {
-        toggleCustomElements(this, 'metal-custom-info', 'metal-file-upload', 'metal-image-preview');
-    });
+}
 });
 
 // Show additional information fields when "Custom" is selected

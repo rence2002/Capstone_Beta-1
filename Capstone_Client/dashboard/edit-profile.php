@@ -118,36 +118,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+    <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="../static/css-files/edit-profile.css">
 </head>
 <body>
-    <header>
-        <!-- Same header as profile.php -->
-        <nav class="navbar">
-            <a href="home.php" class="logo">
-                <img src="../static/images/rm raw png.png" alt="" class="logo">
-            </a>
+<header>
+    <nav class="navbar">
+      <a href="home.php" class="logo">
+        <img src="../static/images/rm raw png.png" alt=""  class="logo">
+      </a>
+        <ul class="menu-links">
+            <li class="dropdown">
+                <a href="home.php" class="">Home</a>
+                <ul class="dropdown-menu">
+                    <li><a href="#about-section">About</a></li>
+                    <li><a href="#contact-section">Contacts</a></li>
+                    <li><a href="#offers-section">Offers</a></li>
+                </ul>
+            </li>
+            <li><a href="Review.php">Reviews</a></li>
+            <li><a href="../dashboard/gallery.php">Gallery</a></li>
+            <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="Review.php">Reviews</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-                <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
-                <li><a href="profile.php" class="profile activecon" id="sign_in">Profile</a></li>
-                <li><a href="logout.php" class="profile" id="sign_in">Logout</a></li>
-                <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-            </ul>
-            <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-        </nav>
-    </header>
-
+            <li class="dropdown">
+            <a href="profile.php" class="profile activecon" id="sign_in">Profile</a>
+                <ul class=" dropdown-menu">
+                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="logout.php">Logout</a></li>
+                </ul>
+            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+        </ul>
+        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+    </nav>
+</header>
     <main>
-        <div class="container-profile">
+    <div class="container-profile">
             <div class="profile-icon-con">
-                <img class="profile-icon" src="<?php echo ($user['PicPath']) ? ''.$user['PicPath'] : '../static/profile-icon.png'; ?>" alt="Profile Icon">
+                <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/profile-icon.png'; ?>" alt="Profile Icon">
                 <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
+                <!-- <a class="ep--edit" href="edit-profile.php"></a> -->
             </div>
+            <!-- <div class="logout-con">
+                <a href="logout.php" class="logout-btn">
+                    <i class="fa fa-sign-out-alt"></i> Logout
+                </a>
+            </div> -->
         </div>
 
         <div class="edit-form">
@@ -203,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="button-group">
                     <button type="submit" class="submit-btn">Save Changes</button>
-                    <a href="profile.php" class="cancel-btn">Cancel</a>
+                    <button href="profile.php" class="cancel-btn">Cancel</button>
                 </div>
             </form>
         </div>
