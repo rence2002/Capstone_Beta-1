@@ -1,108 +1,155 @@
 $(document).ready(function() {
-    // Function to toggle visibility of custom fields and image uploads
+    // Toggle custom options visibility
     function toggleCustomElements(selectElement, wrapperId, imageUploadId, imagePreviewId) {
-        const wrapper = document.getElementById(wrapperId);
-        const imageUpload = document.getElementById(imageUploadId);
-        const imagePreview = document.getElementById(imagePreviewId);
+        const wrapper = $(`#${wrapperId}`);
+        const imageUpload = $(`#${imageUploadId}`);
+        const imagePreview = $(`#${imagePreviewId}`);
 
         if (selectElement.value === 'custom') {
-            if (wrapper) wrapper.style.display = 'block';
-            if (imageUpload) imageUpload.style.display = 'block'; // Ensure upload is visible
-            if (imagePreview) imagePreview.style.display = 'block'; // Ensure preview is visible
+            wrapper.show();
+            imageUpload.show();
+            imagePreview.show();
         } else {
-            if (wrapper) wrapper.style.display = 'none';
-            if (imagePreview) {
-                imagePreview.style.display = 'none';
-                imagePreview.innerHTML = ''; // Clear the preview if hidden
+            wrapper.hide().find('input').val(''); // Clear inputs
+            imageUpload.hide().val(''); // Clear file input
+            imagePreview.hide().empty(); // Clear preview
+        }
+    }
+
+    // Initialize all dropdown handlers
+    function initHandlers() {
+        // Color handler
+        $('#color').on('change', function() {
+            toggleCustomElements(this, 'color-custom-options', 'color-file-upload', 'color-image-preview');
+        });
+
+        // Texture handler
+        $('#texture').on('change', function() {
+            toggleCustomElements(this, 'texture-custom-options', 'texture-file-upload', 'texture-image-preview');
+        });
+
+        // Woods handler
+        $('#woods').on('change', function() {
+            toggleCustomElements(this, 'woods-custom-options', 'wood-file-upload', 'wood-image-preview');
+        });
+
+        // Foam handler
+        $('#foam').on('change', function() {
+            toggleCustomElements(this, 'foam-custom-options', 'foam-file-upload', 'foam-image-preview');
+        });
+
+        // Cover handler
+        $('#cover').on('change', function() {
+            toggleCustomElements(this, 'cover-custom-options', 'cover-file-upload', 'cover-image-preview');
+        });
+
+        // Design handler
+        $('#design').on('change', function() {
+            toggleCustomElements(this, 'design-custom-options', 'design-file-upload', 'design-image-preview');
+        });
+
+        // Tiles handler
+        $('#tiles').on('change', function() {
+            toggleCustomElements(this, 'tiles-custom-options', 'tiles-file-upload', 'tiles-image-preview');
+        });
+
+        // Metal handler
+        $('#metal').on('change', function() {
+            toggleCustomElements(this, 'metal-custom-options', 'metal-file-upload', 'metal-image-preview');
+        });
+
+        // Sizes handler
+        $('#sizes').on('change', function() {
+            $('#sizes-custom-options').toggle(this.value === 'custom');
+        });
+
+        // Furniture type handler
+        $('#furniture').on('change', function() {
+            const furnitureType = $(this).val();
+            let sizesOptions = '<option value="" disabled selected>Select one</option>';
+            
+            switch(furnitureType) {
+                case 'chair':
+                    sizesOptions += `
+                        <option value="custom">Custom</option>
+                        <option value="chair-stan">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
+                    `;
+                    break;
+                case 'table':
+                    sizesOptions += `
+                        <option value="custom">Custom</option>
+                        <option value="table1">Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="table2">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="table3">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
+                    `;
+                    break;
+                case 'salaset':
+                    sizesOptions += `
+                        <option value="custom">Custom</option>
+                        <option value="salaset1">Sala Set 8x8 ft.</option>
+                        <option value="salaset2">Sala Set 9x9 ft.</option>
+                        <option value="salaset3">Sala Set 10x10 ft.</option>
+                        <option value="salaset4">Sala Set 10x11 ft.</option>
+                    `;
+                    break;
+                case 'bedframe':
+                    sizesOptions += `
+                        <option value="custom">Custom</option>
+                        <option value="bedframe1">Bed Frame - California King 72x84 in.</option>
+                        <option value="bedframe2">Bed Frame - King 76x80 in.</option>
+                        <option value="bedframe3">Bed Frame - Queen 60x80 in.</option>
+                        <option value="bedframe4">Bed Frame - Full XL 54x80 in.</option>
+                        <option value="bedframe5">Bed Frame - Full 54x75 in.</option>
+                        <option value="bedframe6">Bed Frame - Twin XL 38x80 in.</option>
+                        <option value="bedframe7">Bed Frame - Twin 38x75 in.</option>
+                    `;
+                    break;
+                default:
+                    sizesOptions = '<option value="" disabled selected>Select one</option>';
             }
-        }
+
+            // Update sizes dropdown
+            $('#sizes').html(sizesOptions).trigger('change');
+        });
+
+        // Image preview setup
+        $('input[type="file"]').on('change', function() {
+            const previewId = $(this).attr('id').replace('-file-upload', '-image-preview');
+            const file = this.files[0];
+            const preview = $(`#${previewId}`);
+
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.html(`<img src="${e.target.result}" style="max-width: 100px; max-height: 100px;">`);
+                    preview.show();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.empty().hide();
+            }
+        });
     }
 
-     // Handle furniture type change (unchanged)
-     $('#furniture').change(function() {
-        var furnitureType = $(this).val();
-        var sizesOptions = '';
+    // Initialize handlers on page load
+    initHandlers();
 
-        if (furnitureType === 'chair') {
-            sizesOptions = `
-                <option value="custom">Custom</option>
-                <option value="chair-stan">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
-                <option value="custom">Custom</option>
-            `;
-        } else if (furnitureType === 'table') {
-            sizesOptions = `
-                <option value="custom">Custom</option>
-                <option value="table1">Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.</option>
-                <option value="table2">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
-                <option value="table3">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
-            `;
-        } else if (furnitureType === 'salaset') {
-            sizesOptions = `
-                <option value="custom">Custom</option>
-                <option value="salaset1">Sala Set 8x8 ft.</option>
-                <option value="salaset2">Sala Set 9x9 ft.</option>
-                <option value="salaset3">Sala Set 10x10 ft.</option>
-                <option value="salaset4">Sala Set 10x11 ft.</option>
-            `;
-        } else if (furnitureType === 'bedframe') {
-            sizesOptions = `
-                <option value="custom">Custom</option>
-                <option value="bedframe1">Bed Frame - California King  72x84 in.</option>
-                <option value="bedframe2">Bed Frame -  King  76x80 in.</option>
-                <option value="bedframe3">Bed Frame - Queen  60x80 in.</option>
-                <option value="bedframe4">Bed Frame - Full XL  54x80 in.</option>
-                <option value="bedframe5">Bed Frame - Full   54x75 in.</option>
-                <option value="bedframe6">Bed Frame - Twin XL   38x80 in.</option>
-                <option value="bedframe7">Bed Frame - Twin   38x75 in.</option>
-            `;
-        } else if (furnitureType === 'sofa') {
-            sizesOptions = `
-                <option value="custom">Custom</option>
-                <option value="sofa1">Sofa - 3 Seater - L: 7 ft. // W: 35 in. // H: 34 in.</option>
-                <option value="sofa2">Sofa - 2 Seater - L: 5 ft. // W: 35 in. // H: 34 in.</option>
-                <option value="sofa3">Sofa - 1 Seater - L: 3 ft. // W: 35 in. // H: 34 in.</option>
-            `;
-        }
+    // Reset all fields
+    $('#reset-button').on('click', function() {
+        // Reset dropdowns
+        $('.cus-boxed select').each(function() {
+            $(this).val('').trigger('change'); // Trigger change to hide custom options
+        });
 
-        $('#sizes').html(sizesOptions);
-        // Trigger the change event on the sizes dropdown to handle initial state
-        $('#sizes').trigger('change');
+        // Clear file inputs
+        $('.cus-boxed input[type="file"]').val('');
+
+        // Clear text inputs
+        $('.cus-boxed input[type="text"]').val('');
+
+        // Clear image previews
+        $('.cus-boxed div[id$="-image-preview"]').empty().hide();
+
+        alert('All fields have been reset!');
     });
-
-    // Show custom size input field when "Custom" is selected (unchanged)
-    $('#sizes').change(function() {
-        toggleCustomElements(this, 'sizes-custom-info', null, null);
-    });// Show custom size input field when "Custom" is selected
-    $('#sizes').change(function() {
-        toggleCustomElements(this, 'sizes-custom-options', null, null); // Use wrapper ID
-    });
-
-    // Call toggleCustomElements for each section on page load
-    handleCustomSelectChange('#color', 'color-custom-options', 'color-file-upload', 'color-image-preview');
-    handleCustomSelectChange('#texture', 'texture-custom-options', 'texture-file-upload', 'texture-image-preview');
-    handleCustomSelectChange('#woods', 'woods-custom-options', 'wood-file-upload', 'wood-image-preview');
-    handleCustomSelectChange('#foam', 'foam-custom-options', 'foam-file-upload', 'foam-image-preview');
-    handleCustomSelectChange('#cover', 'cover-custom-options', 'cover-file-upload', 'cover-image-preview');
-    handleCustomSelectChange('#design', 'design-custom-options', 'design-file-upload', 'design-image-preview');
-    handleCustomSelectChange('#tile', 'tile-custom-options', 'tile-file-upload', 'tile-image-preview');
-    handleCustomSelectChange('#metal', 'metal-custom-options', 'metal-file-upload', 'metal-image-preview');
-
-    function handleCustomSelectChange(selector, wrapperId, imageUploadId, imagePreviewId) {
-        $(selector).change(function() {
-            toggleCustomElements(this, wrapperId, imageUploadId, imagePreviewId);
-            $(`#${imageUploadId}`).change(function() {
-                $(`#${imagePreviewId}`).show();
-            });
-        }).trigger('change'); // Trigger change to initialize hidden state
-    }
 });
-
-// Show additional information fields when "Custom" is selected
-function toggleCustomField(selectElement, fieldId) {
-    const customField = document.getElementById(fieldId);
-    if (selectElement.value === 'custom') {
-        customField.style.display = 'block';
-    } else {
-        customField.style.display = 'none';
-    }
-}

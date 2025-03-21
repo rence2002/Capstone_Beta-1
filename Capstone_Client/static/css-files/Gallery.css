@@ -568,7 +568,7 @@ select:focus {
 .summary-item strong {
   display: inline-block;
   vertical-align: top;
-  width: 170px; 
+  width: 170px; /* Adjust this width as needed */
 }
 
 .summary-item span {
@@ -859,4 +859,154 @@ cursor: pointer;
   .cus-boxed {
     flex: 1 1 100%; /* One column per row on smaller screens */
   }
+}
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  overflow-y: auto; /* Add scrolling for small screens */
+}
+
+.modal-content {
+  margin: 5% auto; /* Adjust vertical spacing */
+  max-width: 800px;
+  width: 90%;
+}
+
+.close-modal {
+  float: right;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  color: #aaa;
+}
+
+.close-modal:hover {
+  color: #000;
+}
+
+#modal-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* In your CSS file */
+@media print {
+  body * {
+      visibility: hidden;
+  }
+  #print-modal, #print-modal * {
+      visibility: visible;
+  }
+  #print-modal {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+  }
+  .modal-content {
+      box-shadow: none;
+      border: none;
+  }
+}
+
+/* Add to gallery.css */
+@media print {
+  /* Hide non-modal elements */
+  body > :not(#print-modal) {
+      display: none !important;
+  }
+
+  /* Style modal content for printing */
+  #print-modal {
+      position: static !important;
+      width: 100% !important;
+      height: auto !important;
+      background: transparent !important;
+      box-shadow: none !important;
+  }
+
+  .modal-content {
+      margin: 0 !important;
+      padding: 20px !important;
+      border: none !important;
+      box-shadow: none !important;
+  }
+
+  /* Format receipt content */
+  #modal-preview {
+      max-height: none !important;
+      overflow: visible !important;
+  }
+/* Standardize input fields */
+.cus-boxed select,
+.cus-boxed input[type="text"],
+.cus-boxed input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* File upload styling */
+.cus-boxed input[type="file"] {
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+/* Improve mobile responsiveness */
+@media (max-width: 768px) {
+  .customized-container {
+      grid-template-columns: 1fr;
+      padding: 10px;
+  }
+
+  .cus-boxed {
+      flex: 1 1 100%;
+      margin-bottom: 20px;
+  }
+
+  #print-button, #reset-button {
+      width: 100%;
+      margin: 10px 0;
+  }
+}
+
+/* Style image previews */
+[id$="-image-preview"] {
+  margin-top: 10px;
+  max-height: 150px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+[id$="-image-preview"] img {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  object-fit: cover;
+}
+
+/* Add focus states */
+select:focus,
+input:focus {
+    outline: 2px solid #007BFF;
+    border-color: #007BFF;
+}
+
+/* Improve contrast */
+label {
+    color: #333;
+    font-weight: 500;
+}
+
 }
