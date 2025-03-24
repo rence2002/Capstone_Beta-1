@@ -42,14 +42,14 @@ $userId = $_SESSION["user_id"];
                     <li><a href="#offers-section">Offers</a></li>
                 </ul>
             </li>
-            <li><a href="Review.php">Reviews</a></li>
-            <li><a href="../dashboard/gallery.php">Gallery</a></li>
+            <li><a href="../review/review.php">Reviews</a></li>
+            <li><a href="../gallery/gallery.php">Gallery</a></li>
             <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
             <li class="dropdown">
             <a href="profile.php" class="profile" id="sign_in">Profile</a>
                 <ul class="dropdown-menu">
-                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
             <span id="close-menu-btn" class="material-symbols-outlined">close</span>

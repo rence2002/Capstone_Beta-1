@@ -125,27 +125,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <header>
-    <nav class="navbar">
+<nav class="navbar">
       <a href="home.php" class="logo">
         <img src="../static/images/rm raw png.png" alt=""  class="logo">
       </a>
         <ul class="menu-links">
             <li class="dropdown">
-                <a href="home.php" class="">Home</a>
+                <a href="home.php" class="active dropdown-toggle">Home</a>
                 <ul class="dropdown-menu">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
                 </ul>
             </li>
-            <li><a href="Review.php">Reviews</a></li>
-            <li><a href="../dashboard/gallery.php">Gallery</a></li>
-            <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
+            <li><a href="../review/review.php">Reviews</a></li>
+            <li><a href="../gallery/gallery.php">Gallery</a></li>
+            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
             <li class="dropdown">
-            <a href="profile.php" class="profile activecon" id="sign_in">Profile</a>
-                <ul class=" dropdown-menu">
-                    <li><a href="profile.php">Profile</a></li>
+            <a href="profile.php" class="profile" id="sign_in">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
             <span id="close-menu-btn" class="material-symbols-outlined">close</span>
