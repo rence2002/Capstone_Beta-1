@@ -44,7 +44,7 @@ $userId = $_SESSION["user_id"];
             </li>
             <li><a href="Review.php">Reviews</a></li>
             <li><a href="../dashboard/gallery.php">Gallery</a></li>
-            <li><a href="cart.php" class="cart" id="cart">Cart</a></li>
+            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
             <ul class="menu-links">
             <li class="dropdown">
             <a href="profile.php" class="profile" id="sign_in">Profile</a>

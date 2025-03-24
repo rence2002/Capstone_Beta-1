@@ -72,38 +72,37 @@ $(document).ready(function() {
                 case 'chair':
                     sizesOptions += `
                         <option value="custom">Custom</option>
-                        <option value="chair-stan">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
+                        <option value="Chair - 20x21 in.">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
                     `;
-                    break;
                 case 'table':
                     sizesOptions += `
                         <option value="custom">Custom</option>
-                        <option value="table1">Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.</option>
-                        <option value="table2">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
-                        <option value="table3">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.">Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
+                        <option value="Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
                     `;
                     break;
                 case 'salaset':
                     sizesOptions += `
                         <option value="custom">Custom</option>
-                        <option value="salaset1">Sala Set 8x8 ft.</option>
-                        <option value="salaset2">Sala Set 9x9 ft.</option>
-                        <option value="salaset3">Sala Set 10x10 ft.</option>
-                        <option value="salaset4">Sala Set 10x11 ft.</option>
+                        <option value="Sala Set 8x8 ft.">Sala Set 8x8 ft.</option>
+                        <option value="Sala Set 9x9 ft">Sala Set 9x9 ft.</option>
+                        <option value="Sala Set 10x10 ft.">Sala Set 10x10 ft.</option>
+                        <option value="Sala Set 10x11 ft.">Sala Set 10x11 ft.</option>
                     `;
                     break;
                 case 'bedframe':
-                    sizesOptions += `
-                        <option value="custom">Custom</option>
-                        <option value="bedframe1">Bed Frame - California King 72x84 in.</option>
-                        <option value="bedframe2">Bed Frame - King 76x80 in.</option>
-                        <option value="bedframe3">Bed Frame - Queen 60x80 in.</option>
-                        <option value="bedframe4">Bed Frame - Full XL 54x80 in.</option>
-                        <option value="bedframe5">Bed Frame - Full 54x75 in.</option>
-                        <option value="bedframe6">Bed Frame - Twin XL 38x80 in.</option>
-                        <option value="bedframe7">Bed Frame - Twin 38x75 in.</option>
-                    `;
-                    break;
+                        sizesOptions += `
+                            <option value="custom">Custom</option>
+                            <option value="California King 72x84 in.">Bed Frame - California King 72x84 in.</option>
+                            <option value="King 76x80 in.">Bed Frame - King 76x80 in.</option>
+                            <option value="Queen 60x80 in.">Bed Frame - Queen 60x80 in.</option>
+                            <option value="Full XL 54x80 in.">Bed Frame - Full XL 54x80 in.</option>
+                            <option value="Full 54x75 in.">Bed Frame - Full 54x75 in.</option>
+                            <option value="Twin XL 38x80 in.">Bed Frame - Twin XL 38x80 in.</option>
+                            <option value="Twin 38x75 in.">Bed Frame - Twin 38x75 in.</option>
+                        `;
+                        break;
                 default:
                     sizesOptions = '<option value="" disabled selected>Select one</option>';
             }

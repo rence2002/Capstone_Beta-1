@@ -36,7 +36,7 @@ try {
     // EXECUTE STATEMENT
     if ($stmt->execute()) {
         // Redirect to the correct page for order requests
-        header("Location: http://localhost../preorder-prod/read-all-preorder-prod-form.php");
+        header("Location: http://localhost../order-requests/read-all-order-requests.php");
         exit; // Ensure script stops after the redirect
     } else {
         echo "Error: Could not execute the query.";
