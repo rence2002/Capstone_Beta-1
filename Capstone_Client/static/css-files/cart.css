@@ -34,6 +34,17 @@
   align-items: center;
 }
 
+#amountcart{
+  font-size: 20px;
+  /* font-weight: bold; */
+  color: #333;
+  margin-top: 10px;
+}
+.cart-product-image{
+  max-width:270px;
+  height:180px;
+  margin-bottom: 10px;
+}
 .item-left {
   display: flex;
   align-items: center;
