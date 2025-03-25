@@ -1,87 +1,97 @@
 <?php
 session_start();
-include("../config/database.php");
+header('Content-Type: application/json'); // Ensure JSON response
 
 // Validate session
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
     http_response_code(403);
-    die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit();
 }
 
-// Validation rules
-$requiredFields = [
-    'furniture' => 'Furniture Type',
-    'sizes' => 'Size'
-];
+include("../config/database.php");
 
-foreach ($requiredFields as $field => $label) {
-    if (empty($_POST[$field])) {
-        http_response_code(400);
-        die(json_encode(['success' => false, 'message' => "$label is required"]));
-    }
-}
-
-// File validation
-$customFields = ['color', 'texture', 'wood', 'foam', 'cover', 'design', 'tiles', 'metal'];
-foreach ($customFields as $field) {
-    if (($_POST[$field] ?? null) === 'custom') {
-        $fileKey = 'file' . ucfirst($field) . 'Image';
-        if (empty($_FILES[$fileKey]['name'])) {
-            http_response_code(400);
-            die(json_encode(['success' => false, 'message' => "Image required for custom $field"]));
-        }
-    }
-}
-
-// File upload handler
-function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
-    if (empty($_FILES[$fileKey]['name'])) return null;
-    
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!in_array($_FILES[$fileKey]['type'], $allowedTypes)) {
-        http_response_code(400);
-        die(json_encode(['success' => false, 'message' => 'Invalid file type']));
-    }
-    
-    $filename = uniqid() . '_' . basename($_FILES[$fileKey]['name']);
-    $targetFilePath = $uploadDir . $filename;
-    
-    if (!is_dir($uploadDir)) {
-        if (!mkdir($uploadDir, 0755, true)) {
-            http_response_code(500);
-            die(json_encode(['success' => false, 'message' => 'Directory creation failed']));
-        }
-    }
-    
-    if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
-        http_response_code(500);
-        die(json_encode(['success' => false, 'message' => 'File upload failed']));
-    }
-    
-    return $targetFilePath;
-}
-
-// Collect form data
-$userID = $_SESSION["user_id"];
-$furnitureType = $_POST['furniture'] ?? null;
-$furnitureInfo = $_POST['furniture_info'] ?? null;
-$standardSize = $_POST['sizes'] ?? null;
-$desiredSize = $_POST['sizes_info'] ?? null;
-
-// Process all file uploads
-$colorImage = handleFileUpload('fileColorImage');
-$textureImage = handleFileUpload('fileTextureImage');
-$woodImage = handleFileUpload('fileWoodImage');
-$foamImage = handleFileUpload('fileFoamImage');
-$coverImage = handleFileUpload('fileCoverImage');
-$designImage = handleFileUpload('fileDesignImage');
-$tilesImage = handleFileUpload('fileTileImage');
-$metalImage = handleFileUpload('fileMetalImage');
-
-// Database transaction
 try {
+    // Fetch user details
+    $userID = $_SESSION["user_id"];
+    $stmt = $pdo->prepare("SELECT User_Name FROM tbl_user_info WHERE User_ID = :userID");
+    $stmt->execute([':userID' => $userID]);
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userName = $userData['User_Name'] ?? 'N/A';
+
+    // Validation rules
+    $requiredFields = ['furniture' => 'Furniture Type', 'sizes' => 'Size'];
+    foreach ($requiredFields as $field => $label) {
+        if (empty($_POST[$field])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => "$label is required"]);
+            exit();
+        }
+    }
+
+    // File validation
+    $customFields = ['color', 'texture', 'wood', 'foam', 'cover', 'design', 'tiles', 'metal'];
+    foreach ($customFields as $field) {
+        if (($_POST[$field] ?? null) === 'custom') {
+            $fileKey = 'file' . ucfirst($field) . 'Image';
+            if (empty($_FILES[$fileKey]['name'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => "Image required for custom $field"]);
+                exit();
+            }
+        }
+    }
+
+    // File upload handler
+    function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
+        if (empty($_FILES[$fileKey]['name'])) return null;
+
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($_FILES[$fileKey]['type'], $allowedTypes)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+            exit();
+        }
+
+        $filename = uniqid() . '_' . basename($_FILES[$fileKey]['name']);
+        $targetFilePath = $uploadDir . $filename;
+
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0755, true)) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Directory creation failed']);
+                exit();
+            }
+        }
+
+        if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'File upload failed']);
+            exit();
+        }
+
+        return $targetFilePath;
+    }
+
+    // Collect form data
+    $furnitureType = $_POST['furniture'] ?? null;
+    $furnitureInfo = $_POST['furniture_info'] ?? null;
+    $standardSize = $_POST['sizes'] ?? null;
+    $desiredSize = $_POST['sizes_info'] ?? null;
+
+    // Process all file uploads
+    $colorImage = handleFileUpload('fileColorImage');
+    $textureImage = handleFileUpload('fileTextureImage');
+    $woodImage = handleFileUpload('fileWoodImage');
+    $foamImage = handleFileUpload('fileFoamImage');
+    $coverImage = handleFileUpload('fileCoverImage');
+    $designImage = handleFileUpload('fileDesignImage');
+    $tilesImage = handleFileUpload('fileTileImage');
+    $metalImage = handleFileUpload('fileMetalImage');
+
+    // Database transaction
     $pdo->beginTransaction();
-    
+
     // Insert into customizations_temp
     $stmt = $pdo->prepare("
         INSERT INTO tbl_customizations_temp (
@@ -108,7 +118,7 @@ try {
             :metalInfo
         )
     ");
-    
+
     $stmt->execute([
         ':userID' => $userID,
         ':furnitureType' => $furnitureType,
@@ -140,9 +150,9 @@ try {
         ':metalImage' => $metalImage,
         ':metalInfo' => $_POST['metal_info'] ?? null
     ]);
-    
+
     $customizationID = $pdo->lastInsertId();
-    
+
     // Insert into order request
     $orderStmt = $pdo->prepare("
         INSERT INTO tbl_order_request (
@@ -153,24 +163,48 @@ try {
             'custom', 0.00
         )
     ");
-    
+
     $orderStmt->execute([
         ':userID' => $userID,
         ':customizationID' => $customizationID
     ]);
-    
+
     $pdo->commit();
-    
+
     // Return JSON response
     echo json_encode([
         'success' => true,
         'data' => [
             'customization_id' => $customizationID,
             'user_id' => $userID,
+            'user_name' => $userName,
             'furniture' => $furnitureType,
             'size' => $standardSize === 'custom' ? $desiredSize : $standardSize,
             'color' => $_POST['color'] ?? 'N/A',
-            'color_image' => $colorImage
+            'color_image' => $colorImage,
+            'color_info' => $_POST['color_info'] ?? 'N/A',
+            'texture' => $_POST['texture'] ?? 'N/A',
+            'texture_image' => $textureImage,
+            'texture_info' => $_POST['texture_info'] ?? 'N/A',
+            'wood' => $_POST['wood'] ?? 'N/A',
+            'wood_image' => $woodImage,
+            'wood_info' => $_POST['wood_info'] ?? 'N/A',
+            'foam' => $_POST['foam'] ?? 'N/A',
+            'foam_image' => $foamImage,
+            'foam_info' => $_POST['foam_info'] ?? 'N/A',
+            'cover' => $_POST['cover'] ?? 'N/A',
+            'cover_image' => $coverImage,
+            'cover_info' => $_POST['cover_info'] ?? 'N/A',
+            'design' => $_POST['design'] ?? 'N/A',
+            'design_image' => $designImage,
+            'design_info' => $_POST['design_info'] ?? 'N/A',
+            'tiles' => $_POST['tiles'] ?? 'N/A',
+            'tiles_image' => $tilesImage,
+            'tiles_info' => $_POST['tiles_info'] ?? 'N/A',
+            'metal' => $_POST['metal'] ?? 'N/A',
+            'metal_image' => $metalImage,
+            'metal_info' => $_POST['metal_info'] ?? 'N/A',
+            'timestamp' => date('Y-m-d H:i:s')
         ]
     ]);
 

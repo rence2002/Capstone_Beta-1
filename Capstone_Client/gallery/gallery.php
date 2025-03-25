@@ -32,6 +32,7 @@ try {
     <title>Gallery</title>
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link rel="stylesheet" href="../static/css-files/Gallery.css">
+    <link rel="stylesheet" href="../static/css-files/grid.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -392,9 +393,11 @@ try {
 
         <!-- Action Buttons -->
         <div class="cus-actions">
-            <button id="print-button">Submit</button>
+            <button id="upload-order-button">Upload Order</button>
+            <button id="print-receipt-button">Print Receipt</button>
             <button id="reset-button">Reset</button>
         </div>
+    </div>
     </div>
 </main>
 
