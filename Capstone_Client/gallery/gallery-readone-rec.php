@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Check if the user is logged in, if not then redirect him to login page
+// Redirect if user is not logged in
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
     header("location: ../index.php");
     exit;
@@ -10,55 +10,55 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
 // Include the database connection
 include("../config/database.php");
 
-// Function to save to cart
 function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
     try {
-        $totalPrice = $quantity * $price;
-        $stmt = $pdo->prepare("INSERT INTO tbl_cart (User_ID, Product_ID, Quantity, Price, Total_Price, Order_Type) VALUES (:userId, :productId, :quantity, :price, :totalPrice, :orderType)");
+        // Log input data for debugging
+        error_log("Saving to cart: User ID: $userId, Product ID: $productId, Quantity: $quantity, Price: $price, Order Type: $orderType");
+
+        // Ensure Order_Type is not empty
+        if (empty($orderType)) {
+            error_log("Error: Order_Type is empty");
+            return ['success' => false, 'message' => 'Order_Type is required'];
+        }
+
+        // Check if the product already exists in the cart for the user
+        $stmt = $pdo->prepare("SELECT * FROM tbl_cart WHERE User_ID = :userId AND Product_ID = :productId AND Order_Type = :orderType");
         $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
         $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
-        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-        $stmt->bindParam(':price', $price, PDO::PARAM_STR);
-        $stmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
         $stmt->bindParam(':orderType', $orderType, PDO::PARAM_STR);
         $stmt->execute();
-        error_log("Cart saved successfully for User ID: $userId, Product ID: $productId");
-        return ['success' => true];
+        $existingCartItem = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingCartItem) {
+            // Update the existing cart item by incrementing the quantity
+            $newQuantity = $existingCartItem['Quantity'] + $quantity;
+            $newTotalPrice = $newQuantity * $price;
+
+            $updateStmt = $pdo->prepare("UPDATE tbl_cart SET Quantity = :newQuantity, Total_Price = :newTotalPrice WHERE Cart_ID = :cartId");
+            $updateStmt->bindParam(':newQuantity', $newQuantity, PDO::PARAM_INT);
+            $updateStmt->bindParam(':newTotalPrice', $newTotalPrice, PDO::PARAM_STR);
+            $updateStmt->bindParam(':cartId', $existingCartItem['Cart_ID'], PDO::PARAM_INT);
+            $updateStmt->execute();
+
+            error_log("Cart updated successfully for User ID: $userId, Product ID: $productId");
+            return ['success' => true];
+        } else {
+            // Insert a new cart item
+            $totalPrice = $quantity * $price;
+            $insertStmt = $pdo->prepare("INSERT INTO tbl_cart (User_ID, Product_ID, Quantity, Price, Total_Price, Order_Type) VALUES (:userId, :productId, :quantity, :price, :totalPrice, :orderType)");
+            $insertStmt->bindParam(':userId', $userId, PDO::PARAM_STR);
+            $insertStmt->bindParam(':productId', $productId, PDO::PARAM_INT);
+            $insertStmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+            $insertStmt->bindParam(':price', $price, PDO::PARAM_STR);
+            $insertStmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
+            $insertStmt->bindParam(':orderType', $orderType, PDO::PARAM_STR);
+            $insertStmt->execute();
+
+            error_log("Cart saved successfully for User ID: $userId, Product ID: $productId");
+            return ['success' => true];
+        }
     } catch (PDOException $e) {
         error_log("Error in saveToCart: " . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
-    }
-}
-
-// Function to save order request
-function saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $totalPrice) {
-    try {
-        $stmt = $pdo->prepare("INSERT INTO tbl_order_request (User_ID, Product_ID, Quantity, Order_Type, Total_Price) VALUES (:userId, :productId, :quantity, :orderType, :totalPrice)");
-        $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
-        $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
-        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-        $stmt->bindParam(':orderType', $orderType, PDO::PARAM_STR);
-        $stmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
-        $stmt->execute();
-        error_log("Order request saved successfully for User ID: $userId, Product ID: $productId");
-        return ['success' => true];
-    } catch (PDOException $e) {
-        error_log("Error in saveOrderRequest: " . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
-    }
-}
-
-// Function to update stock
-function updateStock($pdo, $productId, $quantity) {
-    try {
-        $stmt = $pdo->prepare("UPDATE tbl_prod_info SET Stock = Stock - :quantity WHERE Product_ID = :productId");
-        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-        $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
-        $stmt->execute();
-        error_log("Stock updated successfully for Product ID: $productId");
-        return ['success' => true];
-    } catch (PDOException $e) {
-        error_log("Error in updateStock: " . $e->getMessage());
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_SESSION["user_id"];
     $productId = $_POST['productId'];
     $quantity = $_POST['quantity'];
-    $orderType = $_POST['orderType'] ?? 'ready_made'; // Default to 'ready_made' if not provided
+    $orderType = $_POST['orderType'] ?? 'ready_made'; // Default to 'ready_made'
 
     // Debugging statements
     error_log("Received AJAX request");
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     error_log("Quantity: $quantity");
     error_log("Order Type: $orderType");
 
-    // Fetch product price from the database
+    // Fetch product details
     $stmt = $pdo->prepare("SELECT Price, Stock FROM tbl_prod_info WHERE Product_ID = :productId");
     $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
     $stmt->execute();
@@ -88,15 +88,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stock = $product['Stock'];
         $totalPrice = $quantity * $price;
 
-        if ($quantity > $stock) {
+        // Perform stock check for ready-made orders
+        if ($orderType === 'ready_made' && $quantity > $stock) {
             echo json_encode(['success' => false, 'message' => 'Not enough stock available']);
             exit;
         }
 
+        // Save the order request or cart entry based on the order type
         if ($orderType === 'pre_order' || $orderType === 'ready_made') {
             $response = saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $totalPrice);
-        } else {
+
+            // Deduct stock only for ready-made orders
+            if ($orderType === 'ready_made') {
+                updateStock($pdo, $productId, $quantity);
+            }
+        } elseif ($orderType === 'cart') {
             $response = saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid order type']);
+            exit;
         }
 
         echo json_encode($response);

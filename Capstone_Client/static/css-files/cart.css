@@ -16,6 +16,12 @@
   text-align: center;
 }
 
+
+.no-bootstrap {
+  /* all: unset; */
+  margin: 0 !important;
+  padding-left:  0 !important;
+}
 /* Cart items */
 #cart-items {
   padding: 20px;
@@ -32,6 +38,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* background-color: black; */
+  padding: 10px;
+  align-content: center;
 }
 
 #amountcart{

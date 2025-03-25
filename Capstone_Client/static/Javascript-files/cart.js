@@ -64,7 +64,7 @@ $(document).ready(function() {
 
         // Update UI
         cartItem.find('.item-total').text(
-          itemTotal.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            " " + itemTotal.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
 
         // Update server

@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <ul class="menu-links">
             <li class="dropdown">
                 <a href="home.php" class="active dropdown-toggle">Home</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <ul class="menu-links">
             <li class="dropdown">
             <a href="profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>

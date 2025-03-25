@@ -61,7 +61,7 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
         <ul class="menu-links">
             <li class="dropdown">
                 <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
@@ -73,7 +73,7 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
             <ul class="menu-links">
             <li class="dropdown">
             <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>

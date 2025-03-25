@@ -58,11 +58,11 @@ CREATE TABLE `tbl_cart` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`),
   CONSTRAINT `tbl_cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_cart` */
 
-insert  into `tbl_cart`(`Cart_ID`,`User_ID`,`Product_ID`,`Quantity`,`Price`,`Total_Price`,`Order_Type`,`Date_Added`) values (11,'0001',4,1,'1500.00','1500.00','','2025-03-24 14:16:30'),(12,'0001',4,1,'1500.00','1500.00','','2025-03-24 14:52:07');
+insert  into `tbl_cart`(`Cart_ID`,`User_ID`,`Product_ID`,`Quantity`,`Price`,`Total_Price`,`Order_Type`,`Date_Added`) values (27,'0001',9,1,'1400.00','1400.00','','2025-03-25 11:10:43'),(29,'0001',9,1,'1400.00','1400.00','','2025-03-25 11:12:53');
 
 /*Table structure for table `tbl_customizations` */
 
@@ -190,11 +190,11 @@ CREATE TABLE `tbl_order_request` (
   CONSTRAINT `tbl_order_request_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_3` FOREIGN KEY (`Customization_ID`) REFERENCES `tbl_customizations_temp` (`Temp_Customization_ID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_order_request` */
 
-insert  into `tbl_order_request`(`Request_ID`,`User_ID`,`Product_ID`,`Customization_ID`,`Quantity`,`Order_Type`,`Order_Status`,`Total_Price`,`Request_Date`) values (40,'0001',NULL,16,1,'custom',0,'0.00','2025-03-24 11:52:48');
+insert  into `tbl_order_request`(`Request_ID`,`User_ID`,`Product_ID`,`Customization_ID`,`Quantity`,`Order_Type`,`Order_Status`,`Total_Price`,`Request_Date`) values (51,'0001',9,NULL,1,'pre_order',0,'1400.00','2025-03-25 11:07:10'),(52,'0001',9,NULL,1,'pre_order',0,'1400.00','2025-03-25 11:10:04');
 
 /*Table structure for table `tbl_preorder` */
 
@@ -256,7 +256,7 @@ CREATE TABLE `tbl_prod_info` (
 
 /*Data for the table `tbl_prod_info` */
 
-insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (4,'Sofa','A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.','sofa','L Shape Sofa 6-7 seater - L: 9 ft // W: 3 ft // H: 3.5 ft','brown','98','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','1500','','2025-03-13 14:44:34','2025-03-13 14:46:20','../uploads/product/3d/Sofa(Commission).glb','readymade'),(5,'Bed','A cozy and supportive sleeping solution designed for restful nights. Comes in different sizes and styles to match your comfort and décor preferences.','','Bed Frame - King 76x80 in.','Blue','15','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-03-13 14:45:14','2025-03-17 14:54:25','../uploads/product/3d/Bed(Commission).glb','readymade'),(7,'Custom chair','Custom order from request #17','Custom Furniture',NULL,NULL,NULL,NULL,NULL,'',NULL,'2025-03-18 09:24:20','2025-03-24 13:36:19',NULL,'custom'),(8,'Custom sofa','Custom order from request #22','Custom Furniture',NULL,NULL,NULL,NULL,NULL,'',NULL,'2025-03-18 09:47:54','2025-03-18 09:47:54',NULL,'custom'),(9,'Dining Set','ewan','salaset','Sala Set 9x9 ft.','brown','150','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','1400','','2025-03-24 13:28:58','2025-03-24 13:28:58','../uploads/product/3d/Dining(Commission).glb','readymade');
+insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (4,'Sofa','A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.A comfortable and stylish seating option, perfect for lounging and entertaining guests. Available in various designs and materials to suit any space.','sofa','L Shape Sofa 6-7 seater - L: 9 ft // W: 3 ft // H: 3.5 ft','brown','95','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','1500','','2025-03-13 14:44:34','2025-03-25 11:06:19','../uploads/product/3d/Sofa(Commission).glb','readymade'),(5,'Bed','A cozy and supportive sleeping solution designed for restful nights. Comes in different sizes and styles to match your comfort and décor preferences.','','Bed Frame - King 76x80 in.','Blue','15','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-03-13 14:45:14','2025-03-17 14:54:25','../uploads/product/3d/Bed(Commission).glb','readymade'),(7,'Custom chair','Custom order from request #17','Custom Furniture',NULL,NULL,NULL,NULL,'','',NULL,'2025-03-18 09:24:20','2025-03-25 10:49:44',NULL,'custom'),(8,'Custom sofa','Custom order from request #22','Custom Furniture',NULL,NULL,NULL,NULL,NULL,'',NULL,'2025-03-18 09:47:54','2025-03-18 09:47:54',NULL,'custom'),(9,'Dining Set','ewan','salaset','Sala Set 9x9 ft.','brown','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','1400','','2025-03-24 13:28:58','2025-03-25 10:46:50','../uploads/product/3d/Dining(Commission).glb','readymade');
 
 /*Table structure for table `tbl_progress` */
 

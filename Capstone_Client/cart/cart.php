@@ -45,20 +45,25 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
     <link rel="stylesheet" href="../static/css-files/cart.css">
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 </head>
 
+
+
+
+
+
 <body>
-<header>
-<nav class="navbar">
+<header class>
+<nav class="navbar ">
       <a href="../dashboard/home.php" class="logo">
         <img src="../static/images/rm raw png.png" alt=""  class="logo">
       </a>
-        <ul class="menu-links">
+        <ul class="menu-links   no-bootstrap">
             <li class="dropdown">
                 <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
@@ -67,10 +72,10 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
             <li><a href="../reviews/review.php">Reviews</a></li>
             <li><a href="../gallery/gallery.php">Gallery</a></li>
             <li><a href="../cart/cart.php" class="cart activecon" id="cart">Cart</a></li>
-            <ul class="menu-links">
+            <ul class="menu-links   no-bootstrap">
             <li class="dropdown">
-            <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menu">
+            <a href="../profile/profile.php" class="profile  " id="sign_in">Profile</a>
+                <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
@@ -118,7 +123,7 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
                                     (₱<?= number_format($displayPrice, 2) ?>)
                                 </h5>
                             </div>
-                            <div class="col-md-5 center-item">
+                            <div class="col-md-5 center-item mt-4">
                                 <div class="input-group number-spinner">
                                     <button class="btn btn-default qty-btn minus">
                                         <i class="fas fa-minus"></i>

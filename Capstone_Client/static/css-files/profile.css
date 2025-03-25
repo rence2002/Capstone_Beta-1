@@ -362,6 +362,12 @@
     color: #fff;
 }
 
+.no-bootstrap {
+    /* all: unset; */
+    margin: 0 !important;
+    padding-left:  0 !important;
+  }
+
 .purchase-history {
     padding: 20px;
     background: #fff;

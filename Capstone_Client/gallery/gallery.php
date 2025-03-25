@@ -8,16 +8,16 @@ include("../config/database.php");
 
 // Fetch readymade products
 try {
-    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'readymade'");
+    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock != '0'");
     $stmt->execute();
     $readymadeProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
 
-// Fetch pre-order products
+// Fetch pre-order products (Stock = '0')
 try {
-    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'pre_order'");
+    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock = '0'");
     $stmt->execute();
     $preorderProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -47,7 +47,7 @@ try {
         <ul class="menu-links">
             <li class="dropdown">
                 <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
@@ -59,7 +59,7 @@ try {
             <ul class="menu-links">
             <li class="dropdown">
             <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
@@ -113,6 +113,37 @@ try {
             <?php endforeach; ?>
         </div>
     </div>
+
+    <!-- Pre-order Section -->
+    <?php if (!empty($preorderProducts)): ?>
+    <div class="container">
+        <h3 class="title">Pre-order Furnitures</h3>
+        <div class="products-container">
+            <?php foreach ($preorderProducts as $product): ?>
+                <div class="product" data-name="p-<?= $product['Product_ID'] ?>">
+                    <?php
+                    $imageURLs = explode(',', $product['ImageURL']);
+                    $firstImageUrl = trim($imageURLs[0]);
+                    $imageFilePath = '../uploads/product/' . basename($firstImageUrl);
+                    $glbFilePath = '../uploads/product/3d/' . basename($product['GLB_File_URL']);
+                    ?>
+                    <?php if (!empty($product['GLB_File_URL']) && file_exists($glbFilePath)): ?>
+                        <model-viewer class="image-card three-d" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate></model-viewer>
+                    <?php elseif (!empty($firstImageUrl) && file_exists($imageFilePath)): ?>
+                        <img src="<?= $imageFilePath ?>" alt="<?= $product['Product_Name'] ?>" class="image-card">
+                    <?php else: ?>
+                        <p>No Media Available</p>
+                    <?php endif; ?>
+                    <h3><?= htmlspecialchars($product['Product_Name']) ?></h3>
+                    <div class="price">₱ <?= number_format($product['Price'], 2) ?></div>
+                    <div class="view-btn-con">
+                        <a href="gallery-readone.php?product_id=<?= $product['Product_ID'] ?>" class="view-btn">View</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Customization Section -->
     <div class="container">

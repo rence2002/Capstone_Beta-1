@@ -54,7 +54,6 @@ if (!$product) {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-    <link rel="stylesheet" href="../static/css-files/style.css">
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -69,7 +68,7 @@ if (!$product) {
         <ul class="menu-links">
             <li class="dropdown">
                 <a href="home.php" class="active dropdown-toggle">Home</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
                     <li><a href="#offers-section">Offers</a></li>
@@ -81,7 +80,7 @@ if (!$product) {
             <ul class="menu-links">
             <li class="dropdown">
             <a href="profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
@@ -91,87 +90,80 @@ if (!$product) {
     </nav>
 </header>
 
-    <main>
-        <div id="single-product-container">
-
-        
-            <div id="single-product-box">
-                <div id="single-product-box-image" class="image-slider">
-                    <?php if (!empty($product['ImageURL']) || !empty($product['GLB_File_URL'])) : ?>
+<main>
+    <div id="single-product-container">
+        <div id="single-product-box">
+            <div id="single-product-box-image" class="image-slider">
+                <?php if (!empty($product['ImageURL']) || !empty($product['GLB_File_URL'])) : ?>
+                    <?php
+                    $imageURLs = explode(',', $product['ImageURL']);
+                    $totalItems = count($imageURLs) + (!empty($product['GLB_File_URL']) ? 1 : 0); // Total number of images + 1 if there is a 3D model
+                    $itemCounter = 0;
+                    ?>
+                    <button class="slider-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
+                    <?php foreach ($imageURLs as $key => $imageUrl) : $itemCounter++;?>
                         <?php
-                        $imageURLs = explode(',', $product['ImageURL']);
-                        $totalItems = count($imageURLs) + (!empty($product['GLB_File_URL']) ? 1 : 0); //total number of images + 1 if there is a 3d model
-                        $itemCounter = 0;
-                        ?>
-                        <button class="slider-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
-
-                        <?php foreach ($imageURLs as $key => $imageUrl) : $itemCounter++;?>
-                            <?php
-                            $imageUrl = trim($imageUrl);
-                            if (!empty($imageUrl) && file_exists(dirname(__FILE__) . '/../uploads/product/' . basename($imageUrl))) : ?>
-                                <img src="../uploads/product/<?= basename($imageUrl) ?>" alt="<?= $product['Product_Name'] ?>" class="product-image <?= $itemCounter === 1 ? 'active' : '' ?>">
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                         <?php if (!empty($product['GLB_File_URL']) && file_exists(dirname(__FILE__) . '/../uploads/product/3d/' . basename($product['GLB_File_URL']))) :  $itemCounter++;?>
-                            <?php // Construct correct paths
-                            $glbFilePath =  '../uploads/product/3d/' . basename($product['GLB_File_URL']); ?>
-                            <model-viewer class="three-d-model product-image <?= $itemCounter === 1 ? 'active' : '' ?>" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate auto-rotate-delay="2000"></model-viewer>
-                         <?php endif; ?>
-
-                        <button class="slider-btn next-btn"><i class="fas fa-chevron-right"></i></button>
-                    <?php else : ?>
-                        <p>No image or 3D model available</p>
+                        $imageUrl = trim($imageUrl);
+                        if (!empty($imageUrl) && file_exists(dirname(__FILE__) . '/../uploads/product/' . basename($imageUrl))) : ?>
+                            <img src="../uploads/product/<?= basename($imageUrl) ?>" alt="<?= $product['Product_Name'] ?>" class="product-image <?= $itemCounter === 1 ? 'active' : '' ?>">
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                    <?php if (!empty($product['GLB_File_URL']) && file_exists(dirname(__FILE__) . '/../uploads/product/3d/' . basename($product['GLB_File_URL']))) :  $itemCounter++;?>
+                        <?php // Construct correct paths
+                        $glbFilePath =  '../uploads/product/3d/' . basename($product['GLB_File_URL']); ?>
+                        <model-viewer class="three-d-model product-image <?= $itemCounter === 1 ? 'active' : '' ?>" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate auto-rotate-delay="2000"></model-viewer>
                     <?php endif; ?>
-
-                </div>
-
-                <div id="single-product-box-content">
-
-                 <!-- Exit Button -->
-                              <!-- Exit Button -->
-            <button class="exit-button" onclick="window.location.href='gallery.php'">
-                <i class="fas fa-times"></i>
-            </button>
-         <!-- <button class="exit-button" onclick="window.location.href='gallery.php'">Exit</button> -->
-                    <h1 id="single-product-title"><?= $product['Product_Name'] ?></h1>
-                    <p id="single-product-price">₱ <?= number_format($product['Price'], 2) ?></p>
-                    <p class="single-product-text">
-                        <?= $product['Description'] ?>
-                    </p>
-                    <!-- Display the product size here -->
-                    <p class="single-product-size">Size: <span id="product-size"><?= $product['Sizes'] ?></span></p>
-                    <p class="single-product-stock">Stock: <span id="stock"><?= $product['Stock'] ?></span></p>
-                    <!-- Remove the entire size-block-container -->
-                   
-                    <div id="update-cart-container">
-                        <div>
-                            <button class="single-product-blocks" id="plus-btn">
-                                +
-                            </button>
-                            <span id="quantity">0</span>
-                            <button class="single-product-blocks" id="minus-btn">
-                                –
-                            </button>
-                        </div>
-                        <div class="button-readone" style="flex: 2">
-                            <button class="single-product-cart-btn" id="add-to-cart">
-                                Add To Cart
-                            </button>
+                    <button class="slider-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+                <?php else : ?>
+                    <p>No image or 3D model available</p>
+                <?php endif; ?>
+            </div>
+            <div id="single-product-box-content">
+                <!-- Exit Button -->
+                <button class="exit-button" onclick="window.location.href='gallery.php'">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h1 id="single-product-title"><?= $product['Product_Name'] ?></h1>
+                <p id="single-product-price">₱ <?= number_format($product['Price'], 2) ?></p>
+                <p class="single-product-text">
+                    <?= $product['Description'] ?>
+                </p>
+                <!-- Display the product size here -->
+                <p class="single-product-size">Size: <span id="product-size"><?= $product['Sizes'] ?></span></p>
+                <p class="single-product-stock">Stock: <span id="stock"><?= $product['Stock'] ?></span></p>
+                <!-- Remove the entire size-block-container -->
+                <div id="update-cart-container">
+                    <div>
+                        <button class="single-product-blocks" id="plus-btn">
+                            +
+                        </button>
+                        <span id="quantity">0</span>
+                        <button class="single-product-blocks" id="minus-btn">
+                            –
+                        </button>
+                    </div>
+                    <div class="button-readone" style="flex: 2">
+                        <?php if ($product['Stock'] > 0): ?>
+                            <!-- Buy Now Button (Visible when stock is available) -->
                             <button class="single-product-buy-btn" id="buy-now">
                                 Buy Now
                             </button>
-                             <!-- New Pre-Order Button -->
-                             <button class="single-product-preorder-btn" id="pre-order">
+                        <?php else: ?>
+                            <!-- Pre-Order Button (Visible when stock is 0) -->
+                            <button class="single-product-preorder-btn" id="pre-order">
                                 Pre-Order
                             </button>
-                        </div>
+                        <?php endif; ?>
+                        <!-- Add to Cart Button (Always visible) -->
+                        <button class="single-product-cart-btn" id="add-to-cart">
+                            Add To Cart
+                        </button>
                     </div>
-                   
                 </div>
             </div>
         </div>
-
-    </main>
+    </div>
+</main>
 
     <footer class="footer">
        <!-- Your footer code here -->
