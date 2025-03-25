@@ -63,6 +63,28 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
     }
 }
 
+function saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $totalPrice) {
+    try {
+        // Log input data for debugging
+        error_log("Saving order request: User ID: $userId, Product ID: $productId, Quantity: $quantity, Order Type: $orderType, Total Price: $totalPrice");
+
+        // Insert into tbl_order_request
+        $stmt = $pdo->prepare("INSERT INTO tbl_order_request (User_ID, Product_ID, Quantity, Order_Type, Total_Price) VALUES (:userId, :productId, :quantity, :orderType, :totalPrice)");
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
+        $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
+        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+        $stmt->bindParam(':orderType', $orderType, PDO::PARAM_STR);
+        $stmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
+        $stmt->execute();
+
+        error_log("Order request saved successfully for User ID: $userId, Product ID: $productId");
+        return ['success' => true];
+    } catch (PDOException $e) {
+        error_log("Error in saveOrderRequest: " . $e->getMessage());
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
+
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_SESSION["user_id"];
@@ -112,6 +134,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($response);
     } else {
         echo json_encode(['success' => false, 'message' => 'Product not found']);
+    }
+}
+
+function updateStock($pdo, $productId, $quantity) {
+    try {
+        $stmt = $pdo->prepare("UPDATE tbl_prod_info SET Stock = Stock - :quantity WHERE Product_ID = :productId");
+        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+        $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
+        $stmt->execute();
+        error_log("Stock updated for Product ID: $productId");
+    } catch (PDOException $e) {
+        error_log("Error updating stock: " . $e->getMessage());
     }
 }
 ?>

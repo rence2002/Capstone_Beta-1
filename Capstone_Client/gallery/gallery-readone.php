@@ -97,7 +97,7 @@ if (!$product) {
                 <?php if (!empty($product['ImageURL']) || !empty($product['GLB_File_URL'])) : ?>
                     <?php
                     $imageURLs = explode(',', $product['ImageURL']);
-                    $totalItems = count($imageURLs) + (!empty($product['GLB_File_URL']) ? 1 : 0); // Total number of images + 1 if there is a 3D model
+                    $totalItems = count($imageURLs) + (!empty($product['GLB_File_URL']) ? 1 : 0); 
                     $itemCounter = 0;
                     ?>
                     <button class="slider-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
@@ -173,201 +173,136 @@ if (!$product) {
     <script src="../static/Javascript-files/script.js"></script>
 
     <script>
-    // Your Javascript code here
-         $(document).ready(function() {
-           
-            // Get the product ID from the URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const productId = urlParams.get('product_id');
+    $(document).ready(function() {
+        // Get the product ID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('product_id');
 
-            // Initialize quantity to 1
-            let quantity = 1;
+        // Initialize quantity to 1
+        let quantity = 1;
+        $('#quantity').text(quantity);
+
+        // Plus button click event
+        $('#plus-btn').click(function() {
+            quantity++;
             $('#quantity').text(quantity);
+        });
 
-            // Plus button click event
-            $('#plus-btn').click(function() {
-                quantity++;
+        // Minus button click event
+        $('#minus-btn').click(function() {
+            if (quantity > 0) {
+                quantity--;
                 $('#quantity').text(quantity);
-            });
+            }
+        });
 
-            // Minus button click event
-            $('#minus-btn').click(function() {
-                if (quantity > 0) {
-                    quantity--;
-                    $('#quantity').text(quantity);
+        // Add to cart button click event
+        $('#add-to-cart').click(function() {
+            // Prepare data to send to the server
+            const data = {
+                productId: productId,
+                quantity: quantity,
+                orderType: 'cart' // Add orderType for Add to Cart
+            };
+            console.log('Add to Cart clicked');
+            console.log('Data being sent:', data);
+
+            // Send AJAX request
+            $.ajax({
+                url: 'gallery-readone-rec.php', // Updated URL
+                type: 'POST',
+                data: data,
+                dataType: 'json', // Expect JSON response from the server
+                success: function(response) {
+                    console.log('Response from server:', response);
+                    // Redirect to gallery.php after successful addition to cart
+                    window.location.href = 'gallery.php';
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    alert('An error occurred: ' + error); // Handle any AJAX errors
                 }
             });
+        });
 
-            // Add to cart button click event
-            $('#add-to-cart').click(function() {
-                // Prepare data to send to the server
-                const data = {
-        productId: productId,
-        quantity: quantity,
-        orderType: 'cart' // Add orderType for Add to Cart
-    };
+        // Buy now button click event
+        $('#buy-now').click(function() {
+            // Prepare data to send to the server
+            const data = {
+                productId: productId,
+                quantity: quantity,
+                orderType: 'ready_made' // Corrected order type for buy now
+            };
 
-                console.log('Add to Cart clicked');
-                console.log('Data being sent:', data);
-
-                // Send AJAX request
-                $.ajax({
-                    url: 'gallery-readone-rec.php', // Updated URL
-                    type: 'POST',
-                    data: data,
-                    dataType: 'json', // Expect JSON response from the server
-                    success: function(response) {
-                        console.log('Response from server:', response);
-                        if (response.success) {
-                            if (confirm('Product added to cart successfully! Continue shopping?')) {
-                                window.location.href = 'gallery.php';
-                            }
-                        } else {
-                            alert('Error adding product to cart: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
-                        alert('An error occurred: ' + error); // Handle any AJAX errors
-                    }
-                });
-            });
-
-            // Buy now button click event
-            $('#buy-now').click(function() {
-                // Prepare data to send to the server
-                const data = {
-                    productId: productId,
-                    quantity: quantity,
-                    orderType: 'ready_made' // Corrected order type for buy now
-                };
-
-                // Send AJAX request
-                $.ajax({
-                    url: 'gallery-readone-rec.php', // Updated URL
-                    type: 'POST',
-                    data: data,
-                    dataType: 'json', // Expect JSON response from the server
-                    success: function(response) {
-                        if (response.success) {
-                            if (confirm('Your order is being reviewed for confirmation. Continue shopping?')) {
-                                window.location.href = 'gallery.php';
-                            }
-                        } else {
-                            alert('Error processing your order: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error); // Handle any AJAX errors
-                    }
-                });
-            });
-
-            // Pre-order button click event
-            $('#pre-order').click(function() {
-                // Prepare data to send to the server
-                const data = {
-                    productId: productId,
-                    quantity: quantity,
-                    orderType: 'pre_order' // Add an identifier for pre-order
-                };
-
-                // Send AJAX request
-                $.ajax({
-                    url: 'gallery-readone-rec.php', // Updated URL
-                    type: 'POST',
-                    data: data,
-                    dataType: 'json', // Expect JSON response from the server
-                    success: function(response) {
-                        if (response.success) {
-                            if (confirm('Your order is being reviewed for confirmation. Continue shopping?')) {
-                                window.location.href = 'gallery.php';
-                            }
-                        } else {
-                            alert('Error adding product to pre-order: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error); // Handle any AJAX errors
-                    }
-                });
+            // Send AJAX request
+            $.ajax({
+                url: 'gallery-readone-rec.php', // Updated URL
+                type: 'POST',
+                data: data,
+                dataType: 'json', // Expect JSON response from the server
+                success: function(response) {
+                    console.log('Response from server:', response);
+                    // Redirect to gallery.php after successful buy now
+                    window.location.href = 'gallery.php';
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred: ' + error); // Handle any AJAX errors
+                }
             });
         });
-        //image slider
-        const sliderContainer = document.querySelector('.image-slider');
-        const sliderImages = document.querySelectorAll('.product-image');
-        const prevButton = document.querySelector('.prev-btn');
-        const nextButton = document.querySelector('.next-btn');
 
-        let currentIndex = 0;
+        // Pre-order button click event
+        $('#pre-order').click(function() {
+            // Prepare data to send to the server
+            const data = {
+                productId: productId,
+                quantity: quantity,
+                orderType: 'pre_order' // Add an identifier for pre-order
+            };
 
-        function showImage(index) {
-            sliderImages.forEach(img => img.classList.remove('active'));
-            sliderImages[index].classList.add('active');
-        }
+            // Send AJAX request
+            $.ajax({
+                url: 'gallery-readone-rec.php', // Updated URL
+                type: 'POST',
+                data: data,
+                dataType: 'json', // Expect JSON response from the server
+                success: function(response) {
+                    console.log('Response from server:', response);
+                    // Redirect to gallery.php after successful pre-order
+                    window.location.href = 'gallery.php';
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred: ' + error); // Handle any AJAX errors
+                }
+            });
+        });
+    });
 
-        function prevImage() {
-            currentIndex = (currentIndex - 1 + sliderImages.length) % sliderImages.length;
-            showImage(currentIndex);
-        }
+    // Image slider functionality remains unchanged
+    const sliderContainer = document.querySelector('.image-slider');
+    const sliderImages = document.querySelectorAll('.product-image');
+    const prevButton = document.querySelector('.prev-btn');
+    const nextButton = document.querySelector('.next-btn');
+    let currentIndex = 0;
 
-        function nextImage() {
-            currentIndex = (currentIndex + 1) % sliderImages.length;
-            showImage(currentIndex);
-        }
+    function showImage(index) {
+        sliderImages.forEach(img => img.classList.remove('active'));
+        sliderImages[index].classList.add('active');
+    }
 
-        prevButton.addEventListener('click', prevImage);
-        nextButton.addEventListener('click', nextImage);
-    </script>
+    function prevImage() {
+        currentIndex = (currentIndex - 1 + sliderImages.length) % sliderImages.length;
+        showImage(currentIndex);
+    }
 
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % sliderImages.length;
+        showImage(currentIndex);
+    }
 
-    <footer class="footer">
-        <div class="footer-row">
-            <div class="footer-col">
-                <h4>Info</h4>
-                <ul class="links">
-                    <li><a href="home.php">Home</a></li>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="Gallery.php">Gallery</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Explore</h4>
-                <ul class="links">
-                    <li><a href="#">Free Designs</a></li>
-                    <li><a href="#">Latest Designs</a></li>
-                    <li><a href="#">Themes</a></li>
-                    <li><a href="#">Popular Designs</a></li>
-                    <li><a href="#">Art Skills</a></li>
-                    <li><a href="#">New Uploads</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <ul class="links">
-                    <li><a href="#">Customer Agreement</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">GDPR</a></li>
-                    <li><a href="#">Security</a></li>
-                    <li><a href="#">Testimonials</a></li>
-                    <li><a href="#">Media Kit</a></li>
-                </ul>
-            </div>
-
-            <div class="icons">
-                <i class="fa-brands fa-facebook-f"></i>
-                <i class="fa-brands fa-twitter"></i>
-                <i class="fa-brands fa-linkedin"></i>
-                <i class="fa-brands fa-github"></i>
-            </div>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="../static/Javascript-files/script.js">
-    </script>
+    prevButton.addEventListener('click', prevImage);
+    nextButton.addEventListener('click', nextImage);
+</script>
 </body>
 
 </html>
