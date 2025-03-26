@@ -393,7 +393,7 @@ try {
 
         <!-- Action Buttons -->
         <div class="cus-actions">
-            <button id="upload-order-button">Upload Order</button>
+            <button id="submit-button">Submit</button>
             <button id="print-receipt-button">Print Receipt</button>
             <button id="reset-button">Reset</button>
         </div>
@@ -451,5 +451,28 @@ try {
 <script src="../static/Javascript-files/gallery.js"></script>
 <script src="../static/Javascript-files/script.js"></script>
 <script src="../static/Javascript-files/customization.js"></script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqjDk0jpyHu2vT4RGZ-yZN31UDbK6cYw4",
+    authDomain: "rm-betis-furniture.firebaseapp.com",
+    projectId: "rm-betis-furniture",
+    storageBucket: "rm-betis-furniture.firebasestorage.app",
+    messagingSenderId: "509374756756",
+    appId: "1:509374756756:web:b5daa7b886c122f4120181",
+    measurementId: "G-18WDFEMF89"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>

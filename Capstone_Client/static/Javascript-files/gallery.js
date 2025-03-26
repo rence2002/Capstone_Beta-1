@@ -1,34 +1,71 @@
 document.addEventListener('DOMContentLoaded', function () {
-        // Product preview functionality
-        const previewContainer = document.querySelector('.products-preview');
-        const previewBox = document.querySelectorAll('.preview');
-    
-
-        // Upload to Database button handler
-    document.getElementById('upload-order-button').addEventListener('click', async (e) => {
+    // Product preview functionality
+    const previewContainer = document.querySelector('.products-preview');
+    const previewBox = document.querySelectorAll('.preview');
+    // Handle product click to show preview
+    document.querySelectorAll('.products-container .product').forEach(product => {
+        product.addEventListener('click', (event) => {
+            if (!event.target.closest('model-viewer')) {
+                previewContainer.style.display = 'flex';
+                const name = product.getAttribute('data-name');
+                previewBox.forEach(preview => {
+                    const target = preview.getAttribute('data-target');
+                    if (name === target) {
+                        preview.classList.add('active');
+                        if (!preview.swiper) {
+                            preview.swiper = new Swiper(preview.querySelector('.swiper-container'), {
+                                slidesPerView: 1,
+                                spaceBetween: 20,
+                                pagination: {
+                                    el: '.swiper-pagination',
+                                    clickable: true,
+                                },
+                                navigation: {
+                                    nextEl: '.swiper-button-next',
+                                    prevEl: '.swiper-button-prev',
+                                },
+                                on: {
+                                    init: function () {
+                                        this.slides.forEach(slide => slide.style.opacity = 0);
+                                        this.slides[this.activeIndex].style.opacity = 1;
+                                    },
+                                    slideChange: function () {
+                                        this.slides.forEach(slide => slide.style.opacity = 0);
+                                        this.slides[this.activeIndex].style.opacity = 1;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+    // Close preview
+    document.querySelectorAll('.preview .fa-times').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.preview').classList.remove('active');
+            previewContainer.style.display = 'none';
+        });
+    });
+    // Upload to Database button handler
+    document.getElementById('submit-button').addEventListener('click', async (e) => {
         e.preventDefault();
-
         // Validate required fields
         const requiredFields = ['furniture', 'sizes'];
         let isValid = true;
-
         requiredFields.forEach(field => {
             const value = document.querySelector(`[name="${field}"]`).value;
             if (!value) {
-                alert(`Please select ${field.replace('_', ' ')}`);
                 isValid = false;
             }
         });
-
         const selectedSize = document.querySelector('[name="sizes"]').value;
         const customSizeInput = document.querySelector('[name="sizes-info"]');
         if (selectedSize === 'custom' && !customSizeInput.value.trim()) {
-            alert('Custom size is required when selecting "Custom"');
             isValid = false;
         }
-
         if (!isValid) return;
-
         // Collect form data
         const formData = new FormData();
         const fields = [
@@ -42,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'tiles', 'tiles-info', 'fileTileImage',
             'metal', 'metal-info', 'fileMetalImage'
         ];
-
         fields.forEach(field => {
             const input = document.querySelector(`[name="${field}"]`);
             if (input) {
@@ -56,52 +92,43 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-
         try {
-            // Send data to gallery-custom-rec.php
             const response = await fetch('gallery-custom-rec.php', {
                 method: 'POST',
                 body: formData
             });
-
-            const result = await response.json();
+            // Log raw response for debugging
+            const rawResponse = await response.text();
+            console.log('Raw server response:', rawResponse);
+            // Parse JSON response
+            const result = JSON.parse(rawResponse);
             if (result.success) {
-                alert('Order uploaded successfully!');
                 showReceipt(result.data); // Show receipt after successful upload
             } else {
                 throw new Error(result.message || 'Submission failed');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert(`Failed to upload order: ${error.message}`);
         }
     });
-
     // Print Receipt button handler
     document.getElementById('print-receipt-button').addEventListener('click', async (e) => {
         e.preventDefault();
-
         // Validate required fields
         const requiredFields = ['furniture', 'sizes'];
         let isValid = true;
-
         requiredFields.forEach(field => {
             const value = document.querySelector(`[name="${field}"]`).value;
             if (!value) {
-                alert(`Please select ${field.replace('_', ' ')}`);
                 isValid = false;
             }
         });
-
         const selectedSize = document.querySelector('[name="sizes"]').value;
         const customSizeInput = document.querySelector('[name="sizes-info"]');
         if (selectedSize === 'custom' && !customSizeInput.value.trim()) {
-            alert('Custom size is required when selecting "Custom"');
             isValid = false;
         }
-
         if (!isValid) return;
-
         // Collect form data
         const formData = {};
         const fields = [
@@ -115,7 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'tiles', 'tiles-info', 'fileTileImage',
             'metal', 'metal-info', 'fileMetalImage'
         ];
-
         fields.forEach(field => {
             const input = document.querySelector(`[name="${field}"]`);
             if (input) {
@@ -133,90 +159,138 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-
         try {
             // Generate receipt dynamically
             showReceipt(formData);
         } catch (error) {
             console.error('Error:', error);
-            alert(`Failed to generate receipt: ${error.message}`);
         }
     });
-
     // Reset button handler
     document.getElementById('reset-button').addEventListener('click', (e) => {
         e.preventDefault();
-
         document.querySelectorAll('.cus-boxed select').forEach(select => {
             select.value = '';
             select.dispatchEvent(new Event('change', { bubbles: true }));
         });
-
         document.querySelectorAll('.cus-boxed input[type="file"]').forEach(input => {
             input.value = '';
         });
-
         document.querySelectorAll('.cus-boxed input[type="text"]').forEach(input => {
             input.value = '';
         });
-
         document.querySelectorAll('.cus-boxed div[id$="-image-preview"]').forEach(div => {
             div.innerHTML = '';
             div.style.display = 'none';
         });
-
         document.getElementById('sizes').innerHTML = '<option value="" disabled selected>Select one</option>';
-        alert('Form reset successfully!');
     });
-
+    // Image preview handler
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const previewId = input.id.replace('-file-upload', '-image-preview');
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 150px; max-height: 150px;">`;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.innerHTML = '';
+                preview.style.display = 'none';
+            }
+        });
+    });
     // Print receipt modal
     function showReceipt(data) {
         const modalPreview = document.getElementById('modal-preview');
-
-        // Clear existing content
         modalPreview.innerHTML = '';
-
-        // Append new receipt content
-        modalPreview.innerHTML = `
-            <h2>Customization Receipt - ${data.user_name || 'Guest'}</h2>
-            <p><strong>ID:</strong> ${data.customization_id}</p>
-            <p><strong>User:</strong> ${data.user_id}</p>
-            <p><strong>Furniture:</strong> ${data.furniture}</p>
-            <p><strong>Size:</strong> ${data.size}</p>
-            <p><strong>Color:</strong> ${data.color || 'N/A'}</p>
-            ${data.color_image ? `<img src="${data.color_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Texture:</strong> ${data.texture || 'N/A'}</p>
-            ${data.texture_image ? `<img src="${data.texture_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Wood:</strong> ${data.wood || 'N/A'}</p>
-            ${data.wood_image ? `<img src="${data.wood_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Foam:</strong> ${data.foam || 'N/A'}</p>
-            ${data.foam_image ? `<img src="${data.foam_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Cover:</strong> ${data.cover || 'N/A'}</p>
-            ${data.cover_image ? `<img src="${data.cover_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Design:</strong> ${data.design || 'N/A'}</p>
-            ${data.design_image ? `<img src="${data.design_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Tiles:</strong> ${data.tiles || 'N/A'}</p>
-            ${data.tiles_image ? `<img src="${data.tiles_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Metal:</strong> ${data.metal || 'N/A'}</p>
-            ${data.metal_image ? `<img src="${data.metal_image}" style="max-width: 100px; margin: 10px 0;">` : ''}
-            <p><strong>Date:</strong> ${data.timestamp}</p>
-        `;
-
-        // Show the print modal
-        const printModal = document.getElementById('print-modal');
-        printModal.style.display = 'block';
-
-        setTimeout(() => {
-            window.print();
-            printModal.style.display = 'none';
-        }, 500);
+        // Convert uploaded images to base64 URLs
+        const imagePromises = [];
+        const imageData = {};
+        Object.keys(data).forEach(key => {
+            if (data[key] instanceof File) {
+                const file = data[key];
+                const reader = new FileReader();
+                const promise = new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(file);
+                });
+                imagePromises.push(promise.then(result => {
+                    imageData[key] = result; // Store base64 URL
+                }));
+            }
+        });
+        // Wait for all images to be processed
+        Promise.all(imagePromises).then(() => {
+            modalPreview.innerHTML = `
+                <h2></h2>
+                <div class="receipt-grid">
+                    <!-- First Column -->
+                    <div class="receipt-section">
+                        <h3>Furniture Details</h3>
+                        <p><strong>Product ID:</strong> ${data['product_id'] || 'N/A'}</p>
+                        <p><strong>Customization ID:</strong> ${data['customization_id'] || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${data['furniture'] || 'N/A'}</p>
+                        <p><strong>Info:</strong> ${data['furniture-info'] || 'N/A'}</p>
+                        <p><strong>Size:</strong> ${data['sizes'] === 'custom' ? data['sizes-info'] : data['sizes'] || 'N/A'}</p>
+                        <p><strong>Color:</strong> ${data['color'] || 'N/A'}</p>
+                        ${imageData['fileColorImage'] ? `<img src="${imageData['fileColorImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Color Info:</strong> ${data['color-info'] || 'N/A'}</p>
+                    </div>
+                    <!-- Second Column -->
+                    <div class="receipt-section">
+                        <h3>Material & Texture</h3>
+                        <p><strong>Texture:</strong> ${data['texture'] || 'N/A'}</p>
+                        ${imageData['fileTextureImage'] ? `<img src="${imageData['fileTextureImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Texture Info:</strong> ${data['texture-info'] || 'N/A'}</p>
+                        <p><strong>Wood:</strong> ${data['wood'] || 'N/A'}</p>
+                        ${imageData['fileWoodImage'] ? `<img src="${imageData['fileWoodImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Wood Info:</strong> ${data['wood-info'] || 'N/A'}</p>
+                        <p><strong>Foam:</strong> ${data['foam'] || 'N/A'}</p>
+                        ${imageData['fileFoamImage'] ? `<img src="${imageData['fileFoamImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Foam Info:</strong> ${data['foam-info'] || 'N/A'}</p>
+                    </div>
+                    <!-- Third Column -->
+                    <div class="receipt-section">
+                        <h3>Cover & Design</h3>
+                        <p><strong>Cover:</strong> ${data['cover'] || 'N/A'}</p>
+                        ${imageData['fileCoverImage'] ? `<img src="${imageData['fileCoverImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Cover Info:</strong> ${data['cover-info'] || 'N/A'}</p>
+                        <p><strong>Design:</strong> ${data['design'] || 'N/A'}</p>
+                        ${imageData['fileDesignImage'] ? `<img src="${imageData['fileDesignImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Design Info:</strong> ${data['design-info'] || 'N/A'}</p>
+                        <p><strong>Tiles:</strong> ${data['tiles'] || 'N/A'}</p>
+                        ${imageData['fileDesignImage'] ? `<img src="${imageData['fileDesignImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Design Info:</strong> ${data['design-info'] || 'N/A'}</p>
+                        <p><strong>Tiles:</strong> ${data['tiles'] || 'N/A'}</p>
+                        ${imageData['fileTileImage'] ? `<img src="${imageData['fileTileImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Tiles Info:</strong> ${data['tiles-info'] || 'N/A'}</p>
+                        <p><strong>Metal:</strong> ${data['metal'] || 'N/A'}</p>
+                        ${imageData['fileMetalImage'] ? `<img src="${imageData['fileMetalImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
+                        <p><strong>Metal Info:</strong> ${data['metal-info'] || 'N/A'}</p>
+                        <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+            // Show the print modal
+            const printModal = document.getElementById('print-modal');
+            printModal.style.display = 'block';
+            setTimeout(() => {
+                window.print();
+                printModal.style.display = 'none';
+            }, 500);
+        }).catch(error => {
+            console.error('Error processing images:', error);
+        });
     }
-
     // Close print modal
     document.querySelector('.close-modal').addEventListener('click', () => {
         document.getElementById('print-modal').style.display = 'none';
     });
-
     // Handle furniture type changes to populate sizes
     document.getElementById('furniture').addEventListener('change', function () {
         const furnitureType = this.value;
@@ -250,7 +324,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 { value: 'bedframe7', text: 'Bed Frame - Twin 38x75 in.' }
             ]
         };
-
         sizesDropdown.innerHTML = '<option value="" disabled selected>Select one</option>';
         if (sizeOptions[furnitureType]) {
             sizeOptions[furnitureType].forEach(option => {

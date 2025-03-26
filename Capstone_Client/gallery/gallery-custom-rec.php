@@ -2,95 +2,100 @@
 session_start();
 header('Content-Type: application/json'); // Ensure JSON response
 
+// Initialize $transactionStarted before the try block
+$transactionStarted = false;
+
 // Validate session
 if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
-    http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
+    return;
 }
 
 include("../config/database.php");
 
+// Fetch user details
+$userID = $_SESSION["user_id"];
+$stmt = $pdo->prepare("SELECT First_Name, Last_Name FROM tbl_user_info WHERE User_ID = :userID"); // Corrected query
+$stmt->execute([':userID' => $userID]);
+$userData = $stmt->fetch(PDO::FETCH_ASSOC);
+$userName = ($userData['First_Name'] ?? '') . ' ' . ($userData['Last_Name'] ?? ''); // Concatenate first and last name
+$userName = trim($userName) !== '' ? $userName : 'N/A';
+
+// Validation rules
+$requiredFields = ['furniture' => 'Furniture Type', 'sizes' => 'Size'];
+foreach ($requiredFields as $field => $label) {
+    if (empty($_POST[$field])) {
+        echo json_encode(['success' => false, 'message' => "$label is required"]);
+        return;
+    }
+}
+
+// File validation
+$customFields = ['color', 'texture', 'wood', 'foam', 'cover', 'design', 'tiles', 'metal'];
+foreach ($customFields as $field) {
+    if (($_POST[$field] ?? null) === 'custom') {
+        $fileKey = 'file' . ucfirst($field) . 'Image';
+        if (empty($_FILES[$fileKey]['name'])) {
+            echo json_encode(['success' => false, 'message' => "Image required for custom $field"]);
+            return;
+        }
+    }
+}
+
+// File upload handler
+function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
+    if (empty($_FILES[$fileKey]['name'])) return null;
+
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!in_array($_FILES[$fileKey]['type'], $allowedTypes)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+        return;
+    }
+
+    $maxFileSize = 5 * 1024 * 1024; // 5 MB
+    if ($_FILES[$fileKey]['size'] > $maxFileSize) {
+        echo json_encode(['success' => false, 'message' => 'File size exceeds the limit']);
+        return;
+    }
+
+    $filename = uniqid() . '_' . basename($_FILES[$fileKey]['name']);
+    $targetFilePath = $uploadDir . $filename;
+
+    if (!is_dir($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            echo json_encode(['success' => false, 'message' => 'Directory creation failed']);
+            return;
+        }
+    }
+
+    if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
+        echo json_encode(['success' => false, 'message' => 'File upload failed']);
+        return;
+    }
+
+    return $targetFilePath;
+}
+
+// Collect form data
+$furnitureType = $_POST['furniture'] ?? null;
+$furnitureInfo = $_POST['furniture_info'] ?? null;
+$standardSize = $_POST['sizes'] ?? null;
+$desiredSize = $_POST['sizes_info'] ?? null;
+
+// Process all file uploads
+$colorImage = handleFileUpload('fileColorImage');
+$textureImage = handleFileUpload('fileTextureImage');
+$woodImage = handleFileUpload('fileWoodImage');
+$foamImage = handleFileUpload('fileFoamImage');
+$coverImage = handleFileUpload('fileCoverImage');
+$designImage = handleFileUpload('fileDesignImage');
+$tilesImage = handleFileUpload('fileTileImage');
+$metalImage = handleFileUpload('fileMetalImage');
+
+// Start transaction
 try {
-    // Fetch user details
-    $userID = $_SESSION["user_id"];
-    $stmt = $pdo->prepare("SELECT User_Name FROM tbl_user_info WHERE User_ID = :userID");
-    $stmt->execute([':userID' => $userID]);
-    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
-    $userName = $userData['User_Name'] ?? 'N/A';
-
-    // Validation rules
-    $requiredFields = ['furniture' => 'Furniture Type', 'sizes' => 'Size'];
-    foreach ($requiredFields as $field => $label) {
-        if (empty($_POST[$field])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => "$label is required"]);
-            exit();
-        }
-    }
-
-    // File validation
-    $customFields = ['color', 'texture', 'wood', 'foam', 'cover', 'design', 'tiles', 'metal'];
-    foreach ($customFields as $field) {
-        if (($_POST[$field] ?? null) === 'custom') {
-            $fileKey = 'file' . ucfirst($field) . 'Image';
-            if (empty($_FILES[$fileKey]['name'])) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'message' => "Image required for custom $field"]);
-                exit();
-            }
-        }
-    }
-
-    // File upload handler
-    function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
-        if (empty($_FILES[$fileKey]['name'])) return null;
-
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!in_array($_FILES[$fileKey]['type'], $allowedTypes)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Invalid file type']);
-            exit();
-        }
-
-        $filename = uniqid() . '_' . basename($_FILES[$fileKey]['name']);
-        $targetFilePath = $uploadDir . $filename;
-
-        if (!is_dir($uploadDir)) {
-            if (!mkdir($uploadDir, 0755, true)) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Directory creation failed']);
-                exit();
-            }
-        }
-
-        if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'File upload failed']);
-            exit();
-        }
-
-        return $targetFilePath;
-    }
-
-    // Collect form data
-    $furnitureType = $_POST['furniture'] ?? null;
-    $furnitureInfo = $_POST['furniture_info'] ?? null;
-    $standardSize = $_POST['sizes'] ?? null;
-    $desiredSize = $_POST['sizes_info'] ?? null;
-
-    // Process all file uploads
-    $colorImage = handleFileUpload('fileColorImage');
-    $textureImage = handleFileUpload('fileTextureImage');
-    $woodImage = handleFileUpload('fileWoodImage');
-    $foamImage = handleFileUpload('fileFoamImage');
-    $coverImage = handleFileUpload('fileCoverImage');
-    $designImage = handleFileUpload('fileDesignImage');
-    $tilesImage = handleFileUpload('fileTileImage');
-    $metalImage = handleFileUpload('fileMetalImage');
-
-    // Database transaction
     $pdo->beginTransaction();
+    $transactionStarted = true;
 
     // Insert into customizations_temp
     $stmt = $pdo->prepare("
@@ -153,20 +158,38 @@ try {
 
     $customizationID = $pdo->lastInsertId();
 
+    // Create a new "custom" product in tbl_prod_info
+    $productName = "Custom " . ucfirst($furnitureType) . " Order";
+    $productDescription = "Custom order from request #" . $customizationID;
+    $productStmt = $pdo->prepare("
+        INSERT INTO tbl_prod_info (
+            Product_Name, Description, product_type, Price
+        ) VALUES (
+            :productName, :productDescription, 'custom', 0.00
+        )
+    ");
+    $productStmt->execute([
+        ':productName' => $productName,
+        ':productDescription' => $productDescription
+    ]);
+
+    $productID = $pdo->lastInsertId();
+
     // Insert into order request
     $orderStmt = $pdo->prepare("
         INSERT INTO tbl_order_request (
-            User_ID, Customization_ID, Quantity, 
+            User_ID, Customization_ID, Product_ID, Quantity, 
             Order_Type, Total_Price
         ) VALUES (
-            :userID, :customizationID, 1, 
+            :userID, :customizationID, :productID, 1, 
             'custom', 0.00
         )
     ");
 
     $orderStmt->execute([
         ':userID' => $userID,
-        ':customizationID' => $customizationID
+        ':customizationID' => $customizationID,
+        ':productID' => $productID
     ]);
 
     $pdo->commit();
@@ -176,6 +199,7 @@ try {
         'success' => true,
         'data' => [
             'customization_id' => $customizationID,
+            'product_id' => $productID,
             'user_id' => $userID,
             'user_name' => $userName,
             'furniture' => $furnitureType,
@@ -207,11 +231,22 @@ try {
             'timestamp' => date('Y-m-d H:i:s')
         ]
     ]);
-
+    return;
 } catch (PDOException $e) {
-    $pdo->rollBack();
+    if ($transactionStarted) {
+        $pdo->rollBack();
+    }
     error_log("Database Error: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+    return;
+} catch (Exception $e) {
+    if ($transactionStarted) {
+        $pdo->rollBack();
+    }
+    error_log("General Error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An unexpected error occurred']);
+    return;
+} finally {
+    // No need to rollback here, it's already done in catch blocks
 }
 ?>
