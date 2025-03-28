@@ -18,7 +18,7 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
         // Ensure Order_Type is not empty
         if (empty($orderType)) {
             error_log("Error: Order_Type is empty");
-            return ['success' => false, 'message' => 'Order_Type is required'];
+            return ['success' => false];
         }
 
         // Check if the product already exists in the cart for the user
@@ -59,7 +59,7 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
         }
     } catch (PDOException $e) {
         error_log("Error in saveToCart: " . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
+        return ['success' => false];
     }
 }
 
@@ -81,23 +81,31 @@ function saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $tot
         return ['success' => true];
     } catch (PDOException $e) {
         error_log("Error in saveOrderRequest: " . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
+        return ['success' => false];
     }
 }
 
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = $_SESSION["user_id"];
-    $productId = $_POST['productId'];
-    $quantity = $_POST['quantity'];
-    $orderType = $_POST['orderType'] ?? 'ready_made'; // Default to 'ready_made'
+    // Read raw POST data
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true); // Decode JSON into an associative array
 
-    // Debugging statements
-    error_log("Received AJAX request");
-    error_log("User ID: $userId");
-    error_log("Product ID: $productId");
-    error_log("Quantity: $quantity");
-    error_log("Order Type: $orderType");
+    // Debugging: Log the received data
+    error_log("Raw POST data: " . print_r($data, true));
+
+    // Extract required fields
+    $userId = $_SESSION["user_id"];
+    $productId = $data['productId'] ?? null;
+    $quantity = $data['quantity'] ?? null;
+    $orderType = $data['orderType'] ?? 'ready_made'; // Default to 'ready_made'
+
+    // Validate required fields
+    if (!$productId || !$quantity) {
+        error_log("Missing required fields: productId or quantity");
+        echo json_encode(['success' => false]);
+        exit;
+    }
 
     // Fetch product details
     $stmt = $pdo->prepare("SELECT Price, Stock FROM tbl_prod_info WHERE Product_ID = :productId");
@@ -112,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Perform stock check for ready-made orders
         if ($orderType === 'ready_made' && $quantity > $stock) {
-            echo json_encode(['success' => false, 'message' => 'Not enough stock available']);
+            echo json_encode(['success' => false]);
             exit;
         }
 
@@ -127,13 +135,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($orderType === 'cart') {
             $response = saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid order type']);
+            echo json_encode(['success' => false]);
             exit;
         }
 
         echo json_encode($response);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Product not found']);
+        echo json_encode(['success' => false]);
     }
 }
 

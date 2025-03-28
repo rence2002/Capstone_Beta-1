@@ -59,7 +59,7 @@
 .container .products-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
-  gap: 1rem;
+  gap: 10px;
 }
 
 .container .products-container .product {
@@ -70,6 +70,9 @@
   outline: .1rem solid #ccc;
   outline-offset: -1.5rem;
   cursor: pointer;
+}
+.product{
+  max-width: 25rem;
 }
 
 .container .products-container .product:hover {
@@ -493,7 +496,7 @@
 .cus-actions{
 
 }
-#print-button{
+.print-button{
   width: 100px;
   height: 30px;
   font-size: 12px;
@@ -1014,4 +1017,39 @@ label {
     font-weight: 500;
 }
 
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.close-modal:hover {
+  color: red;
 }

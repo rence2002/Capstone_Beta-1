@@ -394,7 +394,6 @@ try {
         <!-- Action Buttons -->
         <div class="cus-actions">
             <button id="submit-button">Submit</button>
-            <button id="print-receipt-button">Print Receipt</button>
             <button id="reset-button">Reset</button>
         </div>
     </div>
@@ -437,13 +436,24 @@ try {
     </div>
 </footer>
 
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Order Confirmation</h2>
+        <p>Your order has been successfully submitted and is now under review.</p>
+        <div class="modal-buttons">
+            <button id="confirm-ok-button">OK</button>
+        </div>
+    </div>
+</div>
+
 <!-- Print Modal -->
-<div id="print-modal" class="modal">
+<div id="print-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close-modal">&times;</span>
         <h2>Customization Receipt</h2>
         <div id="modal-preview" class="receipt-content"></div>
-        <button id="modal-print-btn">Print</button>
+        <button id="modal-ok-button">OK</button>
     </div>
 </div>
 

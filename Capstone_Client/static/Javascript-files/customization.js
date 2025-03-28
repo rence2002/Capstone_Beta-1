@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
     // Toggle custom options visibility
     function toggleCustomElements(selectElement, wrapperId, imageUploadId, imagePreviewId) {
         const wrapper = $(`#${wrapperId}`);
@@ -19,62 +19,62 @@ $(document).ready(function() {
     // Initialize all dropdown handlers
     function initHandlers() {
         // Color handler
-        $('#color').on('change', function() {
+        $('#color').on('change', function () {
             toggleCustomElements(this, 'color-custom-options', 'color-file-upload', 'color-image-preview');
         });
 
         // Texture handler
-        $('#texture').on('change', function() {
+        $('#texture').on('change', function () {
             toggleCustomElements(this, 'texture-custom-options', 'texture-file-upload', 'texture-image-preview');
         });
 
         // Woods handler
-        $('#woods').on('change', function() {
+        $('#woods').on('change', function () {
             toggleCustomElements(this, 'woods-custom-options', 'wood-file-upload', 'wood-image-preview');
         });
 
         // Foam handler
-        $('#foam').on('change', function() {
+        $('#foam').on('change', function () {
             toggleCustomElements(this, 'foam-custom-options', 'foam-file-upload', 'foam-image-preview');
         });
 
         // Cover handler
-        $('#cover').on('change', function() {
+        $('#cover').on('change', function () {
             toggleCustomElements(this, 'cover-custom-options', 'cover-file-upload', 'cover-image-preview');
         });
 
         // Design handler
-        $('#design').on('change', function() {
+        $('#design').on('change', function () {
             toggleCustomElements(this, 'design-custom-options', 'design-file-upload', 'design-image-preview');
         });
 
         // Tiles handler
-        $('#tiles').on('change', function() {
+        $('#tiles').on('change', function () {
             toggleCustomElements(this, 'tiles-custom-options', 'tiles-file-upload', 'tiles-image-preview');
         });
 
         // Metal handler
-        $('#metal').on('change', function() {
+        $('#metal').on('change', function () {
             toggleCustomElements(this, 'metal-custom-options', 'metal-file-upload', 'metal-image-preview');
         });
 
         // Sizes handler
-        $('#sizes').on('change', function() {
+        $('#sizes').on('change', function () {
             $('#sizes-custom-options').toggle(this.value === 'custom');
         });
 
         // Furniture type handler
-        $('#furniture').on('change', function() {
+        $('#furniture').on('change', function () {
             const furnitureType = $(this).val();
             let sizesOptions = '<option value="" disabled selected>Select one</option>';
-            
-            switch(furnitureType) {
+
+            switch (furnitureType) {
                 case 'chair':
                     sizesOptions += `
                         <option value="custom">Custom</option>
                         <option value="Chair - 20x21 in.">Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.</option>
                     `;
-                    break; // Add break here
+                    break;
                 case 'table':
                     sizesOptions += `
                         <option value="custom">Custom</option>
@@ -82,7 +82,7 @@ $(document).ready(function() {
                         <option value="Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.">Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.</option>
                         <option value="Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.">Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.</option>
                     `;
-                    break; // Ensure break here
+                    break;
                 case 'salaset':
                     sizesOptions += `
                         <option value="custom">Custom</option>
@@ -91,7 +91,7 @@ $(document).ready(function() {
                         <option value="Sala Set 10x10 ft.">Sala Set 10x10 ft.</option>
                         <option value="Sala Set 10x11 ft.">Sala Set 10x11 ft.</option>
                     `;
-                    break; // Ensure break here
+                    break;
                 case 'bedframe':
                     sizesOptions += `
                         <option value="custom">Custom</option>
@@ -103,24 +103,24 @@ $(document).ready(function() {
                         <option value="Twin XL 38x80 in.">Bed Frame - Twin XL 38x80 in.</option>
                         <option value="Twin 38x75 in.">Bed Frame - Twin 38x75 in.</option>
                     `;
-                    break; // Ensure break here
+                    break;
                 default:
                     sizesOptions = '<option value="" disabled selected>Select one</option>';
             }
-        
+
             // Update sizes dropdown
             $('#sizes').html(sizesOptions).trigger('change');
         });
 
         // Image preview setup
-        $('input[type="file"]').on('change', function() {
+        $('input[type="file"]').on('change', function () {
             const previewId = $(this).attr('id').replace('-file-upload', '-image-preview');
             const file = this.files[0];
             const preview = $(`#${previewId}`);
 
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     preview.html(`<img src="${e.target.result}" style="max-width: 100px; max-height: 100px;">`);
                     preview.show();
                 };
@@ -135,9 +135,9 @@ $(document).ready(function() {
     initHandlers();
 
     // Reset all fields
-    $('#reset-button').on('click', function() {
+    $('#reset-button').on('click', function () {
         // Reset dropdowns
-        $('.cus-boxed select').each(function() {
+        $('.cus-boxed select').each(function () {
             $(this).val('').trigger('change'); // Trigger change to hide custom options
         });
 
@@ -150,6 +150,39 @@ $(document).ready(function() {
         // Clear image previews
         $('.cus-boxed div[id$="-image-preview"]').empty().hide();
 
-        alert('All fields have been reset!');
+        // Show modal instead of alert
+        showModal('Success', 'All fields have been reset!');
     });
+
+    function showModal(title, message) {
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>${title}</h2>
+                <p>${message}</p>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    
+        const closeModal = modal.querySelector('.close-modal');
+        closeModal.addEventListener('click', () => {
+            modal.remove();
+        });
+    
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Ensure the modal is hidden on page load
+    const printModal = document.getElementById('print-modal');
+    if (printModal) {
+        printModal.style.display = 'none';
+    }
 });
