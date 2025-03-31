@@ -10,6 +10,14 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
 // Include the database connection
 include("../config/database.php");
 
+// Include Composer's autoload for Intervention Image
+require_once '../vendor/autoload.php';
+
+use Intervention\Image\ImageManagerStatic as Image;
+
+// Initialize Intervention Image
+Image::configure(['driver' => 'gd']);
+
 // Initialize variables
 $product_id = isset($_POST['product_id']) ? trim($_POST['product_id']) : '';
 $review_text = isset($_POST['review_text']) ? trim($_POST['review_text']) : '';
@@ -27,8 +35,6 @@ if ($rating < 1 || $rating > 5) {
     $errors[] = "Rating must be between 1 and 5.";
 }
 
-use Intervention\Image\ImageManagerStatic as Image;
-
 // Handle file uploads
 $uploaded_images = [];
 if (!empty($_FILES['review_image']['name'][0])) {
@@ -41,12 +47,20 @@ if (!empty($_FILES['review_image']['name'][0])) {
 
     foreach ($_FILES['review_image']['tmp_name'] as $key => $tmp_name) {
         $file_name = basename($_FILES['review_image']['name'][$key]);
+        $file_name = preg_replace('/[^a-zA-Z0-9\.\-_]/', '', $file_name); // Sanitize filename
         $target_file = $upload_dir . uniqid() . "_" . $file_name;
 
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $file_type = $_FILES['review_image']['type'][$key];
+        $max_file_size = 2 * 1024 * 1024; // 2MB
+
         if (!in_array($file_type, $allowed_types)) {
             $errors[] = "Invalid file type for image: $file_name. Only JPEG, PNG, and GIF are allowed.";
+            continue;
+        }
+
+        if ($_FILES['review_image']['size'][$key] > $max_file_size) {
+            $errors[] = "File size exceeds the maximum limit of 2MB: $file_name.";
             continue;
         }
 
@@ -58,12 +72,13 @@ if (!empty($_FILES['review_image']['name'][0])) {
                 $constraint->upsize(); // Prevent upscaling
             })->crop(150, 150); // Crop to exact dimensions
 
-            // Save the resized image
-            $image->save($target_file);
+            // Save the resized image with reduced quality
+            $image->save($target_file, 80);
 
             $uploaded_images[] = str_replace("C:/xampp/htdocs/", "../", $target_file);
         } catch (Exception $e) {
-            $errors[] = "Failed to process image: $file_name.";
+            error_log("Error processing image: " . $e->getMessage());
+            $errors[] = "An error occurred while processing the image: $file_name. Please try again.";
         }
     }
 }
