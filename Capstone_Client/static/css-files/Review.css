@@ -139,3 +139,11 @@
       min-width: 100%;
   }
 }
+/* Style for review images */
+.review-image {
+  width: 150px; /* Set a fixed width */
+  height: 150px; /* Set a fixed height */
+  object-fit: cover; /* Crop the image to fit the dimensions */
+  border-radius: 8px; /* Optional: Add rounded corners for aesthetics */
+  margin: 5px; /* Optional: Add spacing between images */
+}
