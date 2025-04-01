@@ -83,6 +83,21 @@ if (!$user) {
     die("User not found.");
 }
 
+// Fetch pending orders data from tbl_order_request
+try {
+    $stmt = $pdo->prepare("
+        SELECT orq.*, pr.Product_Name 
+        FROM tbl_order_request orq 
+        LEFT JOIN tbl_prod_info pr ON orq.Product_ID = pr.Product_ID 
+        WHERE orq.User_ID = :userId
+    ");
+    $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
+    $stmt->execute();
+    $pendingOrdersData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
+
 // Fetch progress data from tbl_progress
 try {
     $stmt = $pdo->prepare("
@@ -101,9 +116,10 @@ try {
 // Fetch purchase history data from tbl_purchase_history
 try {
     $stmt = $pdo->prepare("
-        SELECT ph.*, pr.Product_Name, pr.ImageURL 
+        SELECT ph.*, pr.Product_Name, pr.ImageURL, r.Review_ID
         FROM tbl_purchase_history ph 
         JOIN tbl_prod_info pr ON ph.Product_ID = pr.Product_ID 
+        LEFT JOIN tbl_reviews r ON ph.Product_ID = r.Product_ID AND ph.User_ID = r.User_ID
         WHERE ph.User_ID = :userId
     ");
     $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
@@ -129,14 +145,14 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-<header>
-    <nav class="navbar">
-        <a href="../dashboard/home.php" class="logo">
-            <img src="../static/images/rm raw png.png" alt="" class="logo">
-        </a>
-        <ul class="menu-links no-bootstrap">
+<header class>
+<nav class="navbar ">
+      <a href="../dashboard/home.php" class="logo">
+        <img src="../static/images/rm raw png.png" alt=""  class="logo">
+      </a>
+        <ul class="menu-links   no-bootstrap">
             <li class="dropdown">
-                <a href="../dashboard/home.php">Home</a>
+                <a href="../dashboard/home.php" class="">Home</a>
                 <ul class="dropdown-menus">
                     <li><a href="#about-section">About</a></li>
                     <li><a href="#contact-section">Contacts</a></li>
@@ -145,10 +161,10 @@ try {
             </li>
             <li><a href="../reviews/review.php">Reviews</a></li>
             <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
-            <ul class="menu-links no-bootstrap">
+            <li><a href="../cart/cart.php" class="cart " id="cart">Cart</a></li>
+            <ul class="menu-links   no-bootstrap">
             <li class="dropdown">
-            <a href="../profile/profile.php" class="profile activecon" id="sign_in">Profile</a>
+            <a href="../profile/profile.php" class="profile activecon  " id="sign_in">Profile</a>
                 <ul class="dropdown-menus">
                     <li><a href="../profile/profile.php">Profile</a></li>
                     <li><a href="logout.php">Logout</a></li>
@@ -167,6 +183,33 @@ try {
         </div>
     </div>
 
+    <!-- Pending Orders Section -->
+    <div class="section-container">
+        <div class="section-header" onclick="toggleSection('pending-orders')">
+            <h2>Pending Orders</h2>
+            <span class="toggle-icon">▼</span>
+        </div>
+        <div id="pending-orders" class="section-content">
+            <?php if (empty($pendingOrdersData)): ?>
+                <p>No pending orders</p>
+            <?php else: ?>
+                <?php foreach ($pendingOrdersData as $order): ?>
+                    <div class="pending-order-item">
+                        <h3><?= htmlspecialchars($order['Product_Name']) ?? 'Custom Order' ?></h3>
+                        <?php if ($order['Customization_ID']): ?>
+                            <p><strong>Order Type:</strong> Custom Order</p>
+                        <?php else: ?>
+                            <p><strong>Order Type:</strong> <?= htmlspecialchars($order['Order_Type']) ?></p>
+                        <?php endif; ?>
+                        <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
+                        <p><strong>Total Price:</strong> <?= htmlspecialchars($order['Total_Price']) ?></p>
+                        <p><strong>Request Date:</strong> <?= htmlspecialchars($order['Request_Date']) ?></p>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Order Status Section -->
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('order-status')">
@@ -179,7 +222,7 @@ try {
             <?php else: ?>
                 <?php foreach ($progressData as $progress): ?>
                     <div class="progress-item">
-                        <h3><?= $progress['Product_Name'] ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
+                        <h3><?= htmlspecialchars($progress['Product_Name']) ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
                         <div class="stepper-container">
                             <ol class="stepper">
                                 <?php 
@@ -197,16 +240,17 @@ try {
                                         <span class="step-icon">
                                             <?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?>
                                         </span>
-                                        <span class="step-label"><?= $label ?></span>
+                                        <span class="step-label"><?= htmlspecialchars($label) ?></span>
                                     </li>
                                 <?php endforeach; ?>
                             </ol>
-                        </div>
+                                </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>
+
 
     <!-- Product Status Section -->
     <div class="section-container">
@@ -265,6 +309,14 @@ try {
                         <img src="<?= $purchase['ImageURL'] ?>" alt="<?= $purchase['Product_Name'] ?>" style="max-width: 100px; height: auto;">
                         <p><strong>Quantity:</strong> <?= $purchase['Quantity'] ?></p>
                         <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
+                        <!-- Review Button -->
+                        <div class="review-btn-container">
+                            <?php if (isset($purchase['Review_ID'])): ?>
+                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="btn btn-primary">Edit Review</a>
+                            <?php else: ?>
+                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="btn btn-primary">Write Review</a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -336,6 +388,7 @@ try {
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="../static/Javascript-files/script.js"></script>
 <script>
     const orderStatusMap = <?= json_encode($orderStatusMap) ?>;
     const productStatusLabels = <?= json_encode($productStatusLabels) ?>;

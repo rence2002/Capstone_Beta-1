@@ -1,24 +1,20 @@
 <?php
 session_start();
-
-// Include the database connection
 include '../config/database.php';
 
-// Check if the admin's ID is stored in the session after login
+// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    // Redirect to login page if not logged in
     header("Location: ../login.php");
     exit();
 }
 
-// Fetch admin data from the database
+// Fetch admin data
 $adminId = $_SESSION['admin_id'];
 $stmt = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admin_ID = :admin_id");
 $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check if admin data is fetched
 if (!$admin) {
     echo "Admin not found.";
     exit();
@@ -35,106 +31,127 @@ if (!isset($_GET['id']) || !isset($_GET['order_type'])) {
 
 $id = $_GET['id'];
 $orderType = $_GET['order_type'];
+
 // Determine the correct query based on the order type
+$query = "";
 switch ($orderType) {
     case 'custom':
         $query = "
             SELECT
                 c.Customization_ID AS ID,
                 c.Furniture_Type AS Product_Name,
-                u.User_ID,
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
                 c.Order_Status,
                 c.Product_Status,
-                0.00 as Total_Price,
+                0.00 AS Total_Price,
                 c.Request_Date,
-                c.Last_Update
+                c.Last_Update,
+                c.Progress_Pic_10,
+                c.Progress_Pic_20,
+                c.Progress_Pic_30,
+                c.Progress_Pic_40,
+                c.Progress_Pic_50,
+                c.Progress_Pic_60,
+                c.Progress_Pic_70,
+                c.Progress_Pic_80,
+                c.Progress_Pic_90,
+                c.Progress_Pic_100,
+                c.Stop_Reason
             FROM tbl_customizations c
             JOIN tbl_user_info u ON c.User_ID = u.User_ID
             WHERE c.Customization_ID = :id
         ";
         break;
+
     case 'pre_order':
         $query = "
             SELECT
                 po.Preorder_ID AS ID,
                 pr.Product_Name,
-                u.User_ID,
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
                 po.Preorder_Status AS Order_Status,
                 po.Product_Status,
                 po.Total_Price,
-                po.Order_Date as Request_Date,
-                po.Order_Date AS Last_Update
+                po.Order_Date AS Request_Date,
+                po.Order_Date AS Last_Update,
+                po.Progress_Pic_10,
+                po.Progress_Pic_20,
+                po.Progress_Pic_30,
+                po.Progress_Pic_40,
+                po.Progress_Pic_50,
+                po.Progress_Pic_60,
+                po.Progress_Pic_70,
+                po.Progress_Pic_80,
+                po.Progress_Pic_90,
+                po.Progress_Pic_100,
+                po.Stop_Reason
             FROM tbl_preorder po
             JOIN tbl_user_info u ON po.User_ID = u.User_ID
             JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
             WHERE po.Preorder_ID = :id
         ";
         break;
+
     case 'ready_made':
         $query = "
             SELECT
-                rmo.ReadyMadeOrder_ID AS ID,
-                pr.Product_Name,
-                u.User_ID,
+                p.Progress_ID AS ID,
+                p.Product_Name,
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                rmo.Order_Status,
-                rmo.Product_Status,
-                rmo.Total_Price,
-                rmo.Order_Date as Request_Date,
-                rmo.Order_Date AS Last_Update
-            FROM tbl_ready_made_orders rmo
-            JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
-            JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-            WHERE rmo.ReadyMadeOrder_ID = :id
+                p.Order_Status,
+                p.Product_Status,
+                p.Total_Price,
+                p.Date_Added AS Request_Date,
+                p.LastUpdate AS Last_Update,
+                p.Progress_Pic_10,
+                p.Progress_Pic_20,
+                p.Progress_Pic_30,
+                p.Progress_Pic_40,
+                p.Progress_Pic_50,
+                p.Progress_Pic_60,
+                p.Progress_Pic_70,
+                p.Progress_Pic_80,
+                p.Progress_Pic_90,
+                p.Progress_Pic_100,
+                p.Stop_Reason
+            FROM tbl_progress p
+            JOIN tbl_user_info u ON p.User_ID = u.User_ID
+            JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+            WHERE p.Progress_ID = :id
         ";
         break;
+
     default:
         echo "Invalid order type.";
-        exit();
+        exit;
 }
 
+// Prepare and execute the query
 $stmt = $pdo->prepare($query);
-$stmt->bindParam(':id', $id);
+$stmt->bindParam(':id', $id, PDO::PARAM_INT);
 $stmt->execute();
-$progress = $stmt->fetch(PDO::FETCH_ASSOC);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$progress) {
+if (!$row) {
     echo "Progress record not found.";
     exit();
 }
-// Order Status Map
-$orderStatusLabels = [
+
+// Map status labels
+$statusLabels = [
     0 => 'Order Received',
     10 => 'Order Confirmed',
-    20 => 'Design Finalization',
-    30 => 'Material Preparation',
-    40 => 'Production Started',
-    50 => 'Mid-Production',
-    60 => 'Finishing Process',
-    70 => 'Quality Check',
-    80 => 'Final Assembly',
-    90 => 'Ready for Delivery',
-    100 => 'Delivered / Completed',
-];
-
-// Product Status Map
-$productStatusLabels = [
-    0 => 'Concept Stage',
-    10 => 'Design Approved',
-    20 => 'Material Sourcing',
-    30 => 'Cutting & Shaping',
-    40 => 'Structural Assembly',
-    50 => 'Detailing & Refinements',
-    60 => 'Sanding & Pre-Finishing',
-    70 => 'Final Coating',
-    80 => 'Assembly & Testing',
-    90 => 'Ready for Delivery',
-    100 => 'Sold / Installed',
+    20 => 'In Production',
+    30 => '30% Complete',
+    40 => '40% Complete',
+    50 => '50% Complete',
+    60 => '60% Complete',
+    70 => '70% Complete',
+    80 => '80% Complete',
+    90 => '90% Complete',
+    100 => 'Completed'
 ];
 ?>
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -164,7 +181,7 @@ $productStatusLabels = [
         <ul class="nav-links">
         
             <li>
-                <a href="../dashboard/dashboard.php" class="active">
+                <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
@@ -187,204 +204,137 @@ $productStatusLabels = [
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+            <div class="profile-details" onclick="toggleDropdown()">
+                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
+
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
             </div>
 
 
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+</nav>
+    <br><br><br>
+    <h2>Update Progress</h2>
+    <form action="update-progress-rec.php" method="POST" enctype="multipart/form-data">
+        
+<input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
+        <input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
+        <input type="hidden" name="Product_Name" value="<?= htmlspecialchars($row['Product_Name']) ?>">
+        <input type="hidden" name="User_ID" value="<?= htmlspecialchars($row['User_ID']) ?>">
 
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-        <br><br><br>
-        <div class="container mt-5">
-            <h2>Update Progress Record</h2>
-            <form action="update-progress-rec.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="Progress_ID" value="<?= htmlspecialchars($progress['ID']) ?>">
-                <input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
-                <input type="hidden" name="Product_Name" value="<?= htmlspecialchars($progress['Product_Name']) ?>">
-
-                <div class="form-group">
-                    <label >User:</label>
-                   <input type="text" class="form-control" value="<?= htmlspecialchars($progress['User_Name']) ?>" readonly>
-                    <input type="hidden" name="User_ID" value="<?= htmlspecialchars($progress['User_ID']) ?>">
-                </div>
-                <div class="form-group">
-                    <label >Product Name:</label>
-                   <input type="text" class="form-control" value="<?= htmlspecialchars($progress['Product_Name']) ?>" readonly>
-                    <input type="hidden" name="Product_ID" value="<?= htmlspecialchars($progress['Product_ID'] ?? '') ?>">
-                </div>
-               <div class="form-group">
-                    <label >Order Type:</label>
-                   <input type="text" class="form-control" value="<?= htmlspecialchars($orderType) ?>" readonly>
-                </div>
-
-                <div class="form-group">
-                    <label for="Order_Status">Order Status</label>
-                    <select name="Order_Status" id="Order_Status" class="form-control" required>
-                        <?php foreach ($orderStatusLabels as $key => $value): ?>
-                            <option value="<?= htmlspecialchars($key) ?>" <?= $progress['Order_Status'] == $key ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($key . '% - ' . $value) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="Product_Status">Product Status</label>
-                    <select name="Product_Status" id="Product_Status" class="form-control" required>
-                        <?php foreach ($productStatusLabels as $key => $value): ?>
-                            <option value="<?= htmlspecialchars($key) ?>" <?= $progress['Product_Status'] == $key ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($key . '% - ' . $value) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="Total_Price">Total Price</label>
-                    <input type="text" name="Total_Price" id="Total_Price" class="form-control" value="<?= htmlspecialchars(number_format((float)$progress['Total_Price'], 2, '.', '')) ?>" readonly>
-                </div>
-
-                <div class="form-group" id="progress-pic-10">
-                    <label for="Progress_Pic_10">Progress Picture 10%</label>
-                    <input type="file" name="Progress_Pic_10" id="Progress_Pic_10" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-20">
-                    <label for="Progress_Pic_20">Progress Picture 20%</label>
-                    <input type="file" name="Progress_Pic_20" id="Progress_Pic_20" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-30">
-                    <label for="Progress_Pic_30">Progress Picture 30%</label>
-                    <input type="file" name="Progress_Pic_30" id="Progress_Pic_30" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-40">
-                    <label for="Progress_Pic_40">Progress Picture 40%</label>
-                    <input type="file" name="Progress_Pic_40" id="Progress_Pic_40" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-50">
-                    <label for="Progress_Pic_50">Progress Picture 50%</label>
-                    <input type="file" name="Progress_Pic_50" id="Progress_Pic_50" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-60">
-                    <label for="Progress_Pic_60">Progress Picture 60%</label>
-                    <input type="file" name="Progress_Pic_60" id="Progress_Pic_60" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-70">
-                    <label for="Progress_Pic_70">Progress Picture 70%</label>
-                    <input type="file" name="Progress_Pic_70" id="Progress_Pic_70" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-80">
-                    <label for="Progress_Pic_80">Progress Picture 80%</label>
-                    <input type="file" name="Progress_Pic_80" id="Progress_Pic_80" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-90">
-                    <label for="Progress_Pic_90">Progress Picture 90%</label>
-                    <input type="file" name="Progress_Pic_90" id="Progress_Pic_90" class="form-control">
-                </div>
-                <div class="form-group" id="progress-pic-100">
-                    <label for="Progress_Pic_100">Progress Picture 100%</label>
-                    <input type="file" name="Progress_Pic_100" id="Progress_Pic_100" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="Stop_Reason">Stop Progress Reason</label>
-                    <select name="Stop_Reason" id="Stop_Reason" class="form-control">
-                        <option value="">Select Reason</option>
-                        <option value="none">None</option>
-                        <option value="fire">Fire</option>
-                        <option value="flood">Flood</option>
-                        <option value="typhoon">Typhoon</option>
-                        <option value="earthquake">Earthquake</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Update</button>
-                <a href="read-all-progress-form.php" class="btn btn-secondary">Back to List</a>
-            </form>
+        <div>
+            <label>User:</label>
+            <input type="text" value="<?= htmlspecialchars($row['User_Name']) ?>" readonly>
         </div>
-    </section>
- <script>
+
+        <div>
+            <label>Product Name:</label>
+            <input type="text" value="<?= htmlspecialchars($row['Product_Name']) ?>" readonly>
+        </div>
+
+        <div>
+            <label>Order Status:</label>
+            <select name="Order_Status" required>
+                <?php foreach ($statusLabels as $key => $value): ?>
+                    <option value="<?= $key ?>" <?= $row['Order_Status'] == $key ? 'selected' : '' ?>>
+                        <?= "$key% - $value" ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div>
+            <label>Product Status:</label>
+            <select name="Product_Status" required>
+                <?php foreach ($statusLabels as $key => $value): ?>
+                    <option value="<?= $key ?>" <?= $row['Product_Status'] == $key ? 'selected' : '' ?>>
+                        <?= "$key% - $value" ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div>
+            <label>Total Price:</label>
+            <input type="text" name="Total_Price" value="<?= htmlspecialchars(number_format((float)$row['Total_Price'], 2, '.', '')) ?>" readonly>
+        </div>
+
+        <div>
+            <label>Stop Reason:</label>
+            <select name="Stop_Reason">
+                <option value="">None</option>
+                <option value="fire" <?= $row['Stop_Reason'] === 'fire' ? 'selected' : '' ?>>Fire</option>
+                <option value="flood" <?= $row['Stop_Reason'] === 'flood' ? 'selected' : '' ?>>Flood</option>
+                <option value="typhoon" <?= $row['Stop_Reason'] === 'typhoon' ? 'selected' : '' ?>>Typhoon</option>
+                <option value="earthquake" <?= $row['Stop_Reason'] === 'earthquake' ? 'selected' : '' ?>>Earthquake</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Progress Pictures:</label>
+            <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
+                <div>
+                    <label><?= $percentage ?>%:</label>
+                    <input type="file" name="Progress_Pic_<?= $percentage ?>">
+                    <?php if (!empty($row["Progress_Pic_$percentage"])): ?>
+                        <img src="<?= htmlspecialchars($row["Progress_Pic_$percentage"]) ?>" alt="Progress <?= $percentage ?>%" width="100">
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <button type="submit">Update</button>
+    </form>
+    <script>
+        function showProgressPic(picUrl) {
+            const picRow = document.getElementById('progress-pic-row');
+            const picImg = document.getElementById('progress-pic');
+            if (picUrl) {
+                picImg.src = picUrl;
+                picRow.style.display = 'table-row';
+            } else {
+                picRow.style.display = 'none';
+            }
+        }
+
         let sidebar = document.querySelector(".sidebar");
         let sidebarBtn = document.querySelector(".sidebarBtn");
         sidebarBtn.onclick = function () {
             sidebar.classList.toggle("active");
             if (sidebar.classList.contains("active")) {
                 sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else {
-                sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-            }
+            } else sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
         };
 
         document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
             toggle.addEventListener('click', function () {
-                const parent = this.parentElement; // Get the parent <li> of the toggle
-                const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-                parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+                const parent = this.parentElement;
+                const dropdownMenu = parent.querySelector('.dropdown-menu');
+                parent.classList.toggle('active');
 
-                // Toggle the chevron icon rotation
-                const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
+                const chevron = this.querySelector('i');
                 if (parent.classList.contains('active')) {
                     chevron.classList.remove('bx-chevron-down');
-                    chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
+                    chevron.classList.add('bx-chevron-up');
                 } else {
                     chevron.classList.remove('bx-chevron-up');
-                    chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
+                    chevron.classList.add('bx-chevron-down');
                 }
 
-                // Toggle the display of the dropdown menu
                 dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
         });
     </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const productStatusSelect = document.getElementById('Product_Status');
-        const progressPicFields = {
-            10: document.getElementById('progress-pic-10'),
-            20: document.getElementById('progress-pic-20'),
-            30: document.getElementById('progress-pic-30'),
-            40: document.getElementById('progress-pic-40'),
-            50: document.getElementById('progress-pic-50'),
-            60: document.getElementById('progress-pic-60'),
-            70: document.getElementById('progress-pic-70'),
-            80: document.getElementById('progress-pic-80'),
-            90: document.getElementById('progress-pic-90'),
-            100: document.getElementById('progress-pic-100')
-        };
-
-        function updateProgressPicFields() {
-            const selectedStatus = parseInt(productStatusSelect.value);
-            for (const [status, field] of Object.entries(progressPicFields)) {
-                if (parseInt(status) === selectedStatus) {
-                    field.style.display = 'block';
-                } else {
-                    field.style.display = 'none';
-                }
-            }
-        }
-
-        productStatusSelect.addEventListener('change', updateProgressPicFields);
-        updateProgressPicFields(); // Initial call to set the correct visibility on page load
-    });
-</script>
 </body>
 </html>

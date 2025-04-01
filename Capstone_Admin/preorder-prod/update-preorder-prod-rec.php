@@ -74,6 +74,20 @@ try {
             $progressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
             $progressStmt->execute();
 
+            // **Check if both statuses in tbl_progress are 100 and delete if so**
+            $checkProgressQuery = "SELECT Order_Status, Product_Status FROM tbl_progress WHERE Product_ID = :productID AND Order_Type = 'pre_order'";
+            $checkProgressStmt = $pdo->prepare($checkProgressQuery);
+            $checkProgressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+            $checkProgressStmt->execute();
+            $progressData = $checkProgressStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($progressData && $progressData['Order_Status'] == 100 && $progressData['Product_Status'] == 100) {
+                $deleteProgressQuery = "DELETE FROM tbl_progress WHERE Product_ID = :productID AND Order_Type = 'pre_order'";
+                $deleteProgressStmt = $pdo->prepare($deleteProgressQuery);
+                $deleteProgressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+                $deleteProgressStmt->execute();
+            }
+
             // Redirect to the list page after successful update
             header("Location: read-all-preorder-prod-form.php");
             exit();

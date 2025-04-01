@@ -165,6 +165,21 @@ if (($oldOrderStatus == 100 && $orderStatus != 100) ) {
     $stmt->bindParam(':readyMadeOrderID', $readyMadeOrderID, PDO::PARAM_INT);
     $stmt->execute();
 }
+
+// **Check if both statuses in tbl_progress are 100 and delete if so**
+$checkProgressQuery = "SELECT Order_Status, Product_Status FROM tbl_progress WHERE Product_ID = :productID AND Order_Type = 'ready_made'";
+$checkProgressStmt = $pdo->prepare($checkProgressQuery);
+$checkProgressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+$checkProgressStmt->execute();
+$progressData = $checkProgressStmt->fetch(PDO::FETCH_ASSOC);
+
+if ($progressData && $progressData['Order_Status'] == 100 && $progressData['Product_Status'] == 100) {
+    $deleteProgressQuery = "DELETE FROM tbl_progress WHERE Product_ID = :productID AND Order_Type = 'ready_made'";
+    $deleteProgressStmt = $pdo->prepare($deleteProgressQuery);
+    $deleteProgressStmt->bindParam(':productID', $productID, PDO::PARAM_INT);
+    $deleteProgressStmt->execute();
+}
+
 // Redirect back to the ready-made orders list
 header("Location: read-all-readymade-form.php");
 exit();

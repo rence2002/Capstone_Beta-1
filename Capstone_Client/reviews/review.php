@@ -1,28 +1,42 @@
 <?php
 session_start();
+
+// Redirect to login if user is not logged in
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
     header("location: ../index.php");
     exit;
 }
+
+// Include the database connection
 include("../config/database.php");
 
-// Fetch completed products for the current user
-$stmt = $pdo->prepare("
-    SELECT DISTINCT 
-        p.Product_ID,
-        p.Product_Name,
-        p.ImageURL as Product_Image,
-        pr.Order_Type,
-        pr.Order_Status,
-        pr.Product_Status
-    FROM tbl_prod_info p
-    INNER JOIN tbl_progress pr ON p.Product_ID = pr.Product_ID
-    WHERE pr.User_ID = :user_id 
-    AND pr.Order_Status = '100'
-    AND pr.Product_Status = '100'
-");
-$stmt->execute(['user_id' => $_SESSION["user_id"]]);
-$completedProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Check if product_id is passed via query parameter
+$product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : null;
+
+// Fetch product details if product_id is provided
+$product = null;
+if ($product_id) {
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT 
+            p.Product_ID,
+            p.Product_Name
+        FROM tbl_prod_info p
+        INNER JOIN tbl_progress pr ON p.Product_ID = pr.Product_ID
+        WHERE pr.User_ID = :user_id 
+        AND pr.Order_Status = '100'
+        AND pr.Product_Status = '100'
+        AND p.Product_ID = :product_id
+    ");
+    $stmt->execute(['user_id' => $_SESSION["user_id"], 'product_id' => $product_id]);
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // If the product is not valid, redirect back to profile.php
+    if (!$product) {
+        $_SESSION['error'] = "Invalid product selected for review.";
+        header("location: profile.php");
+        exit;
+    }
+}
 
 // Fetch existing reviews with profile pictures
 $reviewStmt = $pdo->prepare("
@@ -34,6 +48,7 @@ $reviewStmt = $pdo->prepare("
 ");
 $reviewStmt->execute();
 $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,33 +65,36 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 <header>
-    <nav class="navbar">
-        <a href="../dashboard/home.php" class="logo">
-            <img src="../static/images/rm raw png.png" alt="" class="logo">
-        </a>
-        <ul class="menu-links">
-            <li class="dropdown">
-                <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../reviews/review.php" class="active">Reviews</a></li>
-            <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
-            <li class="dropdown">
-                <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            </li>
+  <nav class="navbar">
+    <a href="../dashboard/home.php" class="logo">
+      <img src="../static/images/rm raw png.png" alt="" class="logo">
+    </a>
+    <ul class="menu-links">
+      <li class="dropdown">
+        <a href="../dashboard/home.php">Home</a>
+        <ul class="dropdown-menus">
+          <li><a href="#about-section">About</a></li>
+          <li><a href="#contact-section">Contacts</a></li>
+          <li><a href="#offers-section">Offers</a></li>
         </ul>
-        <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
+      </li>
+      <li><a href="../reviews/review.php" class="active">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" >Gallery</a></li>
+      <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
+      <li class="dropdown">
+        <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
+        <ul class="dropdown-menus">
+          <li><a href="../profile/profile.php">Profile</a></li>
+          <li><a href="logout.php">Logout</a></li>
+        </ul>
+
+       
+      </li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+   
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
 </header>
 <main>
     <div class="container">
@@ -88,34 +106,29 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
         </div>
 
-        <?php if (!empty($completedProducts)): ?>
-            <!-- Review Form -->
+        <?php if ($product): ?>
+            <!-- Show review submission form for the selected product -->
             <div class="form-container">
-                <h2>Submit a Review</h2>
+                <h2>Submit Review for <?= htmlspecialchars($product['Product_Name']) ?></h2>
                 <form id="review-form" method="POST" action="submit_review.php" enctype="multipart/form-data">
-                    <select name="product_id" required>
-                        <option value="">Select Product</option>
-                        <?php foreach ($completedProducts as $product): ?>
-                            <option value="<?php echo htmlspecialchars($product['Product_ID']); ?>">
-                                <?php echo htmlspecialchars($product['Product_Name']); ?> 
-                                (<?php echo htmlspecialchars($product['Order_Type']); ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <input type="hidden" name="product_id" value="<?= htmlspecialchars($product['Product_ID']) ?>">
                     <textarea name="review_text" placeholder="Your Review" required></textarea>
-                    <select name="rating" required>
+                    <label for="rating">Rating:</label>
+                    <select name="rating" id="rating" required>
                         <option value="">Select Rating</option>
                         <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <option value="<?php echo $i; ?>"><?php echo $i; ?> Star<?php echo $i > 1 ? 's' : ''; ?></option>
+                            <option value="<?= $i ?>"><?= $i ?> Star<?= $i > 1 ? 's' : '' ?></option>
                         <?php endfor; ?>
                     </select>
+                    <label for="review_image">Upload Images:</label>
                     <input type="file" name="review_image[]" accept="image/*" multiple>
                     <button type="submit">Submit Review</button>
                 </form>
             </div>
-        <?php else: ?>
+        <?php elseif (!$product_id): ?>
+            <!-- Show existing reviews if no product_id is provided -->
             <div class="no-reviews-message">
-                <p>You have not purchased any furniture yet. You can only view other people's reviews.</p>
+                <p>To write a review, please go to your <a href="../profile/profile.php">profile</a> and select a completed order.</p>
             </div>
         <?php endif; ?>
 
@@ -218,6 +231,5 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
         reviewCards.forEach(card => reviews.appendChild(card));
     });
 </script>
-
 </body>
 </html>

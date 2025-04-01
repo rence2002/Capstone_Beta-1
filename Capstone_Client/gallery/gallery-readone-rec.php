@@ -10,6 +10,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
 // Include the database connection
 include("../config/database.php");
 
+// Get the user ID from the session
+$userId = $_SESSION["user_id"];
+
 function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
     try {
         // Log input data for debugging
@@ -18,7 +21,7 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
         // Ensure Order_Type is not empty
         if (empty($orderType)) {
             error_log("Error: Order_Type is empty");
-            return ['success' => false];
+            return ['success' => false, 'message' => 'Order type is empty'];
         }
 
         // Check if the product already exists in the cart for the user
@@ -41,7 +44,7 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
             $updateStmt->execute();
 
             error_log("Cart updated successfully for User ID: $userId, Product ID: $productId");
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Cart updated successfully'];
         } else {
             // Insert a new cart item
             $totalPrice = $quantity * $price;
@@ -55,11 +58,11 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
             $insertStmt->execute();
 
             error_log("Cart saved successfully for User ID: $userId, Product ID: $productId");
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Cart saved successfully'];
         }
     } catch (PDOException $e) {
         error_log("Error in saveToCart: " . $e->getMessage());
-        return ['success' => false];
+        return ['success' => false, 'message' => 'Error saving to cart'];
     }
 }
 
@@ -78,32 +81,35 @@ function saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $tot
         $stmt->execute();
 
         error_log("Order request saved successfully for User ID: $userId, Product ID: $productId");
-        return ['success' => true];
+        return ['success' => true, 'message' => 'Order request saved successfully'];
     } catch (PDOException $e) {
         error_log("Error in saveOrderRequest: " . $e->getMessage());
-        return ['success' => false];
+        return ['success' => false, 'message' => 'Error saving order request'];
     }
 }
 
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Read raw POST data
-    $rawData = file_get_contents('php://input');
-    $data = json_decode($rawData, true); // Decode JSON into an associative array
+    // Get the JSON data from the request body
+    $jsonData = file_get_contents('php://input');
+    $data = json_decode($jsonData, true);
 
-    // Debugging: Log the received data
-    error_log("Raw POST data: " . print_r($data, true));
+    // Check if JSON decoding was successful
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        // Handle JSON decoding error
+        error_log('JSON decoding error: ' . json_last_error_msg());
+        echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+        exit;
+    }
 
-    // Extract required fields
-    $userId = $_SESSION["user_id"];
-    $productId = $data['productId'] ?? null;
-    $quantity = $data['quantity'] ?? null;
-    $orderType = $data['orderType'] ?? 'ready_made'; // Default to 'ready_made'
+    // Extract data from the JSON object
+    $productId = isset($data['productId']) ? intval($data['productId']) : 0;
+    $quantity = isset($data['quantity']) ? intval($data['quantity']) : 0;
+    $orderType = isset($data['orderType']) ? $data['orderType'] : '';
 
-    // Validate required fields
-    if (!$productId || !$quantity) {
-        error_log("Missing required fields: productId or quantity");
-        echo json_encode(['success' => false]);
+    // Validate data
+    if ($productId <= 0 || $quantity <= 0 || empty($orderType)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid data received']);
         exit;
     }
 
@@ -120,40 +126,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Perform stock check for ready-made orders
         if ($orderType === 'ready_made' && $quantity > $stock) {
-            echo json_encode(['success' => false]);
+            echo json_encode(['success' => false, 'message' => 'Not enough stock available']);
             exit;
         }
 
-        // Save the order request or cart entry based on the order type
-        if ($orderType === 'pre_order' || $orderType === 'ready_made') {
+        if ($orderType === 'ready_made' || $orderType === 'pre_order') {
+            // Save to tbl_order_request for pre-orders and ready-made orders
             $response = saveOrderRequest($pdo, $userId, $productId, $quantity, $orderType, $totalPrice);
-
             // Deduct stock only for ready-made orders
             if ($orderType === 'ready_made') {
-                updateStock($pdo, $productId, $quantity);
+                //updateStock($pdo, $productId, $quantity); // You need to define this function
             }
         } elseif ($orderType === 'cart') {
+            // Save to tbl_cart for add-to-cart actions
             $response = saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType);
         } else {
-            echo json_encode(['success' => false]);
+            echo json_encode(['success' => false, 'message' => 'Invalid order type']); // Added message
             exit;
         }
-
+        
+        // Ensure the response is sent back to the client
         echo json_encode($response);
     } else {
-        echo json_encode(['success' => false]);
-    }
-}
-
-function updateStock($pdo, $productId, $quantity) {
-    try {
-        $stmt = $pdo->prepare("UPDATE tbl_prod_info SET Stock = Stock - :quantity WHERE Product_ID = :productId");
-        $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-        $stmt->bindParam(':productId', $productId, PDO::PARAM_INT);
-        $stmt->execute();
-        error_log("Stock updated for Product ID: $productId");
-    } catch (PDOException $e) {
-        error_log("Error updating stock: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Product not found']);
     }
 }
 ?>

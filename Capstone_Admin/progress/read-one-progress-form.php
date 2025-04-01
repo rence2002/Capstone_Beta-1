@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 include '../config/database.php';
 
 // Check if admin is logged in
@@ -24,108 +23,45 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
-// Check if ID and Order Type are set
-if (!isset($_GET['id']) || !isset($_GET['order_type'])) {
-    echo "Invalid request.";
+// Get the Progress_ID from the URL
+if (!isset($_GET['id'])) {
+    echo "Progress ID not specified.";
     exit();
 }
 
 $id = $_GET['id'];
-$orderType = $_GET['order_type'];
 
-// Determine the correct query based on the order type
-switch ($orderType) {
-    case 'custom':
-        $query = "
-            SELECT
-                c.Customization_ID AS ID,
-                c.Furniture_Type AS Product_Name,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                c.Order_Status,
-                c.Product_Status,
-                COALESCE(pr.Price, 0.00) as Total_Price,
-                c.Request_Date,
-                c.Last_Update,
-                c.ProgressPic_10,
-                c.ProgressPic_20,
-                c.ProgressPic_30,
-                c.ProgressPic_40,
-                c.ProgressPic_50,
-                c.ProgressPic_60,
-                c.ProgressPic_70,
-                c.ProgressPic_80,
-                c.ProgressPic_90,
-                c.ProgressPic_100,
-                c.Stop_Reason
-            FROM tbl_customizations c
-            JOIN tbl_user_info u ON c.User_ID = u.User_ID
-            LEFT JOIN tbl_prod_info pr ON c.Product_ID = pr.Product_ID
-            WHERE c.Customization_ID = :id
-        ";
-        break;
-    case 'pre_order':
-        $query = "
-            SELECT
-                po.Preorder_ID AS ID,
-                pr.Product_Name,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                po.Preorder_Status AS Order_Status,
-                po.Product_Status,
-                po.Total_Price,
-                po.Order_Date as Request_Date,
-                po.Order_Date AS Last_Update,
-                po.ProgressPic_10,
-                po.ProgressPic_20,
-                po.ProgressPic_30,
-                po.ProgressPic_40,
-                po.ProgressPic_50,
-                po.ProgressPic_60,
-                po.ProgressPic_70,
-                po.ProgressPic_80,
-                po.ProgressPic_90,
-                po.ProgressPic_100,
-                po.Stop_Reason
-            FROM tbl_preorder po
-            JOIN tbl_user_info u ON po.User_ID = u.User_ID
-            JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-            WHERE po.Preorder_ID = :id
-        ";
-        break;
-    case 'ready_made':
-        $query = "
-            SELECT
-                rmo.ReadyMadeOrder_ID AS ID,
-                pr.Product_Name,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                rmo.Order_Status,
-                rmo.Product_Status,
-                rmo.Total_Price,
-                rmo.Order_Date as Request_Date,
-                rmo.Order_Date AS Last_Update,
-                rmo.Progress_Pic_10,
-                rmo.Progress_Pic_20,
-                rmo.Progress_Pic_30,
-                rmo.Progress_Pic_40,
-                rmo.Progress_Pic_50,
-                rmo.Progress_Pic_60,
-                rmo.Progress_Pic_70,
-                rmo.Progress_Pic_80,
-                rmo.Progress_Pic_90,
-                rmo.Progress_Pic_100,
-                rmo.Stop_Reason
-            FROM tbl_ready_made_orders rmo
-            JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
-            JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-            WHERE rmo.ReadyMadeOrder_ID = :id
-        ";
-        break;
-    default:
-        echo "Invalid order type.";
-        exit();
-}
+// Query to fetch progress record
+$query = "
+    SELECT
+        p.Progress_ID AS ID,
+        pr.Product_Name,
+        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+        p.Order_Type,
+        p.Order_Status,
+        p.Product_Status,
+        p.Total_Price,
+        p.Date_Added AS Request_Date,
+        p.LastUpdate AS Last_Update,
+        p.Progress_Pic_10,
+        p.Progress_Pic_20,
+        p.Progress_Pic_30,
+        p.Progress_Pic_40,
+        p.Progress_Pic_50,
+        p.Progress_Pic_60,
+        p.Progress_Pic_70,
+        p.Progress_Pic_80,
+        p.Progress_Pic_90,
+        p.Progress_Pic_100,
+        p.Stop_Reason
+    FROM tbl_progress p
+    JOIN tbl_user_info u ON p.User_ID = u.User_ID
+    JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+    WHERE p.Progress_ID = :id
+";
 
 $stmt = $pdo->prepare($query);
-$stmt->bindParam(':id', $id);
+$stmt->bindParam(':id', $id, PDO::PARAM_INT);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -134,35 +70,22 @@ if (!$row) {
     exit();
 }
 
-// Order Status Map
+// Map Order Status and Product Status to labels
 $orderStatusLabels = [
     0 => 'Order Received',
     10 => 'Order Confirmed',
-    20 => 'Design Finalization',
-    30 => 'Material Preparation',
-    40 => 'Production Started',
-    50 => 'Mid-Production',
-    60 => 'Finishing Process',
-    70 => 'Quality Check',
-    80 => 'Final Assembly',
-    90 => 'Ready for Delivery',
-    100 => 'Delivered / Completed',
+    20 => 'In Production',
+    30 => '30% Complete',
+    40 => '40% Complete',
+    50 => '50% Complete',
+    60 => '60% Complete',
+    70 => '70% Complete',
+    80 => '80% Complete',
+    90 => '90% Complete',
+    100 => 'Completed'
 ];
 
-// Product Status Map
-$productStatusLabels = [
-    0 => 'Concept Stage',
-    10 => 'Design Approved',
-    20 => 'Material Sourcing',
-    30 => 'Cutting & Shaping',
-    40 => 'Structural Assembly',
-    50 => 'Detailing & Refinements',
-    60 => 'Sanding & Pre-Finishing',
-    70 => 'Final Coating',
-    80 => 'Assembly & Testing',
-    90 => 'Ready for Sale',
-    100 => 'Sold / Installed',
-];
+$productStatusLabels = $orderStatusLabels; // Assuming same mapping
 ?>
 
 <!DOCTYPE html>
@@ -246,81 +169,23 @@ $productStatusLabels = [
  </nav>
 
         <br><br><br>
-        <div class="container_boxes">
-            <form name="frmProgressRec" method="POST" action="">
-                <h4>View Record</h4>
-                <table>
-                    <tr>
-                        <td>ID:</td>
-                        <td><?= htmlspecialchars($row["ID"]) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Order Type:</td>
-                        <td><?= htmlspecialchars($orderType) ?></td>
-                    </tr>
-                    <tr>
-                        <td>User Name:</td>
-                        <td><?= htmlspecialchars($row["User_Name"]) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Product Name:</td>
-                        <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Order Status:</td>
-                        <td><?= htmlspecialchars($orderStatusLabels[$row["Order_Status"]] ?? "Unknown") ?></td>
-                    </tr>
-                    <tr>
-                        <td>Product Status:</td>
-                        <td><?= htmlspecialchars($productStatusLabels[$row["Product_Status"]] ?? "Unknown") ?></td>
-                    </tr>
-                    <tr>
-                        <td>Total Price:</td>
-                        <td><?= number_format((float)$row["Total_Price"], 2, '.', '') ?></td>
-                    </tr>
-                    <tr>
-                        <td>Request Date:</td>
-                        <td><?= htmlspecialchars($row["Request_Date"]) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Last Update:</td>
-                        <td><?= htmlspecialchars($row["Last_Update"]) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Progress Pictures:</td>
-                        <td>
-                            <select id="progress-pic-dropdown" onchange="showProgressPic(this.value)">
-                                <option value="">Select Progress Percentage</option>
-                                <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
-                                    <?php $picKey = "Progress_Pic_$percentage"; ?>
-                                    <?php if (!empty($row[$picKey])): ?>
-                                        <option value="<?= htmlspecialchars($row[$picKey]) ?>"><?= $percentage ?>%</option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr id="progress-pic-row" style="display: none;">
-                        <td colspan="2">
-                            <img id="progress-pic" src="" alt="Progress Picture" style="max-width: 100%; height: auto;">
-                        </td>
-                        </tr>
-                     <!-- New Stop Reason Display -->
-                     <?php if (!empty($row["Stop_Reason"])): ?>
-                        <tr id="stop-reason-row">
-                            <td>Stop Reason:</td>
-                            <td><?= htmlspecialchars($row["Stop_Reason"]) ?></td>
-                        </tr>
-                    <?php endif; ?>
-                </table>
+        <h2>Progress Details</h2>
+<p><strong>Order Type:</strong> <?= htmlspecialchars($row['Order_Type']) ?></p>
+<p><strong>Order Status:</strong> <?= $orderStatusLabels[$row['Order_Status']] ?></p>
+<p><strong>Product Status:</strong> <?= $productStatusLabels[$row['Product_Status']] ?></p>
+<p><strong>Total Price:</strong> <?= htmlspecialchars($row['Total_Price']) ?></p>
+<p><strong>Request Date:</strong> <?= htmlspecialchars($row['Request_Date']) ?></p>
+<p><strong>Last Update:</strong> <?= htmlspecialchars($row['Last_Update']) ?></p>
 
-                <div class="button-container">
-                    <br>
-                    <a href="read-all-progress-form.php" target="_parent" class="buttonBack">Back to List</a>
-                    <a href="update-progress-form.php?id=<?= htmlspecialchars($row["ID"]) ?>&order_type=<?=htmlspecialchars($orderType)?>" target="_parent" class="buttonUpdate">Update Record</a>
-                </div>
-            </form>
-        </div>
+<h3>Progress Pictures</h3>
+<?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
+    <?php $picKey = "Progress_Pic_$percentage"; ?>
+    <?php if (!empty($row[$picKey])): ?>
+        <p><strong><?= $percentage ?>%:</strong> <img src="<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" width="200"></p>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<p><strong>Stop Reason:</strong> <?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></p>
     </section>
 
     <script>

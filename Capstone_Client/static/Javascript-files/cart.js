@@ -23,37 +23,34 @@ $(document).ready(function() {
         updateCartItem(input);
     });
 
-    // Remove button handler
-    $(document).on('click', '.remove-btn', function() {
-        if (!confirm('Are you sure you want to remove this item?')) return;
-    
-        const cartItem = $(this).closest('.cart-item');
-        const cartId = cartItem.data('id');
-    
-        $.ajax({
-            url: 'remove-from-cart.php', // Ensure filename matches your actual file
-            method: 'POST',
-            data: { cart_id: cartId },
-            success: function(response) {
-                if (response.success) {
-                    // Remove item from DOM
-                    cartItem.remove();
-                    
-                    // Check if cart is empty
-                    if ($('.cart-item').length === 0) {
-                        location.reload(); // Full reload for empty cart
-                    } else {
-                        updateCartTotals(); // Update totals without reload
-                    }
+  // Remove button handler
+$(document).on('click', '.remove-btn', function() {
+    const cartItem = $(this).closest('.cart-item');
+    const cartId = cartItem.data('id');
+
+    $.ajax({
+        url: 'remove-from-cart.php', // Ensure filename matches your actual file
+        method: 'POST',
+        data: { cart_id: cartId },
+        success: function(response) {
+            if (response.success) {
+                // Remove item from DOM
+                cartItem.remove();
+                
+                // Check if cart is empty
+                if ($('.cart-item').length === 0) {
+                    location.reload(); // Full reload for empty cart
                 } else {
-                    alert('Error: ' + response.error);
+                    updateCartTotals(); // Update totals without reload
                 }
-            },
-            error: function(xhr) {
-                alert('Server error: ' + xhr.statusText);
             }
-        });
+        },
+        error: function(xhr) {
+            console.error('Server error:', xhr.statusText); // Log error instead of alert
+        }
     });
+});
+
 
     function updateCartItem(input) {
         const cartItem = input.closest('.cart-item');

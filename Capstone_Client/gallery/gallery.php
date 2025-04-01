@@ -41,34 +41,56 @@ try {
 </head>
 <body>
 <header>
-<nav class="navbar">
-      <a href="../dashboard/home.php" class="logo">
-        <img src="../static/images/rm raw png.png" alt=""  class="logo">
-      </a>
-        <ul class="menu-links">
-            <li class="dropdown">
-                <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../reviews/review.php">Reviews</a></li>
-            <li><a href="../gallery/gallery.php" class="active">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
-            <ul class="menu-links">
-            <li class="dropdown">
-            <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+  <nav class="navbar">
+    <a href="../dashboard/home.php" class="logo">
+      <img src="../static/images/rm raw png.png" alt="" class="logo">
+    </a>
+    <ul class="menu-links">
+      <li class="dropdown">
+        <a href="../dashboard/home.php">Home</a>
+        <ul class="dropdown-menus">
+          <li><a href="#about-section">About</a></li>
+          <li><a href="#contact-section">Contacts</a></li>
+          <li><a href="#offers-section">Offers</a></li>
         </ul>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
+      </li>
+      <li><a href="../reviews/review.php">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" class="active">Gallery</a></li>
+      <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
+      <li class="dropdown">
+        <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
+        <ul class="dropdown-menus">
+          <li><a href="../profile/profile.php">Profile</a></li>
+          <li><a href="logout.php">Logout</a></li>
+        </ul>
+
+       
+      </li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+   
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
 </header>
+
+
+
+
+<!-- <header>
+  <nav class="navbar">
+    <a href="#" class="logo">RM BETIS FURNITURE</a>
+    <ul class="menu-links">
+      <li><a href="Home.html">Home</a></li>
+      <li><a href="#">Reviews</a></li>
+      <li><a href="Gallery.html">Gallery</a></li>
+      <li><a href="cart.html" class="cart" id="cart">Cart</a>
+      </li>
+      <li><a href="/html-files/Profile.html" class="profile" id="sign_in">Profile</a></li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
+</header> -->
 
 <main>
     <div class="hero-section">

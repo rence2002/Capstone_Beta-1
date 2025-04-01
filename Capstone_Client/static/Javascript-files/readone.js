@@ -2,19 +2,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get the product ID from the URL
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('product_id');
+    const stock = parseInt(document.getElementById("stock").textContent);
 
     // Initialize quantity to 1
     let quantity = 1;
     document.getElementById('quantity').textContent = quantity;
 
     // Plus button click event
-    document.getElementById('plus-btn').addEventListener('click', () => {
-        quantity++;
-        document.getElementById('quantity').textContent = quantity;
+    document.getElementById('plus-btn')?.addEventListener('click', () => {
+        if (quantity < stock) {
+            quantity++;
+            document.getElementById('quantity').textContent = quantity;
+        }
     });
 
     // Minus button click event
-    document.getElementById('minus-btn').addEventListener('click', () => {
+    document.getElementById('minus-btn')?.addEventListener('click', () => {
         if (quantity > 1) {
             quantity--;
             document.getElementById('quantity').textContent = quantity;
@@ -23,6 +26,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to send order data to the server
     async function sendOrder(orderType) {
+        if (quantity === 0) {
+            showModal("Error", "Please select a quantity.");
+            return;
+        }
         try {
             // Prepare data to send to the server
             const data = {
@@ -30,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 quantity: quantity,
                 orderType: orderType
             };
-
             console.log(`${orderType.charAt(0).toUpperCase() + orderType.slice(1)} clicked`);
             console.log('Data being sent:', data);
 
@@ -41,13 +47,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify(data)
             });
 
-            // Log raw response for debugging
-            const rawResponse = await response.text();
-            console.log('Raw server response:', rawResponse);
+            // Parse the response
+            const result = await response.json();
+            console.log('Server response:', result);
 
-            const result = JSON.parse(rawResponse);
             if (result.success) {
-                showOrderConfirmationModal(); // Show confirmation modal
+                // Show confirmation modal or notification
+                showOrderConfirmation(orderType);
             } else {
                 throw new Error(result.message || `Failed to process ${orderType}.`);
             }
@@ -56,57 +62,81 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Buy Now Button Handler
-    document.getElementById('buy-now')?.addEventListener('click', () => {
-        if (quantity > 0) {
-            sendOrder('ready_made');
-        } else {
-            showModal('Error', 'Please select a valid quantity.');
-        }
+    // Add to Cart Button
+    document.getElementById('add-to-cart')?.addEventListener('click', function () {
+        sendOrder('cart');
     });
 
-    // Add to Cart Button Handler
-    document.getElementById('add-to-cart')?.addEventListener('click', () => {
-        if (quantity > 0) {
-            sendOrder('cart');
-        } else {
-            showModal('Error', 'Please select a valid quantity.');
-        }
+    // Pre-Order Button
+    document.getElementById('pre-order')?.addEventListener('click', function () {
+        sendOrder('pre_order');
     });
 
-    // Pre-order Button Handler
-    document.getElementById('pre-order')?.addEventListener('click', () => {
-        if (quantity > 0) {
-            sendOrder('pre_order');
-        } else {
-            showModal('Error', 'Please select a valid quantity.');
-        }
+    // Buy Now Button
+    document.getElementById('buy-now')?.addEventListener('click', function () {
+        sendOrder('ready_made');
     });
 
-    // Image slider functionality remains unchanged
-    const sliderContainer = document.querySelector('.image-slider');
-    const sliderImages = document.querySelectorAll('.product-image');
-    const prevButton = document.querySelector('.prev-btn');
-    const nextButton = document.querySelector('.next-btn');
-    let currentIndex = 0;
+    // Close modals when OK buttons are clicked
+    document.getElementById('pre-order-ok-button')?.addEventListener('click', function () {
+        document.getElementById('pre-order-modal').style.display = 'none';
+    });
 
-    function showImage(index) {
-        sliderImages.forEach(img => img.classList.remove('active'));
-        sliderImages[index].classList.add('active');
+    document.getElementById('buy-now-ok-button')?.addEventListener('click', function () {
+        document.getElementById('buy-now-modal').style.display = 'none';
+    });
+
+    // Close modals if the user clicks outside the modal content
+    window.addEventListener('click', function (event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+
+    // Function to show the confirmation modal or notification
+    function showOrderConfirmation(orderType) {
+        if (orderType === 'cart') {
+            // Create a notification element for "Add to Cart"
+            const notification = document.createElement('div');
+            notification.classList.add('notification');
+            notification.textContent = 'The product has been successfully added to your cart.';
+            document.body.appendChild(notification);
+            // Automatically remove the notification after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        } else {
+            // Show modal for "Pre-Order" or "Buy Now"
+            let modalId = '';
+            let modalMessage = '';
+            if (orderType === 'ready_made') {
+                modalId = 'buy-now-modal';
+                modalMessage = 'Your order has been submitted and is now under review.';
+            } else if (orderType === 'pre_order') {
+                modalId = 'pre-order-modal';
+                modalMessage = 'Your pre-order request has been submitted and is now under review.';
+            }
+    
+            const confirmationModal = document.getElementById(modalId);
+            console.log(`Modal ID: ${modalId}, Modal Element:`, confirmationModal); // Debugging statement
+    
+            if (!confirmationModal) {
+                console.error('Confirmation modal not found!');
+                return;
+            }
+    
+            // Update modal content dynamically
+            confirmationModal.querySelector('p').textContent = modalMessage;
+    
+            // Display the modal
+            confirmationModal.style.display = 'block';
+            console.log(`Modal displayed: ${modalId}`); // Debugging statement
+        }
+    
     }
-
-    function prevImage() {
-        currentIndex = (currentIndex - 1 + sliderImages.length) % sliderImages.length;
-        showImage(currentIndex);
-    }
-
-    function nextImage() {
-        currentIndex = (currentIndex + 1) % sliderImages.length;
-        showImage(currentIndex);
-    }
-
-    prevButton.addEventListener('click', prevImage);
-    nextButton.addEventListener('click', nextImage);
 
     // Modal functionality
     function showModal(title, message) {
@@ -126,29 +156,10 @@ document.addEventListener('DOMContentLoaded', function () {
         closeModal.addEventListener('click', () => {
             modal.remove();
         });
-
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.remove();
             }
         });
-    }
-
-    // Function to show the confirmation modal
-    function showOrderConfirmationModal() {
-        const confirmationModal = document.getElementById('order-confirmation-modal');
-        if (!confirmationModal) {
-            console.error('Confirmation modal not found!');
-            return;
-        }
-        confirmationModal.style.display = 'block';
-
-        // Handle OK button in confirmation modal
-        document.getElementById('confirm-ok-button').onclick = () => {
-            confirmationModal.style.display = 'none'; // Hide confirmation modal
-
-            // Reload the current page instead of redirecting to gallery.php
-            window.location.reload(); // Stay on gallery-readone.php
-        };
     }
 });

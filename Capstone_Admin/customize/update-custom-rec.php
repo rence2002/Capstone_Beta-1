@@ -125,6 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $progressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
             $progressStmt->execute();
 
+            // **Check if both statuses in tbl_progress are 100 and delete if so**
+            $checkProgressQuery = "SELECT Order_Status, Product_Status FROM tbl_progress WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
+            $checkProgressStmt = $pdo->prepare($checkProgressQuery);
+            $checkProgressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
+            $checkProgressStmt->execute();
+            $progressData = $checkProgressStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($progressData && $progressData['Order_Status'] == 100 && $progressData['Product_Status'] == 100) {
+                $deleteProgressQuery = "DELETE FROM tbl_progress WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
+                $deleteProgressStmt = $pdo->prepare($deleteProgressQuery);
+                $deleteProgressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
+                $deleteProgressStmt->execute();
+            }
+
             header("Location: read-all-custom-form.php?message=Record updated successfully");
             exit();
         } else {

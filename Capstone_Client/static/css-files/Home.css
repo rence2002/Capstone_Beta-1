@@ -725,7 +725,7 @@ a.button:hover {
     justify-content: flex-end;
     padding: 75px 4px 0;
     transition: right 0.2s ease;
-    z-index: 100; 
+    z-index: 1000; 
    
   }
   header.show-mobile-menu .navbar .menu-links {
@@ -894,5 +894,6 @@ a.button:hover {
   height: 24rem;
 }
 }
+
 
 

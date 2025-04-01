@@ -58,8 +58,11 @@
 
 .container .products-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(25rem, max-content));
   gap: 10px;
+  justify-content: start; 
+  max-width: 104rem; /* Ensures grid doesn't stretch too wide */
+  margin: 0 auto; /* Centers the grid */
 }
 
 .container .products-container .product {
@@ -70,6 +73,7 @@
   outline: .1rem solid #ccc;
   outline-offset: -1.5rem;
   cursor: pointer;
+  margin: 0;
 }
 .product{
   max-width: 25rem;
@@ -506,6 +510,13 @@
   height: 30px;
   font-size: 12px;
 }
+
+#submit-button{
+  width: 100px;
+  height: 30px;
+  font-size: 12px;
+}
+
 
 
 

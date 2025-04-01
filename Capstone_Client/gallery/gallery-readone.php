@@ -61,33 +61,36 @@ if (!$product) {
 
 <body>
 <header>
-<nav class="navbar">
-      <a href="home.php" class="logo">
-        <img src="../static/images/rm raw png.png" alt=""  class="logo">
-      </a>
-        <ul class="menu-links">
-            <li class="dropdown">
-                <a href="home.php" class="active dropdown-toggle">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../review/review.php">Reviews</a></li>
-            <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
-            <ul class="menu-links">
-            <li class="dropdown">
-            <a href="profile.php" class="profile" id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+  <nav class="navbar">
+    <a href="../dashboard/home.php" class="logo">
+      <img src="../static/images/rm raw png.png" alt="" class="logo">
+    </a>
+    <ul class="menu-links">
+      <li class="dropdown">
+        <a href="../dashboard/home.php">Home</a>
+        <ul class="dropdown-menus">
+          <li><a href="#about-section">About</a></li>
+          <li><a href="#contact-section">Contacts</a></li>
+          <li><a href="#offers-section">Offers</a></li>
         </ul>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
+      </li>
+      <li><a href="../reviews/review.php">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" class="active">Gallery</a></li>
+      <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
+      <li class="dropdown">
+        <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
+        <ul class="dropdown-menus">
+          <li><a href="../profile/profile.php">Profile</a></li>
+          <li><a href="logout.php">Logout</a></li>
+        </ul>
+
+       
+      </li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+   
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
 </header>
 
 <main>
@@ -165,23 +168,79 @@ if (!$product) {
     </div>
 </main>
 
-    <footer class="footer">
-       <!-- Your footer code here -->
-    </footer>
-    
-<!-- Order Confirmation Modal -->
-<div id="order-confirmation-modal" class="modal" style="display: none;">
+<footer class="footer">
+    <div class="footer-row">
+        <div class="footer-col">
+            <h4>Info</h4>
+            <ul class="links">
+                <li><a href="home.php">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="Gallery.php">Gallery</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Explore</h4>
+            <ul class="links">
+                <li><a href="#">Free Designs</a></li>
+                <li><a href="#">Latest Designs</a></li>
+                <li><a href="#">Themes</a></li>
+                <li><a href="#">Popular Designs</a></li>
+                <li><a href="#">Art Skills</a></li>
+                <li><a href="#">New Uploads</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <ul class="links">
+                <li><a href="#">Customer Agreement</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">GDPR</a></li>
+                <li><a href="#">Security</a></li>
+                <li><a href="#">Testimonials</a></li>
+                <li><a href="#">Media Kit</a></li>
+            </ul>
+        </div>
+        <div class="icons">
+            <i class="fa-brands fa-facebook-f"></i>
+            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-linkedin"></i>
+            <i class="fa-brands fa-github"></i>
+        </div>
+    </div>
+</footer>
+
+<!-- Pre-Order Modal -->
+<div id="pre-order-modal" class="modal" style="display: none;">
     <div class="modal-content">
-        <h2>Order Confirmation</h2>
-        <p>Your order has been successfully submitted and is now under review.</p>
-        <button id="confirm-ok-button">OK</button>
+        <h2>Pre-Order Confirmation</h2>
+        <p>Your pre-order request has been submitted and is now under review.</p>
+        <div class="modal-buttons">
+            <button id="pre-order-ok-button">OK</button>
+            <a href="../profile/profile.php#pending-orders" class="btn btn-primary">View Pending Orders</a>
+        </div>
     </div>
 </div>
+
+<!-- Buy Now Modal -->
+<div id="buy-now-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Order Confirmation</h2>
+        <p>Your order has been submitted and is now under review.</p>
+        <div class="modal-buttons">
+            <button id="buy-now-ok-button">OK</button>
+            <a href="../profile/profile.php#pending-orders" class="btn btn-primary">View Pending Orders</a>
+        </div>
+    </div>
+</div>
+
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="../static/Javascript-files/script.js"></script>
     <script src="../static/Javascript-files/readone.js">
     
+
+    
 </script>
+
 </body>
 
 </html>
