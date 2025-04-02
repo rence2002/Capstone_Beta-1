@@ -69,7 +69,7 @@ if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
     }
 
     if (move_uploaded_file($_FILES["filePic"]["tmp_name"], $targetFilePath)) {
-        $picPath = "uploads/admin/" . $fileName; // Save the relative path
+        $picPath = "../uploads/admin/" . $fileName; // Save the relative path
     } else {
         die("Error: Failed to upload file.");
     }

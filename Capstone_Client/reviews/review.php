@@ -21,19 +21,18 @@ if ($product_id) {
             p.Product_ID,
             p.Product_Name
         FROM tbl_prod_info p
-        INNER JOIN tbl_progress pr ON p.Product_ID = pr.Product_ID
-        WHERE pr.User_ID = :user_id 
-        AND pr.Order_Status = '100'
-        AND pr.Product_Status = '100'
+        INNER JOIN tbl_purchase_history ph ON p.Product_ID = ph.Product_ID
+        WHERE ph.User_ID = :user_id 
+        AND ph.Order_Status = '100'
+        AND ph.Product_Status = '100'
         AND p.Product_ID = :product_id
     ");
     $stmt->execute(['user_id' => $_SESSION["user_id"], 'product_id' => $product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // If the product is not valid, redirect back to profile.php
     if (!$product) {
         $_SESSION['error'] = "Invalid product selected for review.";
-        header("location: profile.php");
+        header("location: ../profile/profile.php");
         exit;
     }
 }
@@ -115,7 +114,7 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
                     <textarea name="review_text" placeholder="Your Review" required></textarea>
                     <label for="rating">Rating:</label>
                     <select name="rating" id="rating" required>
-                        <option value="">Select Rating</option>
+                        <option value="">Select Rating</option
                         <?php for ($i = 1; $i <= 5; $i++): ?>
                             <option value="<?= $i ?>"><?= $i ?> Star<?= $i > 1 ? 's' : '' ?></option>
                         <?php endfor; ?>
@@ -166,12 +165,7 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
                         ?>
                         <p><?php echo htmlspecialchars($review['Review_Text']); ?></p>
                     </div>
-                    <!-- Add Edit Button for the Logged-In User -->
-                    <?php if ($review['User_ID'] === $_SESSION["user_id"]): ?>
-                        <div class="edit-button">
-                            <a href="edit_review.php?review_id=<?php echo htmlspecialchars($review['Review_ID']); ?>">Edit</a>
-                        </div>
-                    <?php endif; ?>
+                    
                 </div>
             <?php endforeach; ?>
         </div>

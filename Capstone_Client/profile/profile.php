@@ -116,7 +116,8 @@ try {
 // Fetch purchase history data from tbl_purchase_history
 try {
     $stmt = $pdo->prepare("
-        SELECT ph.*, pr.Product_Name, pr.ImageURL, r.Review_ID
+        SELECT ph.*, pr.Product_Name, pr.ImageURL, 
+        CASE WHEN r.Review_ID IS NOT NULL THEN r.Review_ID ELSE NULL END AS Review_ID
         FROM tbl_purchase_history ph 
         JOIN tbl_prod_info pr ON ph.Product_ID = pr.Product_ID 
         LEFT JOIN tbl_reviews r ON ph.Product_ID = r.Product_ID AND ph.User_ID = r.User_ID
@@ -306,7 +307,17 @@ try {
                 <?php foreach ($purchaseHistoryData as $purchase): ?>
                     <div class="purchase-item">
                         <h3><?= $purchase['Product_Name'] ?> - <?= $purchase['Purchase_Date'] ?></h3>
-                        <img src="<?= $purchase['ImageURL'] ?>" alt="<?= $purchase['Product_Name'] ?>" style="max-width: 100px; height: auto;">
+                        <?php
+                        $imageUrls = explode(',', $purchase['ImageURL']);
+                        foreach ($imageUrls as $imageUrl):
+                            $imageUrl = trim($imageUrl); // Remove any leading/trailing spaces
+                            if (!empty($imageUrl)):
+                        ?>
+                            <img src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>" style="max-width: 100px; height: auto;">
+                        <?php
+                            endif;
+                        endforeach;
+                        ?>
                         <p><strong>Quantity:</strong> <?= $purchase['Quantity'] ?></p>
                         <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
                         <!-- Review Button -->
@@ -317,6 +328,7 @@ try {
                                 <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="btn btn-primary">Write Review</a>
                             <?php endif; ?>
                         </div>
+
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
