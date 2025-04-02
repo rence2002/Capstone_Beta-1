@@ -186,7 +186,7 @@ CREATE TABLE `tbl_order_request` (
   CONSTRAINT `tbl_order_request_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_3` FOREIGN KEY (`Customization_ID`) REFERENCES `tbl_customizations_temp` (`Temp_Customization_ID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_order_request` */
 
@@ -260,8 +260,8 @@ CREATE TABLE `tbl_progress` (
   `Product_ID` int(11) NOT NULL,
   `Product_Name` varchar(255) NOT NULL,
   `Order_Type` varchar(100) NOT NULL,
-  `Order_Status` varchar(100) NOT NULL,
-  `Product_Status` varchar(100) NOT NULL,
+  `Order_Status` int(3) NOT NULL,
+  `Product_Status` int(3) NOT NULL,
   `Quantity` int(11) NOT NULL,
   `Total_Price` decimal(10,2) NOT NULL,
   `Date_Added` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -286,6 +286,8 @@ CREATE TABLE `tbl_progress` (
 
 /*Data for the table `tbl_progress` */
 
+insert  into `tbl_progress`(`Progress_ID`,`User_ID`,`Product_ID`,`Product_Name`,`Order_Type`,`Order_Status`,`Product_Status`,`Quantity`,`Total_Price`,`Date_Added`,`LastUpdate`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`,`Progress_Pic_10`) values (1,'0001',1,'Sofa','ready_made',10,90,1,'2000.00','2025-04-02 12:10:13','2025-04-02 12:32:12','../uploads/progress_pics/67ecbdccda3d8_sofa2.jpg','../uploads/progress_pics/67ecbdccda59b_sofa.jpg','../uploads/progress_pics/67ecbdccda688_ck.png','../uploads/progress_pics/67ecbdccda746_Foam.jpg','../uploads/progress_pics/67ecbdccda804_OC 2.jpg','../uploads/progress_pics/67ecbdccda973_OC 3.jpg','../uploads/progress_pics/67ecbdccdaa64_Office Chair.jpg','../uploads/progress_pics/67ecbdccdab2e_Cover.jpg','../uploads/progress_pics/67ecbdccdabe6_Design.jpg','','../uploads/progress_pics/67ecb8b5c035b_sofa3.jpg');
+
 /*Table structure for table `tbl_purchase_history` */
 
 DROP TABLE IF EXISTS `tbl_purchase_history`;
@@ -306,11 +308,9 @@ CREATE TABLE `tbl_purchase_history` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_purchase_history_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_purchase_history_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_purchase_history` */
-
-insert  into `tbl_purchase_history`(`Purchase_ID`,`User_ID`,`Product_ID`,`Product_Name`,`Quantity`,`Total_Price`,`Order_Type`,`Purchase_Date`,`Order_Status`,`Product_Status`) values (1,'0001',1,'Sofa',1,'2000.00','ready_made','2025-04-02 09:34:29',100,100);
 
 /*Table structure for table `tbl_ready_made_orders` */
 
@@ -345,7 +345,7 @@ CREATE TABLE `tbl_ready_made_orders` (
 
 /*Data for the table `tbl_ready_made_orders` */
 
-insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,1,'0001',1,'2000.00',100,'2025-04-02 09:33:58',100,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,1,'0001',1,'2000.00',10,'2025-04-02 12:10:13',90,'../uploads/progress_pics/67ecb8b5c035b_sofa3.jpg','../uploads/progress_pics/67ecbdccda3d8_sofa2.jpg','../uploads/progress_pics/67ecbdccda59b_sofa.jpg','../uploads/progress_pics/67ecbdccda688_ck.png','../uploads/progress_pics/67ecbdccda746_Foam.jpg','../uploads/progress_pics/67ecbdccda804_OC 2.jpg','../uploads/progress_pics/67ecbdccda973_OC 3.jpg','../uploads/progress_pics/67ecbdccdaa64_Office Chair.jpg','../uploads/progress_pics/67ecbdccdab2e_Cover.jpg','../uploads/progress_pics/67ecbdccdabe6_Design.jpg','');
 
 /*Table structure for table `tbl_reviews` */
 

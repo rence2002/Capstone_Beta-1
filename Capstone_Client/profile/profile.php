@@ -25,7 +25,7 @@ $orderIcons = [
     50  => "<i class='fas fa-cogs'></i>",                // Mid-Production
     60  => "<i class='fas fa-brush'></i>",               // Finishing Process
     70  => "<i class='fas fa-search'></i>",              // Quality Check
-    80  => "<i class='fas fa-tools'></i>",               // Final Assembly
+    80  => "<i class='fas fa-tools'></i>",              // Final Assembly
     90  => "<i class='fas fa-truck'></i>",               // Ready for Delivery
     100 => "<i class='fas fa-flag-checkered'></i>"       // Delivered / Completed
 ];
@@ -101,7 +101,11 @@ try {
 // Fetch progress data from tbl_progress
 try {
     $stmt = $pdo->prepare("
-        SELECT p.*, pr.Product_Name 
+        SELECT p.*, pr.Product_Name,
+               p.Progress_Pic_10, p.Progress_Pic_20, p.Progress_Pic_30,
+               p.Progress_Pic_40, p.Progress_Pic_50, p.Progress_Pic_60,
+               p.Progress_Pic_70, p.Progress_Pic_80, p.Progress_Pic_90,
+               p.Progress_Pic_100
         FROM tbl_progress p 
         JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID 
         WHERE p.User_ID = :userId
@@ -129,6 +133,11 @@ try {
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
+
+echo "<script>\n";
+echo "const orderStatusMap = " . json_encode($orderStatusMap) . ";\n";
+echo "const productStatusLabels = " . json_encode($productStatusLabels) . ";\n";
+echo "</script>\n";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -213,86 +222,85 @@ try {
 
     <!-- Order Status Section -->
     <div class="section-container">
-        <div class="section-header" onclick="toggleSection('order-status')">
-            <h2>Order Status (Furniture Update)</h2>
-            <span class="toggle-icon">▼</span>
-        </div>
-        <div id="order-status" class="section-content">
-            <?php if (empty($progressData)): ?>
-                <p>No available data</p>
-            <?php else: ?>
-                <?php foreach ($progressData as $progress): ?>
-                    <div class="progress-item">
-                        <h3><?= htmlspecialchars($progress['Product_Name']) ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
-                        <div class="stepper-container">
-                            <ol class="stepper">
-                                <?php 
-                                $isActive = true; // Track passed steps
-                                foreach ($orderStatusMap as $status => $label): 
-                                    $stepClass = (($progress['Order_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
-                                    if (($progress['Order_Status'] ?? 0) == $status) {
-                                        $isActive = false; // Stop marking future steps active
-                                    }
-                                ?>
-                                    <li class="updates_text <?= $stepClass ?>" 
-                                        data-toggle="modal" 
-                                        data-target="#progressModal" 
-                                        data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>">
-                                        <span class="step-icon">
-                                            <?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?>
-                                        </span>
-                                        <span class="step-label"><?= htmlspecialchars($label) ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
-                                </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+    <div class="section-header" onclick="toggleSection('order-status')">
+        <h2>Order Status (Furniture Update)</h2>
+        <span class="toggle-icon">▼</span>
     </div>
+    <div id="order-status" class="section-content">
+        <?php if (empty($progressData)): ?>
+            <p>No available data</p>
+        <?php else: ?>
+            <?php foreach ($progressData as $progress): ?>
+                <div class="progress-item">
+                    <h3><?= htmlspecialchars($progress['Product_Name']) ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
+                    <div class="stepper-container">
+                        <ol class="stepper">
+                            <?php 
+                            $isActive = true; // Track passed steps
+                            foreach ($orderStatusMap as $status => $label): 
+                                $stepClass = (($progress['Order_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
+                                if (($progress['Order_Status'] ?? 0) == $status) {
+                                    $isActive = false; // Stop marking future steps active
+                                }
+                            ?>
+                                <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode(['context' => 'order', 'data' => $progress]), ENT_QUOTES, 'UTF-8') ?>">
+                                    <span class="step-icon"><?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
+                                    <span class="step-label"><?= htmlspecialchars($label) ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
 
 
     <!-- Product Status Section -->
-    <div class="section-container">
-        <div class="section-header" onclick="toggleSection('product-status')">
-            <h2>Product Status</h2>
-            <span class="toggle-icon">▼</span>
-        </div>
-        <div id="product-status" class="section-content">
-            <?php if (empty($progressData)): ?>
-                <p>No available data</p>
-            <?php else: ?>
-                <?php foreach ($progressData as $progress): ?>
-                    <div class="progress-item">
-                        <h3><?= $progress['Product_Name'] ?></h3>
-                        <div class="stepper-container">
-                            <ol class="stepper">
-                                <?php 
-                                $isActive = true; // Track passed steps
-                                foreach ($productStatusLabels as $status => $label): 
-                                    $stepClass = (($progress['Product_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
-                                    if (($progress['Product_Status'] ?? 0) == $status) {
-                                        $isActive = false; // Stop marking future steps active
-                                    }
-                                ?>
-                                    <li class="updates_text <?= $stepClass ?>" 
-                                        data-toggle="modal" 
-                                        data-target="#progressModal" 
-                                        data-progress="<?= htmlspecialchars(json_encode($progress), ENT_QUOTES, 'UTF-8') ?>">
-                                        <span class="step-icon">
-                                            <?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?>
-                                        </span>
-                                        <span class="step-label"><?= $label ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+<div class="section-container">
+    <div class="section-header" onclick="toggleSection('product-status')">
+        <h2>Product Status</h2>
+        <span class="toggle-icon">▼</span>
     </div>
+    <div id="product-status" class="section-content">
+        <?php if (empty($progressData)): ?>
+            <p>No available data</p>
+        <?php else: ?>
+            <?php foreach ($progressData as $progress): ?>
+                <div class="progress-item">
+                    <h3><?= $progress['Product_Name'] ?></h3>
+                    <div class="stepper-container">
+                        <ol class="stepper">
+                            <?php 
+                            $isActive = true; // Track passed steps
+                            foreach ($productStatusLabels as $status => $label): 
+                                $stepClass = (($progress['Product_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
+                                if (($progress['Product_Status'] ?? 0) == $status) {
+                                    $isActive = false; // Stop marking future steps active
+                                }
+                                // Get the picture URL for this step
+                                $statusKey = "Progress_Pic_" . $status; // Use $status (step's status)
+                                $progressPicUrl = $progress[$statusKey] ?? null;
+                                $stepData = [
+                                    'context' => 'product',
+                                    'data' => $progress,
+                                    'progressPicUrl' => $progressPicUrl, // Add the picture URL
+                                    'stepStatus' => $status // Add the step status
+                                ];
+                            ?>
+                                <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
+                                    <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
+                                    <span class="step-label"><?= $label ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
 
     <!-- Purchase History Section -->
     <div class="section-container">
@@ -388,7 +396,8 @@ try {
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Order details will be populated here -->
+                <!-- Order/Product details will be populated here -->
+                <div id="orderDetails"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -397,30 +406,96 @@ try {
     </div>
 </div>
 
+
+
+
+
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="../static/Javascript-files/script.js"></script>
-<script>
-    const orderStatusMap = <?= json_encode($orderStatusMap) ?>;
-    const productStatusLabels = <?= json_encode($productStatusLabels) ?>;
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../static/Javascript-files/script.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('.stepper li').click(function() {
+            if ($(this).hasClass('active')) {
+                var stepData = $(this).data('progress');
+                $('#progressModal').data('progress', stepData);
+                $('#progressModal').modal('show');
+            }
+        });
 
-    $('#progressModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var progress = button.data('progress');
-        var modal = $(this);
-        var modalBody = modal.find('.modal-body');
-        var orderDetails = `
-            <p><strong>Product Name:</strong> ${progress.Product_Name}</p>
-            <p><strong>Order Status:</strong> ${orderStatusMap[progress.Order_Status] ?? 'Status Unknown'}</p>
-            <p><strong>Product Status:</strong> ${productStatusLabels[progress.Product_Status] ?? 'Status Unknown'}</p>
-            <p><strong>Quantity:</strong> ${progress.Quantity}</p>
-            <p><strong>Total Price:</strong> ${progress.Total_Price}</p>
-            <p><strong>Order Date:</strong> ${progress.Date_Added}</p>
-        `;
-        modalBody.html(orderDetails);
+        $('#progressModal').on('show.bs.modal', function (event) {
+            var stepData = $(this).data('progress');
+
+            if (typeof stepData !== 'object' || stepData === null) {
+                console.error('Invalid or missing progress data:', stepData);
+                return;
+            }
+
+            console.log('Raw progress data:', stepData);
+
+            var modal = $(this);
+            var modalBody = modal.find('.modal-body');
+            var modalTitle = modal.find('.modal-title');
+
+            var context = stepData.context;
+            var progress = stepData.data;
+            var progressPicUrl = stepData.progressPicUrl; // Get the step-specific picture URL
+            var stepStatus = stepData.stepStatus; // Get the step status
+
+            modalBody.html(''); // Clear the modal body
+            modal.find('#progressPictureContainer').hide(); // Hide the picture container
+            modal.find('#progressPicture').attr('src', ''); // Clear the picture source
+
+            if (context === 'order') {
+                modalTitle.text('Order Details');
+            } else if (context === 'product') {
+                modalTitle.text('Product Details');
+            }
+
+            var pictureHtml = ''; // Initialize picture HTML
+
+            if (progressPicUrl) {
+                // Correct the relative path
+                var basePath = window.location.origin + "/Capstone_Beta/Capstone_Client/uploads/progress_pics/"; // Correct base path
+                var filename = progressPicUrl.split('/').pop(); // Extract the filename
+                var encodedFilename = encodeURIComponent(filename); // Encode the filename
+                var absoluteUrl = basePath + encodedFilename;
+                pictureHtml = `<img src="${absoluteUrl}" alt="Progress Picture" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
+            }
+
+            // Populate modal body based on context
+            if (context === 'order') {
+                var orderDetails = `
+                    ${pictureHtml}
+                    <p><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
+                    <p><strong>Order Status:</strong> ${orderStatusMap[progress.Order_Status] || 'Status Unknown'}</p>
+                    <p><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
+                    <p><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
+                    <p><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
+                `;
+                modalBody.html(orderDetails);
+            } else if (context === 'product') {
+                var productDetails = `
+                    ${pictureHtml}
+                    <p><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
+                    <p><strong>Product Status:</strong> ${productStatusLabels[stepStatus] || 'Status Unknown'}</p>
+                    <p><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
+                    <p><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
+                    <p><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
+                `;
+                modalBody.html(productDetails);
+            }
+        });
     });
+</script>
 
+
+
+
+<script>
+    // Define the toggleSection function
     function toggleSection(sectionId) {
         const section = document.getElementById(sectionId);
         if (section.classList.contains('active')) {
@@ -430,5 +505,6 @@ try {
         }
     }
 </script>
+</body>
 </body>
 </html>

@@ -165,44 +165,38 @@ $productGLB = htmlspecialchars($cart['GLB_File_URL'] ?? "");
 
  </nav>
 
-        <br><br><br>
-        <div class="container">
-            <h2>Cart Details</h2>
-            <table>
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-                <tr><td>Cart ID:</td><td><?php echo $cartID; ?></td></tr>
-                <tr><td>User ID:</td><td><?php echo $userID; ?></td></tr>
-                <tr><td>Product ID:</td><td><?php echo $productID; ?></td></tr>
-                <tr><td>Product Name:</td><td><?php echo $productName; ?></td></tr>
-                <tr><td>Quantity:</td><td><?php echo $quantity; ?></td></tr>
-                <tr><td>Price:</td><td><?php echo $price; ?></td></tr>
-                <tr><td>Total Price:</td><td><?php echo $totalPrice; ?></td></tr>
-                <tr><td>Order Type:</td><td><?php echo ucfirst($orderType); ?></td></tr>
-                <tr><td>Date Added:</td><td><?php echo $dateAdded; ?></td></tr>
-                <tr><td>Product Description:</td><td><?php echo $productDesc; ?></td></tr>
-                <tr><td>Category:</td><td><?php echo $productCategory; ?></td></tr>
-                <tr><td>Stock:</td><td><?php echo $productStock; ?></td></tr>
-                <tr><td>3D Model:</td>
-                    <td>
-                         <?php if (!empty($productGLB)) : ?>
-                         <model-viewer src="<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
-                         <?php else: ?>
-                         No 3D model available
-                         <?php endif; ?>
-
-                    </td></tr>
-
-            </table>
-
-            <div class="button-container">
-                <a href="/Capstone/cart/read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
-                <a href="/Capstone/cart/update-cart-form.php?id=<?php echo $cartID; ?>" target="_parent" class="buttonUpdate">Update Record</a>
-            </div>
-        </div>
-    </section>
+ <br><br><br>
+<div class="container_boxes">
+    <h4>CART DETAILS</h4>
+    <table class="table table-bordered">
+        <tr><th>Field</th><th>Value</th></tr>
+        <tr><td>Cart ID:</td><td><?php echo $cartID; ?></td></tr>
+        <tr><td>User ID:</td><td><?php echo $userID; ?></td></tr>
+        <tr><td>Product ID:</td><td><?php echo $productID; ?></td></tr>
+        <tr><td>Product Name:</td><td><?php echo $productName; ?></td></tr>
+        <tr><td>Quantity:</td><td><?php echo $quantity; ?></td></tr>
+        <tr><td>Price:</td><td><?php echo $price; ?></td></tr>
+        <tr><td>Total Price:</td><td><?php echo $totalPrice; ?></td></tr>
+        <tr><td>Order Type:</td><td><?php echo ucfirst($orderType); ?></td></tr>
+        <tr><td>Date Added:</td><td><?php echo $dateAdded; ?></td></tr>
+        <tr><td>Product Description:</td><td><?php echo $productDesc; ?></td></tr>
+        <tr><td>Category:</td><td><?php echo $productCategory; ?></td></tr>
+        <tr><td>Stock:</td><td><?php echo $productStock; ?></td></tr>
+        <tr><td>3D Model:</td>
+            <td>
+                <?php if (!empty($productGLB)) : ?>
+                    <model-viewer src="<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                <?php else: ?>
+                    No 3D model available
+                <?php endif; ?>
+            </td>
+        </tr>
+    </table>
+    <div class="button-container">
+        <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
+        <a href="update-cart-form.php?id=<?php echo $cartID; ?>" target="_parent" class="buttonUpdate">Update Record</a>
+    </div>
+</div>
 
     <script>
 

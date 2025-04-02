@@ -236,79 +236,86 @@ $statusLabels = [
 
 
 </nav>
-    <br><br><br> <br>
-    <h2>Update Progress</h2>
-    <!-- Update Progress Form -->
-<form action="update-progress-rec.php" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="Progress_ID" value="<?= htmlspecialchars($row['ID']) ?>">
-    <input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
-    
-    <!-- Read-only fields -->
-    <div class="form-group">
-        <label>User:</label>
-        <input type="text" class="form-control" 
-               value="<?= htmlspecialchars($row['User_Name']) ?>" readonly>
-    </div>
-    
-    <div class="form-group">
-        <label>Product Name:</label>
-        <input type="text" class="form-control" 
-               value="<?= htmlspecialchars($row['Product_Name']) ?>" readonly>
-    </div>
-    
-    <!-- Editable fields -->
-    <div class="form-group">
-        <label>Order Status:</label>
-        <select name="Order_Status" class="form-control" required>
-            <?php foreach ($statusLabels as $key => $value): ?>
-                <option value="<?= $key ?>" <?= $row['Order_Status'] == $key ? 'selected' : '' ?>>
-                    <?= "$key% - $value" ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label>Product Status:</label>
-        <select name="Product_Status" class="form-control" required>
-            <?php foreach ($statusLabels as $key => $value): ?>
-                <option value="<?= $key ?>" <?= $row['Product_Status'] == $key ? 'selected' : '' ?>>
-                    <?= "$key% - $value" ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label>Stop Reason:</label>
-        <select name="Stop_Reason" class="form-control">
-            <option value="">None</option>
-            <option value="fire" <?= $row['Stop_Reason'] === 'fire' ? 'selected' : '' ?>>Fire</option>
-            <option value="flood" <?= $row['Stop_Reason'] === 'flood' ? 'selected' : '' ?>>Flood</option>
-            <option value="typhoon" <?= $row['Stop_Reason'] === 'typhoon' ? 'selected' : '' ?>>Typhoon</option>
-            <option value="earthquake" <?= $row['Stop_Reason'] === 'earthquake' ? 'selected' : '' ?>>Earthquake</option>
-        </select>
-    </div>
-    
-    <!-- Progress Pictures Section -->
-    <div class="form-group">
-        <label>Progress Pictures:</label>
-        <?php foreach ([10,20,30,40,50,60,70,80,90,100] as $percentage): ?>
-            <div class="mb-2">
-                <label><?= $percentage ?>%:</label>
-                <input type="file" name="Progress_Pic_<?= $percentage ?>" class="form-control-file">
-                <?php if (!empty($row["Progress_Pic_$percentage"])): ?>
-                    <img src="../<?= htmlspecialchars($row["Progress_Pic_$percentage"]) ?>" 
-                         alt="Progress <?= $percentage ?>%" 
-                         class="img-thumbnail mt-2" 
-                         style="max-width: 200px;">
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
-    
-    <button type="submit" class="btn btn-primary">Update Progress</button>
-</form>
+<br><br><br>
+<div class="container_boxes">
+    <h4>UPDATE PROGRESS</h4>
+    <form action="update-progress-rec.php" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="Progress_ID" value="<?= htmlspecialchars($row['ID']) ?>">
+        <input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
+        
+        <table class="table table-bordered">
+            <tr><th>User</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['User_Name']) ?>" readonly></td></tr>
+            <tr><th>Product Name</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['Product_Name']) ?>" readonly></td></tr>
+            <tr>
+                <th>Order Status</th>
+                <td>
+                    <select name="Order_Status" class="form-control" required>
+                        <?php foreach ($statusLabels as $key => $value): ?>
+                            <option value="<?= $key ?>" <?= $row['Order_Status'] == $key ? 'selected' : '' ?>>
+                                <?= "$key% - $value" ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>Product Status</th>
+                <td>
+                    <select name="Product_Status" class="form-control" required>
+                        <?php foreach ($statusLabels as $key => $value): ?>
+                            <option value="<?= $key ?>" <?= $row['Product_Status'] == $key ? 'selected' : '' ?>>
+                                <?= "$key% - $value" ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>Stop Reason</th>
+                <td>
+                    <select name="Stop_Reason" class="form-control">
+                        <option value="">None</option>
+                        <option value="fire" <?= $row['Stop_Reason'] === 'fire' ? 'selected' : '' ?>>Fire</option>
+                        <option value="flood" <?= $row['Stop_Reason'] === 'flood' ? 'selected' : '' ?>>Flood</option>
+                        <option value="typhoon" <?= $row['Stop_Reason'] === 'typhoon' ? 'selected' : '' ?>>Typhoon</option>
+                        <option value="earthquake" <?= $row['Stop_Reason'] === 'earthquake' ? 'selected' : '' ?>>Earthquake</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        
+        <h3>Progress Pictures</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Progress</th>
+                    <th>Upload Image</th>
+                    <th>Current Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
+                    <?php $picKey = "Progress_Pic_$percentage"; ?>
+                    <tr>
+                        <td><strong><?= $percentage ?>%</strong></td>
+                        <td><input type="file" name="Progress_Pic_<?= $percentage ?>" class="form-control-file"></td>
+                        <td>
+                            <?php if (!empty($row[$picKey])): ?>
+                                <img src="../<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" class="img-thumbnail" style="max-width: 100px;">
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary">Update Progress</button>
+            <a href="read-all-product-form.php" class="buttonBack">Back to List</a>
+        </div>
+    </form>
+</div>
+
     <script>
         function showProgressPic(picUrl) {
             const picRow = document.getElementById('progress-pic-row');

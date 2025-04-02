@@ -41,6 +41,10 @@
   /* background-color: black; */
   padding: 10px;
   align-content: center;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
 }
 
 #amountcart{

@@ -6,18 +6,40 @@ if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
 }
 include("../config/database.php");
 
-// Fetch readymade products
+// Initialize search term
+$searchTerm = "";
+
+// Check if a search term is submitted
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $searchTerm = "%" . $_GET['search'] . "%"; // Add wildcards for LIKE clause
+}
+
+// Fetch readymade products (with search filter)
 try {
-    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock != '0'");
+    $sql = "SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock != '0'";
+    if (!empty($searchTerm)) {
+        $sql .= " AND Product_Name LIKE :searchTerm";
+    }
+    $stmt = $pdo->prepare($sql);
+    if (!empty($searchTerm)) {
+        $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
+    }
     $stmt->execute();
     $readymadeProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
 
-// Fetch pre-order products (Stock = '0')
+// Fetch pre-order products (with search filter)
 try {
-    $stmt = $pdo->prepare("SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock = '0'");
+    $sql = "SELECT * FROM tbl_prod_info WHERE product_type = 'readymade' AND Stock = '0'";
+    if (!empty($searchTerm)) {
+        $sql .= " AND Product_Name LIKE :searchTerm";
+    }
+    $stmt = $pdo->prepare($sql);
+    if (!empty($searchTerm)) {
+        $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
+    }
     $stmt->execute();
     $preorderProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -38,6 +60,26 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <style>
+        .search-form {
+            position: relative;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 40px; /* Adjust as needed */
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            color: #888;
+            font-size: 1.2em;
+        }
+
+        .clear-search.show {
+            display: block; /* Show when there's a search term */
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -63,53 +105,32 @@ try {
           <li><a href="../profile/profile.php">Profile</a></li>
           <li><a href="logout.php">Logout</a></li>
         </ul>
-
-       
       </li>
-      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-    </ul>
-   
-    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-  </nav>
-</header>
-
-
-
-
-<!-- <header>
-  <nav class="navbar">
-    <a href="#" class="logo">RM BETIS FURNITURE</a>
-    <ul class="menu-links">
-      <li><a href="Home.html">Home</a></li>
-      <li><a href="#">Reviews</a></li>
-      <li><a href="Gallery.html">Gallery</a></li>
-      <li><a href="cart.html" class="cart" id="cart">Cart</a>
-      </li>
-      <li><a href="/html-files/Profile.html" class="profile" id="sign_in">Profile</a></li>
       <span id="close-menu-btn" class="material-symbols-outlined">close</span>
     </ul>
     <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
   </nav>
-</header> -->
+</header>
 
 <main>
     <div class="hero-section">
         <div class="content">
             <h1>What Furniture Are You Looking For?</h1>
-            <form action="#" class="search-form">
-                <input type="text" placeholder="Search a type of furniture" required>
+            <form action="" method="GET" class="search-form" id="search-form">
+                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" required value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                <span class="clear-search" id="clear-search">&times;</span>
                 <button type="submit" class="material-symbols-outlined">search</button>
             </form>
         </div>
     </div>
 
     <div class="Show_Rooms">
-        <a href="Showroom.php" class="showroom">Showroom</a>
+        <a href="../showroom/showroom.php" class="showroom">Showroom</a>
         <a href="../static/webxr-measuring-tape-master/measure.html" class="showroom">Measure</a>
     </div>
 
     <!-- Ready Made Section -->
-    <div class="container">
+    <div class="container" id="readymade-products-container">
         <h3 class="title">Ready Made Furnitures</h3>
         <div class="products-container">
             <?php foreach ($readymadeProducts as $product): ?>
@@ -139,7 +160,7 @@ try {
 
     <!-- Pre-order Section -->
     <?php if (!empty($preorderProducts)): ?>
-    <div class="container">
+    <div class="container" id="preorder-products-container">
         <h3 class="title">Pre-order Furnitures</h3>
         <div class="products-container">
             <?php foreach ($preorderProducts as $product): ?>
@@ -172,7 +193,7 @@ try {
     <div class="container">
         <h3 class="title">Customize Now!</h3>
         <p class="explain-cus">
-            Create your personalized furniture! Select options or upload designs. 
+            Create your personalized furniture! Select options or upload designs.
             Our team will help bring your vision to life.
         </p>
     </div>
@@ -505,6 +526,35 @@ try {
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+</script>
+<script>
+    const searchInput = document.getElementById('search-input');
+    const clearSearch = document.getElementById('clear-search');
+    const searchForm = document.getElementById('search-form');
+
+    // Show/hide clear button
+    function toggleClearButton() {
+        if (searchInput.value.trim() !== '') {
+            clearSearch.classList.add('show');
+        } else {
+            clearSearch.classList.remove('show');
+        }
+    }
+
+    // Initial check
+    toggleClearButton();
+
+    // Check on input change
+    searchInput.addEventListener('input', toggleClearButton);
+
+    // Clear search
+    clearSearch.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent form submission
+        searchInput.value = '';
+        clearSearch.classList.remove('show');
+        // Submit the form to clear the search
+        searchForm.submit();
+    });
 </script>
 </body>
 </html>

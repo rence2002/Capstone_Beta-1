@@ -892,11 +892,11 @@ cursor: pointer;
   overflow-y: auto; /* Add scrolling for small screens */
 }
 
-.modal-content {
-  margin: 5% auto; /* Adjust vertical spacing */
+/* .modal-content {
+  margin: 5% auto; 
   max-width: 800px;
   width: 90%;
-}
+} */
 
 .close-modal {
   float: right;
@@ -1048,11 +1048,12 @@ label {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  width: 300px;
   text-align: center;
   position: relative;
+  margin: 15% auto;
+  width: 90%;
+  
 }
-
 .close-modal {
   position: absolute;
   top: 10px;

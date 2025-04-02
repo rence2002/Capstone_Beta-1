@@ -95,6 +95,8 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
+
+    
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="../static/js/dashboard.js"></script>
@@ -167,26 +169,53 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
 
 
  </nav>
-
-        <br><br><br>
-        <h2>Progress Details</h2>
-<p><strong>Order Type:</strong> <?= htmlspecialchars($row['Order_Type']) ?></p>
-<p><strong>Order Status:</strong> <?= $orderStatusLabels[$row['Order_Status']] ?></p>
-<p><strong>Product Status:</strong> <?= $productStatusLabels[$row['Product_Status']] ?></p>
-<p><strong>Total Price:</strong> <?= htmlspecialchars($row['Total_Price']) ?></p>
-<p><strong>Request Date:</strong> <?= htmlspecialchars($row['Request_Date']) ?></p>
-<p><strong>Last Update:</strong> <?= htmlspecialchars($row['Last_Update']) ?></p>
-
-<h3>Progress Pictures</h3>
-<?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
-    <?php $picKey = "Progress_Pic_$percentage"; ?>
-    <?php if (!empty($row[$picKey])): ?>
-        <p><strong><?= $percentage ?>%:</strong> <img src="<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" width="200"></p>
-    <?php endif; ?>
-<?php endforeach; ?>
-
-<p><strong>Stop Reason:</strong> <?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></p>
-    </section>
+ <br><br><br>
+<div class="container_boxes">
+    <h4>PROGRESS DETAILS</h4>
+    <!-- <div class="button-container">
+        <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
+        <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a>
+    </div> -->
+    
+    <table class="table table-bordered">
+        <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
+        <tr><th>Order Status</th><td><?= $orderStatusLabels[$row['Order_Status']] ?></td></tr>
+        <tr><th>Product Status</th><td><?= $productStatusLabels[$row['Product_Status']] ?></td></tr>
+        <tr><th>Total Price</th><td><?= htmlspecialchars($row['Total_Price']) ?></td></tr>
+        <tr><th>Request Date</th><td><?= htmlspecialchars($row['Request_Date']) ?></td></tr>
+        <tr><th>Last Update</th><td><?= htmlspecialchars($row['Last_Update']) ?></td></tr>
+    </table>
+    
+    <h3>Progress Pictures</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Progress</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
+                <?php $picKey = "Progress_Pic_$percentage"; ?>
+                <?php if (!empty($row[$picKey])): ?>
+                    <tr>
+                        <td><strong><?= $percentage ?>%</strong></td>
+                        <td><img src="<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" width="100px" height="auto"></td>
+                    </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    
+    <table class="table table-bordered">
+        <tr><th>Stop Reason</th><td><?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></td></tr>
+    </table>
+    
+    <div class="button-container">
+        <a href="read-all-progress-form.php" class="buttonBack">Back to List</a>
+        <a href="update-progress-form.php?id=<?= $row['ID'] ?>" class="buttonUpdate">Update Record</a>
+    </div>
+</div>
 
     <script>
         function showProgressPic(picUrl) {
