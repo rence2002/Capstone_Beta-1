@@ -19,9 +19,15 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
         error_log("Saving to cart: User ID: $userId, Product ID: $productId, Quantity: $quantity, Price: $price, Order Type: $orderType");
 
         // Ensure Order_Type is not empty
-        if (empty($orderType)) {
-            error_log("Error: Order_Type is empty");
-            return ['success' => false, 'message' => 'Order type is empty'];
+        $orderType = trim($orderType);
+        if (empty($orderType) || !in_array($orderType, ['pre_order', 'ready_made', 'cart'])) {
+            error_log("Error: Invalid or empty Order_Type: $orderType");
+            return ['success' => false, 'message' => 'Invalid or empty Order_Type'];
+        }
+
+        // Map 'cart' to 'ready_made' for database compatibility
+        if ($orderType === 'cart') {
+            $orderType = 'ready_made';
         }
 
         // Check if the product already exists in the cart for the user
@@ -48,6 +54,7 @@ function saveToCart($pdo, $userId, $productId, $quantity, $price, $orderType) {
         } else {
             // Insert a new cart item
             $totalPrice = $quantity * $price;
+
             $insertStmt = $pdo->prepare("INSERT INTO tbl_cart (User_ID, Product_ID, Quantity, Price, Total_Price, Order_Type) VALUES (:userId, :productId, :quantity, :price, :totalPrice, :orderType)");
             $insertStmt->bindParam(':userId', $userId, PDO::PARAM_STR);
             $insertStmt->bindParam(':productId', $productId, PDO::PARAM_INT);
@@ -105,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Extract data from the JSON object
     $productId = isset($data['productId']) ? intval($data['productId']) : 0;
     $quantity = isset($data['quantity']) ? intval($data['quantity']) : 0;
-    $orderType = isset($data['orderType']) ? $data['orderType'] : '';
+    $orderType = isset($data['orderType']) ? trim($data['orderType']) : '';
 
     // Validate data
     if ($productId <= 0 || $quantity <= 0 || empty($orderType)) {
@@ -144,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid order type']); // Added message
             exit;
         }
-        
+
         // Ensure the response is sent back to the client
         echo json_encode($response);
     } else {
