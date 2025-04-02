@@ -45,25 +45,19 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
     <link rel="stylesheet" href="../static/css-files/cart.css">
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
 </head>
-
-
-
-
-
-
 <body>
-
-
-
-<!-- <header>
+<header>
   <nav class="navbar">
     <a href="../dashboard/home.php" class="logo">
       <img src="../static/images/rm raw png.png" alt="" class="logo">
     </a>
-    <ul class="menu-links">
+    <ul class="menu-links no-bootstrap">
       <li class="dropdown">
         <a href="../dashboard/home.php">Home</a>
         <ul class="dropdown-menus">
@@ -72,8 +66,8 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
           <li><a href="#offers-section">Offers</a></li>
         </ul>
       </li>
-      <li><a href="../reviews/review.php" class="">Reviews</a></li>
-      <li><a href="../gallery/gallery.php" >Gallery</a></li>
+      <li><a href="../reviews/review.php">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" class="">Gallery</a></li>
       <li><a href="../cart/cart.php" class="cart activecon" id="cart">Cart</a></li>
       <li class="dropdown">
         <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
@@ -81,43 +75,11 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
           <li><a href="../profile/profile.php">Profile</a></li>
           <li><a href="logout.php">Logout</a></li>
         </ul>
-
-       
       </li>
       <span id="close-menu-btn" class="material-symbols-outlined">close</span>
     </ul>
-   
     <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
   </nav>
-</header> -->
-<header class>
-<nav class="navbar ">
-      <a href="../dashboard/home.php" class="logo">
-        <img src="../static/images/rm raw png.png" alt=""  class="logo">
-      </a>
-        <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-                <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../reviews/review.php">Reviews</a></li>
-            <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart activecon" id="cart">Cart</a></li>
-            <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-            <a href="../profile/profile.php" class="profile  " id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
-        </ul>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
 </header>
 
 <main>

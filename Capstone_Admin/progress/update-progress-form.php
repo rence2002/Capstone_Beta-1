@@ -213,24 +213,16 @@ $statusLabels = [
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-    <?php
-    if (!empty($profilePicPath) && file_exists('../' . $profilePicPath)) {
-        // If the profile picture path exists and the file exists, display the image
-        echo '<img src="../' . htmlspecialchars($profilePicPath) . '" alt="Profile Picture" />';
-    } else {
-        // If the profile picture path is empty or the file does not exist, display a default image
-        echo '<img src="../static/images/default_profile.png" alt="Default Profile Picture" />';
-    }
-    ?>
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <!-- Modified link here -->
-        <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
 
 

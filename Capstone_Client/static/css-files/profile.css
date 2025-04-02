@@ -1,6 +1,6 @@
 .container-profile {
-    height: 150px;
-    width: 100%;
+    height: 20vh; /* Use viewport height */
+    width: 100%; /* Full width */
     background-color: #B99470;
     display: flex;
     justify-content: space-between;
@@ -17,23 +17,23 @@
 }
 
 .profile-icon {
-    width: 150px;
-    height: 150px;
+    width: 15vw; /* Use viewport width */
+    height: 15vw;
+    max-width: 100px; /* Set a max width for large screens */
+    max-height: 100px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #fff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     margin: 10px 10px ;
-    max-width: 100px;
-    max-height: 100px;
     border: 1px solid rgb(255, 255, 255);
     border-radius: 70px;
 }
-.nameofuser{
-  color: white;
-  font-size: 30px;
-  font-weight: 500;
-  margin:10px;
+.nameofuser {
+    font-size: clamp(1.5rem, 2.5vw, 2rem); /* Scales between 1.5rem and 2rem */
+    color: white;
+    font-weight: 500;
+    margin:10px;
 }
 
 .ep--edit{
@@ -314,10 +314,9 @@
 }
 
 .purchase-image {
-    flex: 0 0 100px; /* Reduce from 150px to 100px */
-    width: 100px;
-    height: 100px;
-    margin-right: 15px;
+    width: 100%; /* Full width */
+    height: auto; /* Maintain aspect ratio */
+    max-width: 150px; /* Limit size for larger screens */
 }
 
 .product-thumbnail {
@@ -379,9 +378,8 @@
 
 .details-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
     gap: 10px;
-    margin-top: 10px;
 }
 
 .purchase-details h5 {
@@ -527,7 +525,7 @@
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 10; /* Increase z-index to ensure it appears above other elements */
     left: 0;
     top: 0;
     width: 100%;
@@ -599,7 +597,7 @@
     list-style: none;
     display: flex;
     padding: 0;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     width: 100%;
     position: relative;
     align-items: center;
@@ -700,11 +698,27 @@
 .section-content {
     display: none; /* Initially hidden */
     padding: 10px;
+    /* Set the layout to row */
 }
 
 .purchase-item {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    gap: 10px;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
-    padding: 10px 0;
+}
+
+.purchase-image-div {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    gap: 10px;
+}
+
+.purchase-image {
+    width: 100%; /* Full width */
+    height: auto; /* Maintain aspect ratio */
+    max-width: 150px; /* Limit size for larger screens */
 }
 
 .purchase-item h3 {
@@ -722,8 +736,83 @@
     margin: 5px 0;
 }
 
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+.menu-links {
+    display: flex;
+    gap: 15px;
+}
+@media (max-width: 600px) {
+    .stepper {
+        display: flex;
+        flex-direction: column; /* Stack steps vertically */
+        align-items: center; /* Center the stepper */
+        gap: 40px; /* Add space between steps */
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .stepper li {
+        display: flex;
+        flex-direction: row; /* Align icon and label in a row */
+        align-items: center; /* Center each step */
+        justify-content: center;
+        position: relative;
+        gap: 10px; /* Add spacing between icon and label */
+        margin-left: 100px;
+    }
+
+    /* Vertical progress bar */
+    .stepper li::before {
+        content: "";
+        position: absolute;
+        width: 6px; /* Adjust bar width */
+        height: calc(100% + 40px); /* Ensure bar connects between steps */
+        background-color: #ccc; /* Default gray */
+        top: -20px; /* Align bar properly */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+    }
+
+    /* Hide the bar for the first and last step */
+.stepper li:first-child::before,
+.stepper li:last-child::before {
+    display: none;
+}
+   
+    /* Active vertical bar */
+    .stepper li.active::before {
+        background-color: #B99470; /* Active color */
+    }
+
+    /* Step icon and label are now in a row */
+    .stepper li .step-icon {
+        margin-bottom: 0; /* Remove bottom margin */
+        z-index: 1; /* Lower z-index to avoid overwriting modal */
+    }
+
+    .stepper li .step-label {
+        margin-top: 0; /* Remove top margin */
+        font-size: 14px; /* Adjust font size */
+        text-align: left; /* Align text */
+        max-width: 120px; /* Limit label width */
+        margin-right: 150px;
+        word-wrap: break-word; /* Allow labels to wrap */
+    }
+}
 
 
+@media (max-width: 768px) {
+    .menu-links {
+        flex-direction: column; /* Stack links vertically */
+        gap: 10px;
+    }
+}
 
 @media (max-width: 600px) {
     .stepper {
@@ -746,5 +835,36 @@
         right: auto;
         height: 100vw;
         background: var(--active-b);
+    }
+}
+
+@media (max-width: 768px) {
+    .container-profile {
+        flex-direction: column; /* Stack items vertically */
+        height: auto; /* Adjust height */
+        padding: 10px;
+    }
+    .profile-icon {
+        width: 20vw;
+        height: 20vw;
+    }
+    .nameofuser {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    .purchase-item {
+        flex-direction: column; /* Stack items vertically */
+    }
+    .purchase-image-div {
+        justify-content: center; /* Center images */
+    }
+}
+@media (max-width: 480px) {
+    .profile-icon {
+        width: 25vw;
+        height: 25vw;
+    }
+    .nameofuser {
+        font-size: 1.2rem;
     }
 }

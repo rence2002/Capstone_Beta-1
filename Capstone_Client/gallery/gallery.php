@@ -117,8 +117,8 @@ try {
         <div class="content">
             <h1>What Furniture Are You Looking For?</h1>
             <form action="" method="GET" class="search-form" id="search-form">
-                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" required value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                <span class="clear-search" id="clear-search">&times;</span>
+                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                <!-- <span class="clear-search" id="clear-search">&times;</span> -->
                 <button type="submit" class="material-symbols-outlined">search</button>
             </form>
         </div>
@@ -480,8 +480,8 @@ try {
 </footer>
 
 <!-- Confirmation Modal -->
-<div id="confirmation-modal" class="modal" style="display: none;">
-    <div class="modal-content">
+<div id="confirmation-modal" style="display: none;">
+    <div class="modal-content-logs" >
         <h2>Order Confirmation</h2>
         <p>Your order has been successfully submitted and is now under review.</p>
         <div class="modal-buttons">
@@ -491,8 +491,8 @@ try {
 </div>
 
 <!-- Print Modal -->
-<div id="print-modal" class="modal" style="display: none;">
-    <div class="modal-content">
+<div id="print-modal" style="display: none;">
+    <div class="modal-content-logs">
         <span class="close-modal">&times;</span>
         <h2>Customization Receipt</h2>
         <div id="modal-preview" class="receipt-content"></div>

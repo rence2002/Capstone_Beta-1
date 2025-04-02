@@ -56,56 +56,66 @@
   margin: 0 auto;
 }
 
+/* Products Container */
 .container .products-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(25rem, max-content));
-  gap: 10px;
-  justify-content: start; 
-  max-width: 104rem; /* Ensures grid doesn't stretch too wide */
-  margin: 0 auto; /* Centers the grid */
+  grid-template-columns: repeat(3, 1fr); /* Set grid to 3 columns */
+  gap: 20px; /* Space between product cards */
+  justify-content: center; /* Center the grid */
+  max-width: 100%; /* Ensure it doesn't stretch too wide */
+  margin: 0 auto; /* Center the grid horizontally */
+  padding: 20px; /* Add padding around the grid */
 }
 
+/* Product Card */
 .container .products-container .product {
   text-align: center;
-  padding: 3rem 2rem;
+  padding: 2rem 1.5rem;
   background: #fff;
-  box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
-  outline: .1rem solid #ccc;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  outline: 0.1rem solid #ccc;
   outline-offset: -1.5rem;
   cursor: pointer;
-  margin: 0;
-}
-.product{
-  max-width: 25rem;
+  transition: transform 0.3s ease, outline-offset 0.3s ease;
+  border-radius: 8px; /* Add rounded corners */
 }
 
 .container .products-container .product:hover {
-  outline: .2rem solid #222;
+  outline: 0.2rem solid #222;
   outline-offset: 0;
+  transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
+/* Product Image */
 .container .products-container .product img {
-  height: 25rem;
+  height: auto;
+  max-width: 100%; /* Ensure the image scales properly */
+  border-radius: 5px; /* Add rounded corners to the image */
+  transition: transform 0.3s ease;
 }
 
 .container .products-container .product:hover img {
-  transform: scale(.9);
+  transform: scale(0.95); /* Slightly shrink the image on hover */
 }
 
+/* Product Title */
 .container .products-container .product h3 {
-  padding: .5rem 0;
-  font-size: 1.50rem;
+  padding: 0.5rem 0;
+  font-size: 1.2rem;
   color: #444;
-  font-weight: 100;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 .container .products-container .product:hover h3 {
-  color: #27ae60;
+  color: #27ae60; /* Change color on hover */
 }
 
+/* Product Price */
 .container .products-container .product .price {
-  font-size: 1.50rem;
+  font-size: 1rem;
   color: #444;
+  font-weight: 400;
 }
 
 .view-btn-con {
@@ -118,7 +128,7 @@
   margin-left: auto;
   margin-right: auto;
 }
-.view-btn  {
+.view-btn {
   background-color: rgb(50, 50, 50);
   font-size: 18px;
   font-weight: 400;
@@ -131,8 +141,8 @@
   flex: 1; /* added to occupy the space evenly */
   cursor: pointer; /* added for the mouse pointer */
   text-decoration: none;
- 
 }
+
 
 
 
@@ -650,7 +660,10 @@ cursor: pointer;
   opacity: 1;
   visibility: visible;
   z-index: 2000; 
+  font-size: 1rem; /* Default font size */
 }
+
+
 
 .check-icon {
   margin-left: 5px;
@@ -666,6 +679,19 @@ cursor: pointer;
 
 /* Media Queries */
 @media (max-width: 820px) {
+
+
+  /* Products Container */
+.container .products-container {
+  
+  grid-template-columns: repeat(2, 1fr); /* Set grid to 3 columns 
+}
+
+  .view-btn {
+    font-size: 16px; /* Adjust font size for smaller screens */
+    padding: 8px 8px; /* Adjust padding for smaller screens */
+  }
+
   .products-preview .preview {
      width: 90%;
      max-width: 50rem;
@@ -785,6 +811,7 @@ cursor: pointer;
  
 }
 
+
 @media (max-width: 375px) {
 
 
@@ -870,13 +897,31 @@ cursor: pointer;
 }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .customized-container {
-    grid-template-columns: 1fr; /* One column per row on smaller screens */
+
+
+@media (max-width: 480px) {
+
+  .view-btn {
+    font-size: 14px; /* Further reduce font size for very small screens */
+    padding: 6px 6px; /* Further adjust padding */
+    margin-bottom:10px;
   }
-  .cus-boxed {
-    flex: 1 1 100%; /* One column per row on smaller screens */
+
+  .container .products-container {
+    grid-template-columns: 1fr; /* Single column layout for very small screens */
+    gap: 10px; /* Reduce gap further */
+  }
+
+  .container .products-container .product {
+    padding: 1rem; /* Further reduce padding */
+  }
+
+  .container .products-container .product h3 {
+    font-size: 0.9rem; /* Further reduce font size */
+  }
+
+  .container .products-container .product .price {
+    font-size: 0.8rem; /* Further reduce font size */
   }
 }
 /* Modal Styles */
@@ -983,6 +1028,56 @@ cursor: pointer;
 
 /* Improve mobile responsiveness */
 @media (max-width: 768px) {
+
+
+  .notification {
+    font-size: 0.9rem; /* Slightly smaller font size for tablets */
+    padding: 8px; /* Adjust padding */
+  }
+
+  /* Products Container */
+.container .products-container {
+
+  grid-template-columns: repeat(2, 1fr); /* Set grid to 3 columns 
+}
+}
+
+@media (max-width: 418px) {
+  .notification {
+    font-size: 0.8rem; /* Smaller font size for mobile */
+    padding: 6px; /* Further adjust padding */
+    top: calc(90% - 40px); /* Adjust position for smaller screens */
+  }
+
+  /* Products Container */
+.container .products-container {
+ 
+  grid-template-columns: repeat( 1fr); /* Set grid to 3 columns */
+
+}
+  .customized-container {
+    grid-template-columns: 1fr; /* One column per row on smaller screens */
+  }
+  .cus-boxed {
+    flex: 1 1 100%; /* One column per row on smaller screens */
+  }
+  .container .products-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust columns for smaller screens */
+    gap: 15px; /* Reduce gap between product cards */
+  }
+
+  .container .products-container .product {
+    padding: 1.5rem 1rem; /* Reduce padding for smaller screens */
+  }
+
+  .container .products-container .product h3 {
+    font-size: 1rem; /* Reduce font size for smaller screens */
+  }
+
+  .container .products-container .product .price {
+    font-size: 0.9rem; /* Reduce font size for smaller screens */
+  }
+  
   .customized-container {
       grid-template-columns: 1fr;
       padding: 10px;
@@ -1051,8 +1146,17 @@ label {
   text-align: center;
   position: relative;
   margin: 15% auto;
-  width: 90%;
   
+}
+
+.modal-content-logs{
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  margin: 15% auto;
+  width: 90%;
 }
 .close-modal {
   position: absolute;

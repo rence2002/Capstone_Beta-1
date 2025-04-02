@@ -145,6 +145,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_review'])) {
     <title>Edit Review - RM BETIS FURNITURE</title>
     <link rel="stylesheet" href="../static/css-files/home.css">
     <link rel="stylesheet" href="../static/css-files/review.css">
+    <link rel="stylesheet" href="../static/css-files/edit-review.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <style>
         /* Styling for the Delete Button */
         .delete-button {
@@ -200,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_review'])) {
         <h1>Edit Your Review</h1>
 
         <!-- Edit Review Form -->
+        <div class="form-container">
         <form id="edit-review-form" method="POST" action="edit_review.php?review_id=<?php echo htmlspecialchars($review['Review_ID']); ?>" enctype="multipart/form-data">
             <textarea name="review_text" placeholder="Your Review" required><?php echo htmlspecialchars($review['Review_Text']); ?></textarea>
             <select name="rating" required>
@@ -213,11 +218,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_review'])) {
             <input type="file" name="review_image[]" accept="image/*" multiple>
             <button type="submit">Update Review</button>
         </form>
+        </div>
 
         <!-- Delete Review Button -->
-        <form id="delete-review-form" method="POST" action="edit_review.php?review_id=<?php echo htmlspecialchars($review['Review_ID']); ?>" style="margin-top: 20px;">
+        <!-- <form id="delete-review-form" method="POST" action="edit_review.php?review_id=<?php echo htmlspecialchars($review['Review_ID']); ?>" style="margin-top: 20px;">
             <button type="submit" name="delete_review" class="delete-button">Delete Review</button>
-        </form>
+        </form> -->
     </div>
 </main>
 </body>

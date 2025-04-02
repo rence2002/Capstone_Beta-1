@@ -120,38 +120,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Edit Profile</title>
     <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="../static/css-files/Home.css">
-    <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="../static/css-files/edit-profile.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script src="../static/Javascript-files/script.js"></script>
 </head>
 <body>
-<header class>
-<nav class="navbar ">
-      <a href="../dashboard/home.php" class="logo">
-        <img src="../static/images/rm raw png.png" alt=""  class="logo">
-      </a>
-        <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-                <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../reviews/review.php">Reviews</a></li>
-            <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart " id="cart">Cart</a></li>
-            <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-            <a href="../profile/profile.php" class="profile activecon " id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+
+<header>
+  <nav class="navbar">
+    <a href="../dashboard/home.php" class="logo">
+      <img src="../static/images/rm raw png.png" alt="" class="logo">
+    </a>
+    <ul class="menu-links">
+      <li class="dropdown">
+        <a href="../dashboard/home.php">Home</a>
+        <ul class="dropdown-menus">
+          <li><a href="#about-section">About</a></li>
+          <li><a href="#contact-section">Contacts</a></li>
+          <li><a href="#offers-section">Offers</a></li>
         </ul>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
+      </li>
+      <li><a href="../reviews/review.php">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" class="active">Gallery</a></li>
+      <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
+      <li class="dropdown">
+        <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
+        <ul class="dropdown-menus">
+          <li><a href="../profile/profile.php">Profile</a></li>
+          <li><a href="logout.php">Logout</a></li>
+        </ul>
+      </li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
 </header>
     <main>
     <div class="container-profile">
@@ -204,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="tel" id="mobileNumber" name="mobileNumber" value="<?= htmlspecialchars($user['Mobile_Number'] ?? '') ?>">
                 </div>
                 <div class="form-group password-section">
-                    <h3>Change Password</h3>
                     <div class="form-group">
                         <label for="current_password">Current Password</label>
                         <input type="password" id="current_password" name="current_password">

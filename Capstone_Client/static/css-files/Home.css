@@ -515,27 +515,33 @@ a.button:hover {
 
 /* FOOTER */
 .footer {
-  max-width: 5000px;
+  max-width: 100%;
   width: 100%;
   background-color: #B99470;
+  padding: 40px 20px;
 }
+
 .footer .footer-row {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 3.5rem;
-  padding: 60px;
+  gap: 2rem;
+}
 
+.footer-row .footer-col {
+  flex: 1;
+  min-width: 200px; /* Ensure columns don't shrink too much */
 }
 
 .footer-row .footer-col h4 {
   color: black;
   font-size: 1.2rem;
   font-weight: 400;
+  margin-bottom: 15px;
 }
 
 .footer-col .links {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .footer-col .links li {
@@ -546,6 +552,7 @@ a.button:hover {
 .footer-col .links li a {
   text-decoration: none;
   color: black;
+  font-size: 0.9rem;
 }
 
 .footer-col .links li a:hover {
@@ -556,11 +563,13 @@ a.button:hover {
   margin: 20px 0;
   color: black;
   max-width: 300px;
+  font-size: 0.9rem;
 }
 
 .footer-col form {
   display: flex;
   gap: 5px;
+  flex-wrap: wrap; /* Allow wrapping for smaller screens */
 }
 
 .footer-col input {
@@ -569,7 +578,7 @@ a.button:hover {
   background: none;
   width: 100%;
   outline: none;
-  border: 1px solid #7489C6 ;
+  border: 1px solid #7489C6;
   caret-color: #000000;
   color: black;
   padding-left: 10px;
@@ -579,7 +588,7 @@ a.button:hover {
   color: black;
 }
 
- .footer-col form button {
+.footer-col form button {
   color: black;
   outline: none;
   border: none;
@@ -597,18 +606,70 @@ a.button:hover {
 .footer-col .icons {
   display: flex;
   margin-top: 30px;
-  gap: 30px;
+  gap: 15px;
   cursor: pointer;
+  justify-content: center; /* Center icons */
 }
 
 .footer-col .icons i {
   color: black;
+  font-size: 1.5rem;
 }
 
-.footer-col .icons i:hover  {
-  color: black;
+.footer-col .icons i:hover {
+  color: white;
 }
-/* END FOOTER */
+
+/* RESPONSIVE FOOTER */
+@media screen and (max-width: 768px) {
+  .footer .footer-row {
+    flex-direction: column; /* Stack columns vertically */
+    align-items: center; /* Center align the content */
+    text-align: center;
+  }
+
+  .footer-row .footer-col {
+    flex: none;
+    width: 100%; /* Full width for smaller screens */
+    margin-bottom: 20px; /* Add spacing between columns */
+  }
+
+  .footer-col .icons {
+    justify-content: center; /* Center icons */
+  }
+
+  .footer-col form {
+    flex-direction: column; /* Stack input and button vertically */
+    gap: 10px;
+  }
+
+  .footer-col input,
+  .footer-col form button {
+    width: 100%; /* Full width for input and button */
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .footer {
+    padding: 20px 10px;
+  }
+
+  .footer-row .footer-col h4 {
+    font-size: 1rem;
+  }
+
+  .footer-col p {
+    font-size: 0.8rem;
+  }
+
+  .footer-col .links li a {
+    font-size: 0.8rem;
+  }
+
+  .footer-col .icons i {
+    font-size: 1.2rem;
+  }
+}
 
 
 .profile-container {
@@ -790,7 +851,7 @@ a.button:hover {
  }
  header {
  
-  height: 50px;
+  height: 70px;
 
 }
 

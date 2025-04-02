@@ -96,6 +96,10 @@ if (!$product) {
 <main>
     <div id="single-product-container">
         <div id="single-product-box">
+              <!-- Exit Button -->
+              <button class="exit-button" onclick="window.location.href='gallery.php'">
+                    <i class="fas fa-times"></i>
+                </button>
             <div id="single-product-box-image" class="image-slider">
                 <?php if (!empty($product['ImageURL']) || !empty($product['GLB_File_URL'])) : ?>
                     <?php
@@ -122,10 +126,7 @@ if (!$product) {
                 <?php endif; ?>
             </div>
             <div id="single-product-box-content">
-                <!-- Exit Button -->
-                <button class="exit-button" onclick="window.location.href='gallery.php'">
-                    <i class="fas fa-times"></i>
-                </button>
+              
                 <h1 id="single-product-title"><?= $product['Product_Name'] ?></h1>
                 <p id="single-product-price">₱ <?= number_format($product['Price'], 2) ?></p>
                 <p class="single-product-text">
@@ -235,11 +236,37 @@ if (!$product) {
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="../static/Javascript-files/script.js"></script>
-    <script src="../static/Javascript-files/readone.js">
-    
+    <script src="../static/Javascript-files/readone.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const images = document.querySelectorAll(".product-image");
+            const nextBtn = document.querySelector(".next-btn");
+            const prevBtn = document.querySelector(".prev-btn");
+            let currentIndex = 0;
 
-    
-</script>
+            // Function to update the active image
+            function updateActiveImage(index) {
+                images.forEach((img, i) => {
+                    img.classList.toggle("active", i === index);
+                });
+            }
+
+            // Event listener for the next button
+            nextBtn.addEventListener("click", function () {
+                currentIndex = (currentIndex + 1) % images.length; // Loop back to the first image
+                updateActiveImage(currentIndex);
+            });
+
+            // Event listener for the previous button
+            prevBtn.addEventListener("click", function () {
+                currentIndex = (currentIndex - 1 + images.length) % images.length; // Loop back to the last image
+                updateActiveImage(currentIndex);
+            });
+
+            // Initialize the first image as active
+            updateActiveImage(currentIndex);
+        });
+    </script>
 
 </body>
 

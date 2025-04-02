@@ -147,42 +147,44 @@ echo "</script>\n";
     <title>Profile</title>
     <link rel="stylesheet" href="../static/css-files/Home.css">
     <link rel="stylesheet" href="../static/css-files/profile.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
 </head>
 <body>
-<header class>
-<nav class="navbar ">
-      <a href="../dashboard/home.php" class="logo">
-        <img src="../static/images/rm raw png.png" alt=""  class="logo">
-      </a>
-        <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-                <a href="../dashboard/home.php" class="">Home</a>
-                <ul class="dropdown-menus">
-                    <li><a href="#about-section">About</a></li>
-                    <li><a href="#contact-section">Contacts</a></li>
-                    <li><a href="#offers-section">Offers</a></li>
-                </ul>
-            </li>
-            <li><a href="../reviews/review.php">Reviews</a></li>
-            <li><a href="../gallery/gallery.php">Gallery</a></li>
-            <li><a href="../cart/cart.php" class="cart " id="cart">Cart</a></li>
-            <ul class="menu-links   no-bootstrap">
-            <li class="dropdown">
-            <a href="../profile/profile.php" class="profile activecon  " id="sign_in">Profile</a>
-                <ul class="dropdown-menus">
-                    <li><a href="../profile/profile.php">Profile</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+
+<header>
+  <nav class="navbar">
+    <a href="../dashboard/home.php" class="logo">
+      <img src="../static/images/rm raw png.png" alt="" class="logo">
+    </a>
+    <ul class="menu-links">
+      <li class="">
+        <a href="../dashboard/home.php">Home</a>
+        <ul class="dropdown-menus">
+          <li><a href="#about-section">About</a></li>
+          <li><a href="#contact-section">Contacts</a></li>
+          <li><a href="#offers-section">Offers</a></li>
         </ul>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
-    </nav>
+      </li>
+      <li><a href="../reviews/review.php">Reviews</a></li>
+      <li><a href="../gallery/gallery.php" class="">Gallery</a></li>
+      <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
+      <li class="dropdown">
+        <a href="../profile/profile.php" class="profile activecon" id="sign_in">Profile</a>
+        <ul class="dropdown-menus">
+          <li><a href="../profile/profile.php">Profile</a></li>
+          <li><a href="logout.php">Logout</a></li>
+        </ul>
+      </li>
+      <span id="close-menu-btn" class="material-symbols-outlined">close</span>
+    </ul>
+    <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+  </nav>
 </header>
 <main>
     <div class="container-profile">
@@ -315,17 +317,19 @@ echo "</script>\n";
                 <?php foreach ($purchaseHistoryData as $purchase): ?>
                     <div class="purchase-item">
                         <h3><?= $purchase['Product_Name'] ?> - <?= $purchase['Purchase_Date'] ?></h3>
-                        <?php
-                        $imageUrls = explode(',', $purchase['ImageURL']);
-                        foreach ($imageUrls as $imageUrl):
-                            $imageUrl = trim($imageUrl); // Remove any leading/trailing spaces
-                            if (!empty($imageUrl)):
-                        ?>
-                            <img src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>" style="max-width: 100px; height: auto;">
-                        <?php
-                            endif;
-                        endforeach;
-                        ?>
+                        <div class="purchase-image-div">
+                            <?php
+                            $imageUrls = explode(',', $purchase['ImageURL']);
+                            foreach ($imageUrls as $imageUrl):
+                                $imageUrl = trim($imageUrl); // Remove any leading/trailing spaces
+                                if (!empty($imageUrl)):
+                            ?>
+                                <img class="purchase-image" src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
+                            <?php
+                                endif;
+                            endforeach;
+                            ?>
+                        </div>
                         <p><strong>Quantity:</strong> <?= $purchase['Quantity'] ?></p>
                         <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
                         <!-- Review Button -->
@@ -336,7 +340,6 @@ echo "</script>\n";
                                 <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="btn btn-primary">Write Review</a>
                             <?php endif; ?>
                         </div>
-
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -399,9 +402,9 @@ echo "</script>\n";
                 <!-- Order/Product details will be populated here -->
                 <div id="orderDetails"></div>
             </div>
-            <div class="modal-footer">
+            <!-- <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
