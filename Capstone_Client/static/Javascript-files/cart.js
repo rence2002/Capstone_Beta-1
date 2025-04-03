@@ -23,33 +23,34 @@ $(document).ready(function() {
         updateCartItem(input);
     });
 
-  // Remove button handler
-$(document).on('click', '.remove-btn', function() {
-    const cartItem = $(this).closest('.cart-item');
-    const cartId = cartItem.data('id');
+    // Remove button handler
+    $(document).on('click', '.remove-btn', function() {
+        const cartItem = $(this).closest('.cart-item');
+        const cartId = cartItem.data('id');
 
-    $.ajax({
-        url: 'remove-from-cart.php', // Ensure filename matches your actual file
-        method: 'POST',
-        data: { cart_id: cartId },
-        success: function(response) {
-            if (response.success) {
-                // Remove item from DOM
-                cartItem.remove();
-                
-                // Check if cart is empty
-                if ($('.cart-item').length === 0) {
-                    location.reload(); // Full reload for empty cart
-                } else {
-                    updateCartTotals(); // Update totals without reload
+        $.ajax({
+            url: 'remove-from-cart.php', // Ensure filename matches your actual file
+            method: 'POST',
+            data: { cart_id: cartId },
+            success: function(response) {
+                if (response.success) {
+                    // Remove item from DOM
+                    cartItem.remove();
+
+                    // Check if cart is empty
+                    if ($('.cart-item').length === 0) {
+                        location.reload(); // Full reload for empty cart
+                    } else {
+                        updateCartTotals(); // Update totals without reload
+                    }
                 }
+            },
+            error: function(xhr) {
+                console.error('Server error:', xhr.statusText); // Log error instead of alert
+                showModal('Error', 'Server error. Please try again.', 'readone');
             }
-        },
-        error: function(xhr) {
-            console.error('Server error:', xhr.statusText); // Log error instead of alert
-        }
+        });
     });
-});
 
 
     function updateCartItem(input) {
@@ -71,7 +72,7 @@ $(document).on('click', '.remove-btn', function() {
             data: { cart_id: cartId, quantity: quantity },
             success: updateCartTotals,
             error: function() {
-                alert('Error updating quantity. Reloading...');
+                showModal('Error', 'Error updating quantity. Reloading...', 'readone');
                 location.reload();
             }
         });
@@ -91,36 +92,115 @@ $(document).on('click', '.remove-btn', function() {
         $('#tax').text('₱' + tax.toLocaleString('en-US', { minimumFractionDigits: 2 }));
         $('#total').text('₱' + total.toLocaleString('en-US', { minimumFractionDigits: 2 }));
     }
-});
 
-function proceedToCheckout() {
-    if ($('.cart-item').length === 0) {
-        alert('Your cart is empty!');
-        return;
+    // Modal Functionality
+    function showModal(title, message, type = 'default', callback = null) {
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+
+        let modalContentHTML = '';
+
+        if (type === 'readone') {
+            modalContentHTML = `
+                <div class="modal-content readone-modal">
+                    <button class="exit-button close-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="modal-body">
+                        <h2 class="modal-title">${title}</h2>
+                        <p class="modal-message">${message}</p>
+                        <div class="modal-buttons">
+                            <button class="modal-ok-button close-modal">Cancel</button>
+                            <button class="modal-confirm-button">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            modalContentHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        modal.innerHTML = modalContentHTML;
+        document.body.appendChild(modal);
+        modal.style.display = "block";
+
+        const closeButtons = modal.querySelectorAll('.close-modal');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.remove();
+            });
+        });
+
+        // Handle confirm button click
+        const confirmButton = modal.querySelector('.modal-confirm-button');
+        if (confirmButton) {
+            confirmButton.addEventListener('click', () => {
+                if (callback) {
+                    callback();
+                }
+                modal.remove();
+            });
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
-    if (!confirm('Confirm checkout?')) return;
+    window.showModal = showModal;
 
-    $.ajax({
-        url: 'cart-rec.php', // Verify path to your PHP handler
-        method: 'POST',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                alert('Order placed successfully!');
-                location.reload(); // Refresh to show empty cart
-            } else {
-                alert('Error: ' + response.message);
-            }
-        },
-        error: function(xhr) {
-            try {
-                const res = JSON.parse(xhr.responseText);
-                alert('Server Error: ' + res.message);
-            } catch (e) {
-                alert('Network error. Please try again.');
-            }
+    window.proceedToCheckout = function() {
+        console.log("proceedToCheckout() called"); // Debugging log
+
+        if ($('.cart-item').length === 0) {
+            console.log("Cart is empty"); // Debugging log
+            showModal('Empty Cart', 'Your cart is empty!', 'readone');
+            return;
         }
-    });
-}
 
+        console.log("Cart is not empty, proceeding with checkout"); // Debugging log
+
+        // Show the confirmation modal
+        showModal(
+            'Confirm Checkout',
+            'Are you sure you want to proceed with the checkout?',
+            'readone',
+            function() {
+                // This function will be called if the user clicks "Confirm"
+                console.log("User confirmed checkout");
+                // Proceed with the AJAX request
+                $.ajax({
+                    url: 'cart-rec.php', // Verify path to your PHP handler
+                    method: 'POST',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log("AJAX success:", response); // Debugging log
+                        if (response.success) {
+                            showModal('Success', 'Order placed successfully!', 'readone');
+                            location.reload(); // Refresh to show empty cart
+                        } else {
+                            showModal('Error', 'Error: ' + response.message, 'readone');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX error:", xhr, status, error); // Detailed error log
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            showModal('Error', 'Server Error: ' + res.message, 'readone');
+                        } catch (e) {
+                            showModal('Error', 'Network error. Please try again.', 'readone');
+                        }
+                    }
+                });
+            }
+        );
+    };
+});

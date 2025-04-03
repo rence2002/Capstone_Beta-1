@@ -4,8 +4,15 @@ include("../config/database.php");
 
 header('Content-Type: application/json');
 
+// Check if the user is logged in
 if (!isset($_SESSION["user_id"])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in']);
+    exit;
+}
+
+// Check if the request method is POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
 
@@ -23,6 +30,7 @@ try {
     $stmt->execute(['user_id' => $_SESSION["user_id"]]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Check if the cart is empty
     if (empty($cartItems)) {
         throw new Exception('Cart is empty');
     }
@@ -61,11 +69,17 @@ try {
     // Commit transaction
     $pdo->commit();
 
+    // Return a success response
     echo json_encode(['success' => true, 'message' => 'Orders placed successfully']);
 
 } catch (Exception $e) {
     // Rollback transaction on error
     $pdo->rollBack();
+
+    // Log the error for debugging
+    error_log("Error processing order: " . $e->getMessage());
+
+    // Return an error response
     echo json_encode([
         'success' => false, 
         'message' => 'Error processing order: ' . $e->getMessage()

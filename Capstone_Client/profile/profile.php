@@ -448,8 +448,8 @@ echo "</script>\n";
             var stepStatus = stepData.stepStatus; // Get the step status
 
             modalBody.html(''); // Clear the modal body
-            modal.find('#progressPictureContainer').hide(); // Hide the picture container
-            modal.find('#progressPicture').attr('src', ''); // Clear the picture source
+            // modal.find('#progressPictureContainer').hide(); // Hide the picture container
+            // modal.find('#progressPicture').attr('src', ''); // Clear the picture source
 
             if (context === 'order') {
                 modalTitle.text('Order Details');
@@ -466,6 +466,9 @@ echo "</script>\n";
                 var encodedFilename = encodeURIComponent(filename); // Encode the filename
                 var absoluteUrl = basePath + encodedFilename;
                 pictureHtml = `<img src="${absoluteUrl}" alt="Progress Picture" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
+            }
+            else{
+                pictureHtml = `<p>No Picture Available</p>`;
             }
 
             // Populate modal body based on context
