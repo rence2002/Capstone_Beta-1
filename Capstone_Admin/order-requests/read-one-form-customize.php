@@ -64,7 +64,8 @@ if (isset($_GET['id'])) {
                 c.Tile_Additional_Info,
                 c.Metal_Type,
                 c.Metal_Image_URL,
-                c.Metal_Additional_Info
+                c.Metal_Additional_Info,
+                orq.Order_Status AS Request_Status
             FROM tbl_order_request orq
             JOIN tbl_user_info u ON orq.User_ID = u.User_ID
             LEFT JOIN tbl_customizations_temp c ON orq.Customization_ID = c.Temp_Customization_ID
@@ -105,7 +106,7 @@ if (isset($_GET['id'])) {
             $metalType = htmlspecialchars($orderRequest['Metal_Type']);
             $metalImageURL = htmlspecialchars($orderRequest['Metal_Image_URL']);
             $metalAdditionalInfo = htmlspecialchars($orderRequest['Metal_Additional_Info']);
-            $status = htmlspecialchars($orderRequest['Status']);
+            $status = htmlspecialchars($orderRequest['Request_Status']); // Use the alias
             $requestDate = htmlspecialchars($orderRequest['Request_Date']);
         } else {
             echo "Customization request not found.";
