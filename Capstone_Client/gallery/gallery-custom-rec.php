@@ -30,18 +30,6 @@ foreach ($requiredFields as $field => $label) {
     }
 }
 
-// File validation
-$customFields = ['color', 'texture', 'wood', 'foam', 'cover', 'design', 'tiles', 'metal'];
-foreach ($customFields as $field) {
-    if (($_POST[$field] ?? null) === 'custom') {
-        $fileKey = 'file' . ucfirst($field) . 'Image';
-        if (empty($_FILES[$fileKey]['name'])) {
-            echo json_encode(['success' => false, 'message' => "Image required for custom $field"]);
-            return;
-        }
-    }
-}
-
 // File upload handler
 function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
     if (empty($_FILES[$fileKey]['name'])) return null;
@@ -49,13 +37,13 @@ function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
     $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!in_array($_FILES[$fileKey]['type'], $allowedTypes)) {
         echo json_encode(['success' => false, 'message' => 'Invalid file type']);
-        return;
+        return null;
     }
 
     $maxFileSize = 5 * 1024 * 1024; // 5 MB
     if ($_FILES[$fileKey]['size'] > $maxFileSize) {
         echo json_encode(['success' => false, 'message' => 'File size exceeds the limit']);
-        return;
+        return null;
     }
 
     $filename = uniqid() . '_' . basename($_FILES[$fileKey]['name']);
@@ -64,23 +52,24 @@ function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
     if (!is_dir($uploadDir)) {
         if (!mkdir($uploadDir, 0755, true)) {
             echo json_encode(['success' => false, 'message' => 'Directory creation failed']);
-            return;
+            return null;
         }
     }
 
     if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
         echo json_encode(['success' => false, 'message' => 'File upload failed']);
-        return;
+        return null;
     }
 
-    return $targetFilePath;
+    // Return the web-accessible path
+    return '/Capstone_Beta/Capstone_Client/uploads/custom/' . $filename;
 }
 
 // Collect form data
 $furnitureType = $_POST['furniture'] ?? null;
-$furnitureInfo = $_POST['furniture_info'] ?? null;
+$furnitureInfo = $_POST['furniture-info'] ?? null;
 $standardSize = $_POST['sizes'] ?? null;
-$desiredSize = $_POST['sizes_info'] ?? null;
+$desiredSize = $_POST['sizes-info'] ?? null;
 
 // Process all file uploads
 $colorImage = handleFileUpload('fileColorImage');
@@ -113,8 +102,8 @@ try {
         ) VALUES (
             :userID, :furnitureType, :furnitureInfo,
             :standardSize, :desiredSize, :color, :colorImage,
-            :colorInfo, :texture, :textureImage,
-            :textureInfo, :wood, :woodImage,
+            :colorAdditionalInfo, :texture, :textureImage,
+            :textureAdditionalInfo, :wood, :woodImage,
             :woodInfo, :foam, :foamImage,
             :foamInfo, :cover, :coverImage,
             :coverInfo, :design, :designImage,
@@ -132,28 +121,28 @@ try {
         ':desiredSize' => $desiredSize,
         ':color' => $_POST['color'] ?? null,
         ':colorImage' => $colorImage,
-        ':colorInfo' => $_POST['color_info'] ?? null,
+        ':colorAdditionalInfo' => $_POST['color-info'] ?? null,
         ':texture' => $_POST['texture'] ?? null,
         ':textureImage' => $textureImage,
-        ':textureInfo' => $_POST['texture_info'] ?? null,
+        ':textureAdditionalInfo' => $_POST['texture-info'] ?? null,
         ':wood' => $_POST['wood'] ?? null,
         ':woodImage' => $woodImage,
-        ':woodInfo' => $_POST['wood_info'] ?? null,
+        ':woodInfo' => $_POST['wood-info'] ?? null,
         ':foam' => $_POST['foam'] ?? null,
         ':foamImage' => $foamImage,
-        ':foamInfo' => $_POST['foam_info'] ?? null,
+        ':foamInfo' => $_POST['foam-info'] ?? null,
         ':cover' => $_POST['cover'] ?? null,
         ':coverImage' => $coverImage,
-        ':coverInfo' => $_POST['cover_info'] ?? null,
+        ':coverInfo' => $_POST['cover-info'] ?? null,
         ':design' => $_POST['design'] ?? null,
         ':designImage' => $designImage,
-        ':designInfo' => $_POST['design_info'] ?? null,
+        ':designInfo' => $_POST['design-info'] ?? null,
         ':tiles' => $_POST['tiles'] ?? null,
         ':tilesImage' => $tilesImage,
-        ':tilesInfo' => $_POST['tiles_info'] ?? null,
+        ':tilesInfo' => $_POST['tiles-info'] ?? null,
         ':metal' => $_POST['metal'] ?? null,
         ':metalImage' => $metalImage,
-        ':metalInfo' => $_POST['metal_info'] ?? null
+        ':metalInfo' => $_POST['metal-info'] ?? null
     ]);
 
     $customizationID = $pdo->lastInsertId();
@@ -206,28 +195,28 @@ try {
             'size' => $standardSize === 'custom' ? $desiredSize : $standardSize,
             'color' => $_POST['color'] ?? 'N/A',
             'color_image' => $colorImage,
-            'color_info' => $_POST['color_info'] ?? 'N/A',
+            'color_info' => $_POST['color-info'] ?? 'N/A',
             'texture' => $_POST['texture'] ?? 'N/A',
             'texture_image' => $textureImage,
-            'texture_info' => $_POST['texture_info'] ?? 'N/A',
+            'texture_info' => $_POST['texture-info'] ?? 'N/A',
             'wood' => $_POST['wood'] ?? 'N/A',
             'wood_image' => $woodImage,
-            'wood_info' => $_POST['wood_info'] ?? 'N/A',
+            'wood_info' => $_POST['wood-info'] ?? 'N/A',
             'foam' => $_POST['foam'] ?? 'N/A',
             'foam_image' => $foamImage,
-            'foam_info' => $_POST['foam_info'] ?? 'N/A',
+            'foam_info' => $_POST['foam-info'] ?? 'N/A',
             'cover' => $_POST['cover'] ?? 'N/A',
             'cover_image' => $coverImage,
-            'cover_info' => $_POST['cover_info'] ?? 'N/A',
+            'cover_info' => $_POST['cover-info'] ?? 'N/A',
             'design' => $_POST['design'] ?? 'N/A',
             'design_image' => $designImage,
-            'design_info' => $_POST['design_info'] ?? 'N/A',
+            'design_info' => $_POST['design-info'] ?? 'N/A',
             'tiles' => $_POST['tiles'] ?? 'N/A',
             'tiles_image' => $tilesImage,
-            'tiles_info' => $_POST['tiles_info'] ?? 'N/A',
+            'tiles_info' => $_POST['tiles-info'] ?? 'N/A',
             'metal' => $_POST['metal'] ?? 'N/A',
             'metal_image' => $metalImage,
-            'metal_info' => $_POST['metal_info'] ?? 'N/A',
+            'metal_info' => $_POST['metal-info'] ?? 'N/A',
             'timestamp' => date('Y-m-d H:i:s')
         ]
     ]);

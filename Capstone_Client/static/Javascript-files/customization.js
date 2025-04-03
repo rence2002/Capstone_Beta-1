@@ -1,70 +1,21 @@
 $(document).ready(function () {
     // Toggle custom options visibility
-    function toggleCustomElements(selectElement, wrapperId, imageUploadId, imagePreviewId) {
+    function toggleCustomElements(selectElement, wrapperId) {
         const wrapper = $(`#${wrapperId}`);
-        const imageUpload = $(`#${imageUploadId}`);
-        const imagePreview = $(`#${imagePreviewId}`);
-
         if (selectElement.value === 'custom') {
             wrapper.show();
-            imageUpload.show();
-            imagePreview.show();
         } else {
             wrapper.hide().find('input').val(''); // Clear inputs
-            imageUpload.hide().val(''); // Clear file input
-            imagePreview.hide().empty(); // Clear preview
+            wrapper.find('input[type="file"]').val(''); // Clear file input
+            wrapper.find('.image-preview').empty(); // Clear preview
         }
     }
 
     // Initialize all dropdown handlers
     function initHandlers() {
-        // Color handler
-        $('#color').on('change', function () {
-            toggleCustomElements(this, 'color-custom-options', 'color-file-upload', 'color-image-preview');
-        });
-
-        // Texture handler
-        $('#texture').on('change', function () {
-            toggleCustomElements(this, 'texture-custom-options', 'texture-file-upload', 'texture-image-preview');
-        });
-
-        // Woods handler
-        $('#woods').on('change', function () {
-            toggleCustomElements(this, 'woods-custom-options', 'wood-file-upload', 'wood-image-preview');
-        });
-
-        // Foam handler
-        $('#foam').on('change', function () {
-            toggleCustomElements(this, 'foam-custom-options', 'foam-file-upload', 'foam-image-preview');
-        });
-
-        // Cover handler
-        $('#cover').on('change', function () {
-            toggleCustomElements(this, 'cover-custom-options', 'cover-file-upload', 'cover-image-preview');
-        });
-
-        // Design handler
-        $('#design').on('change', function () {
-            toggleCustomElements(this, 'design-custom-options', 'design-file-upload', 'design-image-preview');
-        });
-
-        // Tiles handler
-        $('#tiles').on('change', function () {
-            toggleCustomElements(this, 'tiles-custom-options', 'tiles-file-upload', 'tiles-image-preview');
-        });
-
-        // Metal handler
-        $('#metal').on('change', function () {
-            toggleCustomElements(this, 'metal-custom-options', 'metal-file-upload', 'metal-image-preview');
-        });
-
-        // Sizes handler
-        $('#sizes').on('change', function () {
-            $('#sizes-custom-options').toggle(this.value === 'custom');
-        });
-
         // Furniture type handler
         $('#furniture').on('change', function () {
+            toggleCustomElements(this, 'furniture-custom-options');
             const furnitureType = $(this).val();
             let sizesOptions = '<option value="" disabled selected>Select one</option>';
 
@@ -104,12 +55,58 @@ $(document).ready(function () {
                         <option value="Twin 38x75 in.">Bed Frame - Twin 38x75 in.</option>
                     `;
                     break;
+                case 'custom':
+                    sizesOptions += `<option value="custom">Custom</option>`;
+                    break;
                 default:
                     sizesOptions = '<option value="" disabled selected>Select one</option>';
             }
 
             // Update sizes dropdown
             $('#sizes').html(sizesOptions).trigger('change');
+        });
+        // Sizes handler
+        $('#sizes').on('change', function () {
+            toggleCustomElements(this, 'sizes-custom-options');
+        });
+        // Color handler
+        $('#color').on('change', function () {
+            toggleCustomElements(this, 'color-custom-options');
+        });
+
+        // Texture handler
+        $('#texture').on('change', function () {
+            toggleCustomElements(this, 'texture-custom-options');
+        });
+
+        // Woods handler
+        $('#woods').on('change', function () {
+            toggleCustomElements(this, 'woods-custom-options');
+        });
+
+        // Foam handler
+        $('#foam').on('change', function () {
+            toggleCustomElements(this, 'foam-custom-options');
+        });
+
+        // Cover handler
+        $('#cover').on('change', function () {
+            toggleCustomElements(this, 'cover-custom-options');
+        });
+
+        // Design handler
+        $('#design').on('change', function () {
+            toggleCustomElements(this, 'design-custom-options');
+        });
+
+        // Tiles handler
+        $('#tiles').on('change', function () {
+            toggleCustomElements(this, 'tiles-custom-options');
+        });
+
+        // Metal handler
+        $('#metal').on('change', function () {
+            toggleCustomElements(this, 'metal-custom-options');
         });
 
         // Image preview setup
@@ -133,6 +130,7 @@ $(document).ready(function () {
 
     // Initialize handlers on page load
     initHandlers();
+    $('#furniture').trigger('change');
 
     // Reset all fields
     $('#reset-button').on('click', function () {

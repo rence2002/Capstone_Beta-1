@@ -448,8 +448,6 @@ echo "</script>\n";
             var stepStatus = stepData.stepStatus; // Get the step status
 
             modalBody.html(''); // Clear the modal body
-            // modal.find('#progressPictureContainer').hide(); // Hide the picture container
-            // modal.find('#progressPicture').attr('src', ''); // Clear the picture source
 
             if (context === 'order') {
                 modalTitle.text('Order Details');
@@ -459,15 +457,14 @@ echo "</script>\n";
 
             var pictureHtml = ''; // Initialize picture HTML
 
-            if (progressPicUrl) {
-                // Correct the relative path
-                var basePath = window.location.origin + "/Capstone_Beta/Capstone_Client/uploads/progress_pics/"; // Correct base path
-                var filename = progressPicUrl.split('/').pop(); // Extract the filename
-                var encodedFilename = encodeURIComponent(filename); // Encode the filename
-                var absoluteUrl = basePath + encodedFilename;
+            // Check if progressPicUrl is not null and not empty
+            if (progressPicUrl && progressPicUrl.trim() !== "") {
+                // Construct the absolute URL correctly
+                var basePath = window.location.origin + "/Capstone_Beta/Capstone_Client/";
+                var absoluteUrl = basePath + progressPicUrl.replace("../", ""); // Remove "../" from the path
+
                 pictureHtml = `<img src="${absoluteUrl}" alt="Progress Picture" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
-            }
-            else{
+            } else {
                 pictureHtml = `<p>No Picture Available</p>`;
             }
 

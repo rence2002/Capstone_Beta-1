@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Product preview functionality
+    // Product preview functionality (unchanged)
     const previewContainer = document.querySelector('.products-preview');
     const previewBox = document.querySelectorAll('.preview');
 
@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Submit Button Handler
-    document.getElementById('submit-button').addEventListener('click', async (e) => {
+    const submitButton = document.getElementById('submit-button');
+    submitButton.addEventListener('click', async (e) => {
         e.preventDefault();
 
         // Validate required fields
@@ -98,11 +99,10 @@ document.addEventListener('DOMContentLoaded', function () {
             fields.forEach(field => {
                 const input = document.querySelector(`[name="${field}"]`);
                 if (input) {
-                    if (input.tagName === 'SELECT') {
-                        const selected = input.options[input.selectedIndex];
-                        formData.append(field, selected ? selected.text : '');
-                    } else if (input.type === 'file') {
-                        if (input.files.length) formData.append(field, input.files[0]);
+                    if (input.type === 'file') {
+                        if (input.files.length > 0) {
+                            formData.append(field, input.files[0]);
+                        }
                     } else {
                         formData.append(field, input.value || '');
                     }
@@ -114,14 +114,70 @@ document.addEventListener('DOMContentLoaded', function () {
                     method: 'POST',
                     body: formData
                 });
-                const rawResponse = await response.text();
-                console.log('Raw server response:', rawResponse);
-                const result = JSON.parse(rawResponse);
+                const data = await response.json();
 
-                if (result.success) {
-                    showReceipt(result.data); // Show receipt after successful upload
+                if (data.success) {
+                    // Display the modal
+                    const printModal = document.getElementById('print-modal');
+                    printModal.style.display = 'block';
+
+                    // Now that the modal is displayed, populate its content
+                    const modalPreview = document.getElementById('modal-preview');
+                    if (modalPreview) {
+                        modalPreview.innerHTML = `
+                            <p>Customization ID: ${data.data.customization_id}</p>
+                            <p>Product ID: ${data.data.product_id}</p>
+                            <p>User ID: ${data.data.user_id}</p>
+                            <p>User Name: ${data.data.user_name}</p>
+                            <p>Furniture: ${data.data.furniture}</p>
+                            <p>Size: ${data.data.size}</p>
+                            <p>Color: ${data.data.color}</p>
+                            ${data.data.color_image ? `<img src="${data.data.color_image}" alt="Color Image" style="max-width: 100px;">` : ''}
+                            <p>Color Info: ${data.data.color_info}</p>
+                            <p>Texture: ${data.data.texture}</p>
+                            ${data.data.texture_image ? `<img src="${data.data.texture_image}" alt="Texture Image" style="max-width: 100px;">` : ''}
+                            <p>Texture Info: ${data.data.texture_info}</p>
+                            <p>Wood: ${data.data.wood}</p>
+                            ${data.data.wood_image ? `<img src="${data.data.wood_image}" alt="Wood Image" style="max-width: 100px;">` : ''}
+                            <p>Wood Info: ${data.data.wood_info}</p>
+                            <p>Foam: ${data.data.foam}</p>
+                            ${data.data.foam_image ? `<img src="${data.data.foam_image}" alt="Foam Image" style="max-width: 100px;">` : ''}
+                            <p>Foam Info: ${data.data.foam_info}</p>
+                            <p>Cover: ${data.data.cover}</p>
+                            ${data.data.cover_image ? `<img src="${data.data.cover_image}" alt="Cover Image" style="max-width: 100px;">` : ''}
+                            <p>Cover Info: ${data.data.cover_info}</p>
+                            <p>Design: ${data.data.design}</p>
+                            ${data.data.design_image ? `<img src="${data.data.design_image}" alt="Design Image" style="max-width: 100px;">` : ''}
+                            <p>Design Info: ${data.data.design_info}</p>
+                            <p>Tiles: ${data.data.tiles}</p>
+                            ${data.data.tiles_image ? `<img src="${data.data.tiles_image}" alt="Tiles Image" style="max-width: 100px;">` : ''}
+                            <p>Tiles Info: ${data.data.tiles_info}</p>
+                            <p>Metal: ${data.data.metal}</p>
+                            ${data.data.metal_image ? `<img src="${data.data.metal_image}" alt="Metal Image" style="max-width: 100px;">` : ''}
+                            <p>Metal Info: ${data.data.metal_info}</p>
+                            <p>Timestamp: ${data.data.timestamp}</p>
+                        `;
+                    } else {
+                        console.error("modal-preview element not found!");
+                    }
+                    if (!modalPreview){
+                        throw new Error(data.message || 'Submission failed');
+                    }
+
+                    // Add event listener for the close button
+                    const closeModal = document.querySelector('.close-modal');
+                    closeModal.addEventListener('click', function () {
+                        printModal.style.display = 'none';
+                    });
+
+                    // Add event listener for the OK button
+                    const modalOkButton = document.getElementById('modal-ok-button');
+                    modalOkButton.addEventListener('click', function () {
+                        printModal.style.display = 'none';
+                    });
+
                 } else {
-                    throw new Error(result.message || 'Submission failed');
+                    throw new Error(data.message || 'Submission failed');
                 }
             } catch (error) {
                 showModal('Error', error.message || 'An unexpected error occurred.');
@@ -134,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     });
 
-    // Reset Button Handler
+    // Reset Button Handler (unchanged)
     document.getElementById('reset-button').addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.cus-boxed select').forEach(select => {
@@ -155,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showModal('Success', 'All fields have been reset!');
     });
 
-    // Image Preview Handler
+    // Image Preview Handler (unchanged)
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('change', (e) => {
             const previewId = input.id.replace('-file-upload', '-image-preview');
@@ -174,136 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Print Receipt Modal
-    function showReceipt(data) {
-        const modalPreview = document.getElementById('modal-preview');
-        modalPreview.innerHTML = '';
-
-        // Convert uploaded images to base64 URLs
-        const imagePromises = [];
-        const imageData = {};
-        Object.keys(data).forEach(key => {
-            if (data[key] instanceof File) {
-                const file = data[key];
-                const reader = new FileReader();
-                const promise = new Promise((resolve, reject) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = () => reject(reader.error);
-                    reader.readAsDataURL(file);
-                });
-                imagePromises.push(promise.then(result => {
-                    imageData[key] = result; // Store base64 URL
-                }));
-            }
-        });
-
-        // Wait for all images to be processed
-        Promise.all(imagePromises).then(() => {
-            modalPreview.innerHTML = `
-                <h2>Receipt</h2>
-                <div class="receipt-grid">
-                    <!-- First Column -->
-                    <div class="receipt-section">
-                        <h3>Furniture Details</h3>
-                        <p><strong>Type:</strong> ${data['furniture'] || 'N/A'}</p>
-                        <p><strong>Info:</strong> ${data['furniture-info'] || 'N/A'}</p>
-                        <p><strong>Size:</strong> ${data['sizes'] === 'custom' ? data['sizes-info'] : data['sizes'] || 'N/A'}</p>
-                        <p><strong>Color:</strong> ${data['color'] || 'N/A'}</p>
-                        ${imageData['fileColorImage'] ? `<img src="${imageData['fileColorImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Color Info:</strong> ${data['color-info'] || 'N/A'}</p>
-                        <p><strong>Texture:</strong> ${data['texture'] || 'N/A'}</p>
-                        ${imageData['fileTextureImage'] ? `<img src="${imageData['fileTextureImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Texture Info:</strong> ${data['texture-info'] || 'N/A'}</p>
-                        <p><strong>Wood:</strong> ${data['wood'] || 'N/A'}</p>
-                        ${imageData['fileWoodImage'] ? `<img src="${imageData['fileWoodImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Wood Info:</strong> ${data['wood-info'] || 'N/A'}</p>
-                        <p><strong>Foam:</strong> ${data['foam'] || 'N/A'}</p>
-                        ${imageData['fileFoamImage'] ? `<img src="${imageData['fileFoamImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Foam Info:</strong> ${data['foam-info'] || 'N/A'}</p>
-                        <p><strong>Cover:</strong> ${data['cover'] || 'N/A'}</p>
-                        ${imageData['fileCoverImage'] ? `<img src="${imageData['fileCoverImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Cover Info:</strong> ${data['cover-info'] || 'N/A'}</p>
-                        <p><strong>Design:</strong> ${data['design'] || 'N/A'}</p>
-                        ${imageData['fileDesignImage'] ? `<img src="${imageData['fileDesignImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Design Info:</strong> ${data['design-info'] || 'N/A'}</p>
-                        <p><strong>Tiles:</strong> ${data['tiles'] || 'N/A'}</p>
-                        ${imageData['fileTileImage'] ? `<img src="${imageData['fileTileImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Tiles Info:</strong> ${data['tiles-info'] || 'N/A'}</p>
-                        <p><strong>Metal:</strong> ${data['metal'] || 'N/A'}</p>
-                        ${imageData['fileMetalImage'] ? `<img src="${imageData['fileMetalImage']}" style="max-width: 100px; margin: 10px 0;">` : ''}
-                        <p><strong>Metal Info:</strong> ${data['metal-info'] || 'N/A'}</p>
-                        <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
-                    </div>
-                </div>
-            `;
-            // Show the print modal
-            const printModal = document.getElementById('print-modal');
-            printModal.style.display = 'block';
-        }).catch(error => {
-            showModal('Error', 'Failed to process images. Please try again.');
-        });
-    }
-
-    // Close Print Modal
-    document.getElementById('modal-ok-button').addEventListener('click', () => {
-        document.getElementById('print-modal').style.display = 'none';
-    });
-
-    document.querySelector('.close-modal').addEventListener('click', () => {
-        document.getElementById('print-modal').style.display = 'none';
-    });
-
-    document.getElementById('print-modal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('print-modal')) {
-            document.getElementById('print-modal').style.display = 'none';
-        }
-    });
-
-    // Handle Furniture Type Changes to Populate Sizes
-    document.getElementById('furniture').addEventListener('change', function () {
-        const furnitureType = this.value;
-        const sizesDropdown = document.getElementById('sizes');
-        const sizeOptions = {
-            chair: [
-                { value: 'custom', text: 'Custom' },
-                { value: 'chair-stan', text: 'Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.' }
-            ],
-            table: [
-                { value: 'custom', text: 'Custom' },
-                { value: 'table1', text: 'Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.' },
-                { value: 'table2', text: 'Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.' },
-                { value: 'table3', text: 'Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.' }
-            ],
-            salaset: [
-                { value: 'custom', text: 'Custom' },
-                { value: 'salaset1', text: 'Sala Set 8x8 ft.' },
-                { value: 'salaset2', text: 'Sala Set 9x9 ft.' },
-                { value: 'salaset3', text: 'Sala Set 10x10 ft.' },
-                { value: 'salaset4', text: 'Sala Set 10x11 ft.' }
-            ],
-            bedframe: [
-                { value: 'custom', text: 'Custom' },
-                { value: 'bedframe1', text: 'Bed Frame - California King 72x84 in.' },
-                { value: 'bedframe2', text: 'Bed Frame - King 76x80 in.' },
-                { value: 'bedframe3', text: 'Bed Frame - Queen 60x80 in.' },
-                { value: 'bedframe4', text: 'Bed Frame - Full XL 54x80 in.' },
-                { value: 'bedframe5', text: 'Bed Frame - Full 54x75 in.' },
-                { value: 'bedframe6', text: 'Bed Frame - Twin XL 38x80 in.' },
-                { value: 'bedframe7', text: 'Bed Frame - Twin 38x75 in.' }
-            ]
-        };
-        sizesDropdown.innerHTML = '<option value="" disabled selected>Select one</option>';
-        if (sizeOptions[furnitureType]) {
-            sizeOptions[furnitureType].forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option.value;
-                opt.textContent = option.text;
-                sizesDropdown.appendChild(opt);
-            });
-        }
-    });
-
-    // Modal Functionality
+    // Modal Functionality (unchanged)
     function showModal(title, message) {
         const modal = document.createElement('div');
         modal.classList.add('modal');
@@ -327,12 +254,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Close Print Modal
+// Close Print Modal (unchanged)
 document.getElementById('modal-ok-button').addEventListener('click', () => {
     document.getElementById('print-modal').style.display = 'none';
 });
 
-// Close modal when clicking the close button or outside the modal
+// Close modal when clicking the close button or outside the modal (unchanged)
 document.querySelector('.close-modal').addEventListener('click', () => {
     document.getElementById('print-modal').style.display = 'none';
 });

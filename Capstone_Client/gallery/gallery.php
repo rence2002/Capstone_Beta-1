@@ -117,8 +117,8 @@ try {
         <div class="content">
             <h1>What Furniture Are You Looking For?</h1>
             <form action="" method="GET" class="search-form" id="search-form">
-                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                <!-- <span class="clear-search" id="clear-search">&times;</span> -->
+                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" required value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                <span class="clear-search" id="clear-search">&times;</span>
                 <button type="submit" class="material-symbols-outlined">search</button>
             </form>
         </div>
@@ -208,353 +208,222 @@ try {
                 <option value="table">Table</option>
                 <option value="salaset">Sala Set</option>
                 <option value="bedframe">Bed Frame</option>
+                <option value="custom">Custom</option>
             </select>
             <div id="furniture-custom-options" style="display: none;">
                 <label class="upload-file" for="fileFurnitureImage">Upload Design:</label>
                 <input type="file" id="fileFurnitureImage" name="fileFurnitureImage" accept="image/*">
                 <div id="furniture-image-preview" class="image-preview"></div>
                 <label for="furniture-info">Details:</label>
-                <input type="text" id="furniture-info" name="txtFurnitureInfo" placeholder="Additional info">
+                <input type="text" id="furniture-info" name="furniture-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Size Selection -->
+        <!-- Sizes -->
         <div class="cus-boxed">
-            <label for="sizes">Standard Sizes:</label>
+            <label for="sizes">Sizes:</label>
             <select id="sizes" name="sizes">
                 <option value="" disabled selected>Select one</option>
             </select>
             <div id="sizes-custom-options" style="display: none;">
-                <label for="custom-size">Custom Size:</label>
-                <input type="text" id="custom-size" name="sizes-info" placeholder="Width x Length x Height">
+                <label for="sizes-info">Sizes Additional Info:</label>
+                <input type="text" id="sizes-info" name="sizes-info" placeholder="Enter additional info">
             </div>
         </div>
 
-        <!-- Color Section -->
+        <!-- Color -->
         <div class="cus-boxed">
             <label for="color">Color:</label>
             <select id="color" name="color">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="natural_oak">Natural Oak</option>
-                            <option value="dark_walnut">Dark Walnut</option>
-                            <option value="espresso">Espresso</option>
-                            <option value="driftwood_gray">Driftwood Gray</option>
-                            <option value="mahogany">Mahogany</option>
-                            <option value="cherry_wood">Cherry Wood</option>
-                            <option value="black">Black</option>
-                            <option value="white">White</option>
-                            <option value="charcoal_gray">Charcoal Gray</option>
-                            <option value="antique_white">Antique White</option>
-                            <option value="weathered_oak">Weathered Oak</option>
-                            <option value="honey_pine">Honey Pine</option>
-                            <option value="maple">Maple</option>
-                            <option value="birch">Birch</option>
-                            <option value="teak">Teak</option>
-                            <option value="rosewood">Rosewood</option>
-                            <option value="ebony">Ebony</option>
-                            <option value="gunmetal">Gunmetal</option>
-                            <option value="brushed_gold">Brushed Gold</option>
-                            <option value="brushed_silver">Brushed Silver</option>
+                <option value="Teak">Teak</option>
+                <option value="Weathered Oak">Weathered Oak</option>
+                <option value="Antique White">Antique White</option>
+                <option value="Black">Black</option>
+                <option value="Driftwood Gray">Driftwood Gray</option>
             </select>
             <div id="color-custom-options" style="display: none;">
-                <label class="upload-file" for="fileColorImage">Upload Sample:</label>
-                <input type="file" id="color-file-upload" name="fileColorImage" accept="image/*">
+                <label for="color-info">Color Additional Info:</label>
+                <input type="text" id="color-info" name="color-info" placeholder="Enter additional info">
+                <label for="fileColorImage">Upload Color Image:</label>
+                <input type="file" id="fileColorImage" name="fileColorImage" accept="image/*">
                 <div id="color-image-preview" class="image-preview"></div>
-                <label for="color-info">Details:</label>
-                <input type="text" id="color-info" name="color-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Texture Section -->
+        <!-- Texture -->
         <div class="cus-boxed">
             <label for="texture">Texture:</label>
             <select id="texture" name="texture">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="matte">Matte</option>
-                <option value="glossy">Glossy</option>
-                <option value="semi_glossy">Semi Glossy</option>
-                <option value="duco_finish">Duco Finish</option>
-                <option value="marble_finish">Marble Finish</option>
-                <option value="smooth">Smooth</option>
-                <option value="satin_finish">Satin Finish</option>
-                <option value="distressed">Distressed</option>
-                <option value="rustic">Rustic</option>
-                <option value="textured">Textured</option>
-                <option value="brushed">Brushed</option>
-                <option value="weathered">Weathered</option>
-                <option value="wood_grain">Wood Grain</option>
-                <option value="laminated">Laminated</option>
-                <option value="veneer">Veneer</option>
-                <option value="high_gloss">High Gloss</option>
-                <option value="powder_coated">Powder Coated</option>
-                <option value="patina">Patina</option>
-                <option value="raw_unfinished">Raw / Unfinished</option>
-                <option value="polished">Polished</option>
+                <option value="High Gloss">High Gloss</option>
+                <option value="Brushed">Brushed</option>
+                <option value="Textured">Textured</option>
+                <option value="Smooth">Smooth</option>
+                <option value="Semi Glossy">Semi Glossy</option>
+                <option value="Duco Finish">Duco Finish</option>
+                <option value="Rustic">Rustic</option>
             </select>
             <div id="texture-custom-options" style="display: none;">
-                <label class="upload-file" for="fileTextureImage">Upload Sample:</label>
-                <input type="file" id="texture-file-upload" name="fileTextureImage" accept="image/*">
+                <label for="texture-info">Texture Additional Info:</label>
+                <input type="text" id="texture-info" name="texture-info" placeholder="Enter additional info">
+                <label for="fileTextureImage">Upload Texture Image:</label>
+                <input type="file" id="fileTextureImage" name="fileTextureImage" accept="image/*">
                 <div id="texture-image-preview" class="image-preview"></div>
-                <label for="texture-info">Details:</label>
-                <input type="text" id="texture-info" name="texture-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Wood Type -->
+        <!-- Wood -->
         <div class="cus-boxed">
-            <label for="woods">Wood Type:</label>
+            <label for="woods">Wood:</label>
             <select id="woods" name="wood">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="mahogany">Mahogany</option>
-                <option value="tangile">Tangile</option>
-                <option value="nara">Nara</option>
-                <option value="plywood1">Plywood 1/8</option>
-                <option value="plywood2">Plywood 1/4</option>
-                <option value="plywood3">Plywood 1/2</option>
-                <option value="plywood4">Plywood 3/4</option>
+                <option value="Nara">Nara</option>
+                <option value="Plywood 1/4">Plywood 1/4</option>
+                <option value="Plywood 1/8">Plywood 1/8</option>
             </select>
             <div id="woods-custom-options" style="display: none;">
-                <label class="upload-file" for="fileWoodImage">Upload Sample:</label>
-                <input type="file" id="wood-file-upload" name="fileWoodImage" accept="image/*">
+                <label for="wood-info">Wood Additional Info:</label>
+                <input type="text" id="wood-info" name="wood-info" placeholder="Enter additional info">
+                <label for="fileWoodImage">Upload Wood Image:</label>
+                <input type="file" id="fileWoodImage" name="fileWoodImage" accept="image/*">
                 <div id="wood-image-preview" class="image-preview"></div>
-                <label for="wood-info">Details:</label>
-                <input type="text" id="wood-info" name="wood-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Foam Type -->
+        <!-- Foam -->
         <div class="cus-boxed">
-            <label for="foam">Foam Type:</label>
+            <label for="foam">Foam:</label>
             <select id="foam" name="foam">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="uratex">Uratex</option>
+                <option value="Uratex">Uratex</option>
             </select>
             <div id="foam-custom-options" style="display: none;">
-                <label class="upload-file" for="fileFoamImage">Upload Sample:</label>
-                <input type="file" id="foam-file-upload" name="fileFoamImage" accept="image/*">
+                <label for="foam-info">Foam Additional Info:</label>
+                <input type="text" id="foam-info" name="foam-info" placeholder="Enter additional info">
+                <label for="fileFoamImage">Upload Foam Image:</label>
+                <input type="file" id="fileFoamImage" name="fileFoamImage" accept="image/*">
                 <div id="foam-image-preview" class="image-preview"></div>
-                <label for="foam-info">Details:</label>
-                <input type="text" id="foam-info" name="foam-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Cover Type -->
+        <!-- Cover -->
         <div class="cus-boxed">
-            <label for="cover">Cover Type:</label>
+            <label for="cover">Cover:</label>
             <select id="cover" name="cover">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="velvet">Velvet</option>
-                <option value="linen">Linen Type</option>
-                <option value="suede">Suede</option>
-                <option value="frenchleather">French Leather</option>
-                <option value="germanleather">German Leather</option>
-                <option value="koreanleather">Korean Leather</option>
-                <option value="italianleather">Italian Leather</option>
+                <option value="German Leather">German Leather</option>
+                <option value="Korean Leather">Korean Leather</option>
+                <option value="Velvet">Velvet</option>
+                <option value="Italian Leather">Italian Leather</option>
+                <option value="Linen Type">Linen Type</option>
             </select>
             <div id="cover-custom-options" style="display: none;">
-                <label class="upload-file" for="fileCoverImage">Upload Sample:</label>
-                <input type="file" id="cover-file-upload" name="fileCoverImage" accept="image/*">
+                <label for="cover-info">Cover Additional Info:</label>
+                <input type="text" id="cover-info" name="cover-info" placeholder="Enter additional info">
+                <label for="fileCoverImage">Upload Cover Image:</label>
+                <input type="file" id="fileCoverImage" name="fileCoverImage" accept="image/*">
                 <div id="cover-image-preview" class="image-preview"></div>
-                <label for="cover-info">Details:</label>
-                <input type="text" id="cover-info" name="cover-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Design Section -->
+        <!-- Design -->
         <div class="cus-boxed">
-            <label for="design">Design Style:</label>
+            <label for="design">Design:</label>
             <select id="design" name="design">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="modern">Modern</option>
-                <option value="contemporary">Contemporary</option>
-                <option value="rustic">Rustic</option>
-                <option value="industrial">Industrial</option>
-                <option value="scandinavian">Scandinavian</option>
-                <option value="midcentury">Mid-Century Modern</option>
-                <option value="minimalist">Minimalist</option>
-                <option value="traditional">Traditional</option>
-                <option value="bohemian">Bohemian</option>
-                <option value="artdeco">Art Deco</option>
-                <option value="farmhouse">Farmhouse</option>
-                <option value="vintage">Vintage</option>
-                <option value="eclectic">Eclectic</option>
-                <option value="shabbychic">Shabby Chic</option>
-                <option value="asianinspired">Asian Inspired</option>
+                <option value="Eclectic">Eclectic</option>
+                <option value="Shabby Chic">Shabby Chic</option>
+                <option value="Rustic">Rustic</option>
+                <option value="Asian Inspired">Asian Inspired</option>
+                <option value="Farmhouse">Farmhouse</option>
             </select>
             <div id="design-custom-options" style="display: none;">
-                <label class="upload-file" for="fileDesignImage">Upload Design:</label>
-                <input type="file" id="design-file-upload" name="fileDesignImage" accept="image/*">
+                <label for="design-info">Design Additional Info:</label>
+                <input type="text" id="design-info" name="design-info" placeholder="Enter additional info">
+                <label for="fileDesignImage">Upload Design Image:</label>
+                <input type="file" id="fileDesignImage" name="fileDesignImage" accept="image/*">
                 <div id="design-image-preview" class="image-preview"></div>
-                <label for="design-info">Details:</label>
-                <input type="text" id="design-info" name="design-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Tiles Section -->
+        <!-- Tiles -->
         <div class="cus-boxed">
-            <label for="tiles">Tile Type:</label>
+            <label for="tiles">Tiles:</label>
             <select id="tiles" name="tiles">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="marble">Marble</option>
-                <option value="porcelain">Porcelain</option>
-                <option value="quartz">Quartz</option>
-                <option value="granite">Granite</option>
+                <option value="Porcelain">Porcelain</option>
+                <option value="Quartz">Quartz</option>
+                <option value="Marble">Marble</option>
+                <option value="Granite">Granite</option>
             </select>
             <div id="tiles-custom-options" style="display: none;">
-                <label class="upload-file" for="fileTileImage">Upload Sample:</label>
-                <input type="file" id="tiles-file-upload" name="fileTileImage" accept="image/*">
+                <label for="tiles-info">Tiles Additional Info:</label>
+                <input type="text" id="tiles-info" name="tiles-info" placeholder="Enter additional info">
+                <label for="fileTileImage">Upload Tile Image:</label>
+                <input type="file" id="fileTileImage" name="fileTileImage" accept="image/*">
                 <div id="tiles-image-preview" class="image-preview"></div>
-                <label for="tiles-info">Details:</label>
-                <input type="text" id="tiles-info" name="tiles-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Metal Section -->
+        <!-- Metal -->
         <div class="cus-boxed">
-            <label for="metal">Metal Type:</label>
+            <label for="metal">Metal:</label>
             <select id="metal" name="metal">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
-                <option value="flat">Flat Bar</option>
-                <option value="tubular">Tubular</option>
+                <option value="Flat Bar">Flat Bar</option>
+                <option value="Tubular">Tubular</option>
             </select>
             <div id="metal-custom-options" style="display: none;">
-                <label class="upload-file" for="fileMetalImage">Upload Sample:</label>
-                <input type="file" id="metal-file-upload" name="fileMetalImage" accept="image/*">
+                <label for="metal-info">Metal Additional Info:</label>
+                <input type="text" id="metal-info" name="metal-info" placeholder="Enter additional info">
+                <label for="fileMetalImage">Upload Metal Image:</label>
+                <input type="file" id="fileMetalImage" name="fileMetalImage" accept="image/*">
                 <div id="metal-image-preview" class="image-preview"></div>
-                <label for="metal-info">Details:</label>
-                <input type="text" id="metal-info" name="metal-info" placeholder="Additional info">
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="cus-actions">
+        <!-- Submit and Reset Buttons -->
+        <div class="cus-boxed">
             <button id="submit-button">Submit</button>
             <button id="reset-button">Reset</button>
         </div>
     </div>
+
+    <!-- Print Modal -->
+    <div id="print-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Customization Receipt</h2>
+            <div id="modal-preview" class="receipt-content"></div>
+            <button id="modal-ok-button">OK</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Confirm Submission</h2>
+            <p>Are you sure you want to submit this customization?</p>
+            <button id="confirm-ok-button">OK</button>
+            <button id="confirm-cancel-button">Cancel</button>
+        </div>
     </div>
 </main>
-
 <footer class="footer">
-    <div class="footer-row">
-        <div class="footer-col">
-            <h4>Info</h4>
-            <ul class="links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Explore</h4>
-            <ul class="links">
-                <li><a href="#">Free Designs</a></li>
-                <li><a href="#">Latest Designs</a></li>
-                <li><a href="#">Themes</a></li>
-                <li><a href="#">Popular Designs</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Legal</h4>
-            <ul class="links">
-                <li><a href="#">Customer Agreement</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">GDPR</a></li>
-            </ul>
-        </div>
-        <div class="icons">
-            <i class="fa-brands fa-facebook-f"></i>
-            <i class="fa-brands fa-twitter"></i>
-            <i class="fa-brands fa-linkedin"></i>
-            <i class="fa-brands fa-github"></i>
-        </div>
-    </div>
-</footer>
-
-<!-- Confirmation Modal -->
-<div id="confirmation-modal" style="display: none;">
-    <div class="modal-content-logs" >
-        <h2>Order Confirmation</h2>
-        <p>Your order has been successfully submitted and is now under review.</p>
-        <div class="modal-buttons">
-            <button id="confirm-ok-button">OK</button>
-        </div>
-    </div>
-</div>
-
-<!-- Print Modal -->
-<div id="print-modal" style="display: none;">
-    <div class="modal-content-logs">
-        <span class="close-modal">&times;</span>
-        <h2>Customization Receipt</h2>
-        <div id="modal-preview" class="receipt-content"></div>
-        <button id="modal-ok-button">OK</button>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="../static/Javascript-files/gallery.js"></script>
-<script src="../static/Javascript-files/script.js"></script>
-<script src="../static/Javascript-files/customization.js"></script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqjDk0jpyHu2vT4RGZ-yZN31UDbK6cYw4",
-    authDomain: "rm-betis-furniture.firebaseapp.com",
-    projectId: "rm-betis-furniture",
-    storageBucket: "rm-betis-furniture.firebasestorage.app",
-    messagingSenderId: "509374756756",
-    appId: "1:509374756756:web:b5daa7b886c122f4120181",
-    measurementId: "G-18WDFEMF89"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-<script>
-    const searchInput = document.getElementById('search-input');
-    const clearSearch = document.getElementById('clear-search');
-    const searchForm = document.getElementById('search-form');
-
-    // Show/hide clear button
-    function toggleClearButton() {
-        if (searchInput.value.trim() !== '') {
-            clearSearch.classList.add('show');
-        } else {
-            clearSearch.classList.remove('show');
-        }
-    }
-
-    // Initial check
-    toggleClearButton();
-
-    // Check on input change
-    searchInput.addEventListener('input', toggleClearButton);
-
-    // Clear search
-    clearSearch.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent form submission
-        searchInput.value = '';
-        clearSearch.classList.remove('show');
-        // Submit the form to clear the search
-        searchForm.submit();
-    });
-</script>
+    </footer>
+    <script src="../static/Javascript-files/script.js"></script>
+    <script src="../static/Javascript-files/customization.js"></script>
+    <script src="../static/Javascript-files/gallery.js"></script>
+    <script src="../static/Javascript-files/jQuery.js"></script>
 </body>
 </html>
