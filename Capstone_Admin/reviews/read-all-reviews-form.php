@@ -161,8 +161,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo htmlspecialchars($row['Review_Text']); ?></td>
                     <td><?php echo htmlspecialchars($row['Review_Date']); ?></td>
                    <td style="text-align: center;"><a class="buttonView" href="read-one-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">View</a></td>
-                <td style="text-align: center;"><a class="buttonEdit" href="update-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Edit</a></td>
-                <td style="text-align: center;"><a class="buttonDelete" href="delete-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Delete</a></td>
+                <!-- <td style="text-align: center;"><a class="buttonEdit" href="update-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Edit</a></td>
+                <td style="text-align: center;"><a class="buttonDelete" href="delete-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Delete</a></td> -->
                 </tr>
                 <?php endforeach; ?>
             </table>

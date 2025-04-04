@@ -203,8 +203,9 @@ if (isset($_GET['id'])) {
                 </table>
                 <!-- Separated buttons -->
                 <div class="button-container">
-                    <input type="submit" value="Submit" class="buttonUpdate">
-                    <a href="read-all-user-form.php" target="_parent" class="buttonBack">Back to List</a>
+                <a href="read-all-user-form.php" target="_parent" class="buttonBack">Back to List</a>
+                    <input type="submit" value="Update" class="buttonUpdate">
+                 
                 </div>
 
             </form>

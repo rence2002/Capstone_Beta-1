@@ -194,7 +194,7 @@ $productGLB = htmlspecialchars($cart['GLB_File_URL'] ?? "");
     </table>
     <div class="button-container">
         <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
-        <a href="update-cart-form.php?id=<?php echo $cartID; ?>" target="_parent" class="buttonUpdate">Update Record</a>
+        <a href="update-cart-form.php?id=<?php echo $cartID; ?>" target="_parent" class="buttonEdit">Edit</a>
     </div>
 </div>
 

@@ -172,7 +172,7 @@ function calculatePercentage($status) {
             <!-- Add Back to Dashboard button -->
             <div class="button-container">
                 <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-                <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a>
+                <!-- <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a> -->
             </div>
                 <table>
             <table width="100%" border="1" cellspacing="5">

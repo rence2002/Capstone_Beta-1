@@ -302,8 +302,8 @@ $statusLabels = [
         </table>
         
         <div class="button-container">
-            <button type="submit" class="btn btn-primary">Update Progress</button>
-            <a href="read-all-product-form.php" class="buttonBack">Back to List</a>
+        <a href="read-all-progress-form.php" class="buttonBack">Back to List</a>
+            <button type="submit" class="buttonUpdate">Update Progress</button>
         </div>
     </form>
 </div>

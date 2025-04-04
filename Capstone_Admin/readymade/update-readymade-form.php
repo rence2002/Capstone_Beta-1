@@ -226,8 +226,9 @@ $productStatusMap = [
                     </tr>
                 </table>
                 <div class="button-container">
+                   
+                    <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>
                     <input type="submit" value="Update" class="buttonUpdate">
-                    <a href="read-all-readymade-form.php" class="buttonCancel">Cancel</a>
                 </div>
             </form>
         </div>

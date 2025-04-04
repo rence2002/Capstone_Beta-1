@@ -166,17 +166,17 @@ $productStatusText = $productStatusLabels[$preorder['Product_Status']] ?? 'Unkno
                 <i class="bx bx-search"></i>
             </div>
 
-
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
 <!-- Link to External JS -->
 <script src="dashboard.js"></script>
@@ -248,15 +248,15 @@ $productStatusText = $productStatusLabels[$preorder['Product_Status']] ?? 'Unkno
                             </select>
                         </td>
                     </tr>
-
                     <tr>
-                        <td colspan="2">
-                            <button type="submit" class="buttonUpdate">Update</button>
-                            <a href="read-all-preorder-prod-form.php" target="_parent" class="buttonBack">Back to List</a>
-                        </td>
-                    </tr>
-                </table>
-            </form>
+    <td colspan="2"> <!-- Ensures buttons span across the table if needed -->
+        <div class="button-container">
+            <a href="read-all-preorder-prod-form.php" target="_parent" class="buttonBack">Back to List</a>
+            <button type="submit" class="buttonUpdate">Update</button>
+        </div>
+    </td>
+</tr>
+
         </div>
     </section>
     <script>

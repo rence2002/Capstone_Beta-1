@@ -203,8 +203,8 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                 </table>
                 <div class="button-container">
-                    <input type="submit" value="Submit" class="buttonUpdate">
-                    <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
+                <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
+                    <input type="submit" value="Update" class="buttonUpdate">
                     <!-- Add the checkout button -->
                     <button type="button" class="buttonCheckout" onclick="checkout()">Checkout</button>
                 </div>

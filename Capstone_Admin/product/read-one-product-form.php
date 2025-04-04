@@ -189,7 +189,7 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                 <div class="button-container">
                     <br>
                     <a href="read-all-product-form.php" target="_parent" class="buttonBack">Back to List</a>
-                    <a href="update-product-form.php?id=<?php echo $productID; ?>" target="_parent" class="buttonUpdate">Update Record</a>
+                    <a href="update-product-form.php?id=<?php echo $productID; ?>" target="_parent" class="buttonEdit">Edit</a>
                 </div>
             </form>
         </div>

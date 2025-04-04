@@ -225,7 +225,7 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                 <div class="button-container">
                     <br>
                     <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>
-                    <a href="update-readymade-form.php?id=<?php echo $readyMadeOrderID; ?>" class="buttonUpdate">Update Record</a>
+                    <a href="update-readymade-form.php?id=<?php echo $readyMadeOrderID; ?>" class="buttonEdit">Edit</a>
                 </div>
             </form>
         </div>

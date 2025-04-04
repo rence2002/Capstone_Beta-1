@@ -125,12 +125,12 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
                 </a>
             </li>
          
-            <li>
+            <!-- <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
                     <i class="bx bx-comment-detail"></i>
                     <span class="links_name">All Purchase History</span>
                 </a>
-            </li>
+            </li> -->
             <li>
     <a href="../reviews/read-all-reviews-form.php">
         <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
@@ -213,8 +213,9 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
     </table>
     
     <div class="button-container">
+    
         <a href="read-all-progress-form.php" class="buttonBack">Back to List</a>
-        <a href="update-progress-form.php?id=<?= $row['ID'] ?>" class="buttonUpdate">Update Record</a>
+        <a href="../progress/update-progress-form.php?id=<?= urlencode($row['ID']) ?>" class="buttonEdit">Edit</a>
     </div>
 </div>
 

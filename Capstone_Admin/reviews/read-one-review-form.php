@@ -194,8 +194,8 @@ $reviewPicPaths = json_decode($review['PicPath'], true) ?? [];
     <!-- Buttons -->
     <div class="button-container">
         <a href="../reviews/read-all-reviews-form.php" class="buttonBack">Back to Review List</a>
-        <a href="../reviews/update-review-form.php?id=<?php echo $reviewID; ?>" class="buttonUpdate">Update Review</a>
-        <a href="../reviews/delete-review-form.php?id=<?php echo $reviewID; ?>" class="buttonDelete">Delete Review</a>
+        <!-- <a href="../reviews/update-review-form.php?id=<?php echo $reviewID; ?>" class="buttonUpdate">Update Review</a>
+        <a href="../reviews/delete-review-form.php?id=<?php echo $reviewID; ?>" class="buttonDelete">Delete Review</a> -->
     </div>
 </div>
 

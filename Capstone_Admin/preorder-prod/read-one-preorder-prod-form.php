@@ -253,11 +253,12 @@ $productStatusText = $productStatusLabels[$preorder['Product_Status']] ?? 'Unkno
     </tr>
 </table>
 
-                <br>
-                <a href="read-all-preorder-prod-form.php" class="btn btn-primary">Back to Preorders</a>
-                <a class="buttonEdit" href="update-preorder-prod-form.php?id=<?php echo $preorderID; ?>" target="_parent">Edit</a>
-            </form>
-        </div>
+<div class="button-container">
+    <a href="read-all-preorder-prod-form.php" class="buttonBack">Back to Preorders</a>
+    <a class="buttonEdit" href="update-preorder-prod-form.php?id=<?php echo $preorderID; ?>" target="_parent">Edit</a>
+</div>
+</div>
+
     </section>
 
     <script>

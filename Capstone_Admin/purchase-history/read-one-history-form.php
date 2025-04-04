@@ -183,7 +183,7 @@ $productStatusText = $productStatusLabels[$purchase['Product_Status']] ?? 'Unkno
             </table>
             <div class="button-container">
                 <a href="read-all-history-form.php" class="btn btn-primary">Back to List</a>
-                <a href="update-history-form.php?id=<?php echo htmlspecialchars($purchase['Purchase_ID']); ?>" target="_parent" class="buttonUpdate">Update Record</a>
+                <!-- <a href="update-history-form.php?id=<?php echo htmlspecialchars($purchase['Purchase_ID']); ?>" target="_parent" class="buttonUpdate">Update Record</a> -->
 
             </div>
         </div>

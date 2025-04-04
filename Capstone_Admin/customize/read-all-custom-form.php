@@ -175,11 +175,11 @@ $orderStatusMap = [
                             <td>'.$userName.'</td>
                             <td>'.$furnitureType.'</td>
                             <td>
-                                <div class="progress-bar">
-                                    <div class="progress-bar-inner" style="width: '.$progressPercentage.'%; background-color: '.getColorForStatus($orderStatus).';">
-                                        '.$progressPercentage.'%
-                                    </div>
-                                </div>
+                                <div class="progress" style="width: 150px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: '.$progressPercent.'%;" aria-valuenow="'.$progressPercent.'" aria-valuemin="0" aria-valuemax="100">
+                            '.$progressPercent.'%
+                        </div>
+                    </div>
                             </td>
 
                             <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>

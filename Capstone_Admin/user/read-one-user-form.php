@@ -179,7 +179,7 @@ $userPicPath = htmlspecialchars($user["PicPath"]); // Fetch the user's profile p
             <!-- Separated buttons -->
             <div class="button-container">
                 <a href="read-all-user-form.php" target="_parent" class="buttonBack">Back to List</a>
-                <a href="update-user-form.php?id=<?php echo $userID; ?>" target="_parent" class="buttonUpdate">Update Record</a>
+                <a href="update-user-form.php?id=<?php echo $userID; ?>" target="_parent" class="buttonEdit">Edit</a>
             </div>
         </form>
     </div>

@@ -166,8 +166,8 @@ $picPath = htmlspecialchars($adminToView["PicPath"]);
             
             <!-- Buttons outside the table -->
             <div class="button-container">
+            <a href="../dashboard/dashboard.php" target="_parent" class="buttonBack">Back to Dashboard</a>
                 <a href="update-admin-form.php" target="_parent" class="buttonUpdate">Update Record</a>
-                <a href="../dashboard/dashboard.php" target="_parent" class="buttonBack">Back to Dashboard</a>
             </div>
         </form>
     </div>

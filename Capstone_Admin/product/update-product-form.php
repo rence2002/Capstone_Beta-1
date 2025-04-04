@@ -232,8 +232,9 @@ $glbFileURL = htmlspecialchars($product["GLB_File_URL"]);
                 </tr>
             </table>
             <div class="button-container">
-                <input type="submit" value="Submit" class="buttonUpdate">
                 <a href="read-all-product-form.php" target="_parent" class="buttonBack">Back to List</a>
+                <input type="submit" value="Update" class="buttonUpdate">
+                
             </div>
         </form>
 
