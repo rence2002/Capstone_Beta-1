@@ -23,7 +23,7 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
-// Get the Progress_ID and order type from the URL
+// Get the ID and order type from the URL
 if (!isset($_GET['id']) || !isset($_GET['order_type'])) {
     echo "Progress ID and Order Type not specified.";
     exit();
@@ -37,68 +37,40 @@ $query = "";
 switch ($orderType) {
     case 'custom':
         $query = "
-            SELECT
-                c.Customization_ID AS ID,
-                c.Furniture_Type AS Product_Name,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                c.Order_Status,
-                c.Product_Status,
-                0.00 AS Total_Price,
-                c.Request_Date,
-                c.Last_Update,
-                c.Progress_Pic_10,
-                c.Progress_Pic_20,
-                c.Progress_Pic_30,
-                c.Progress_Pic_40,
-                c.Progress_Pic_50,
-                c.Progress_Pic_60,
-                c.Progress_Pic_70,
-                c.Progress_Pic_80,
-                c.Progress_Pic_90,
-                c.Progress_Pic_100,
-                c.Stop_Reason,
-                c.User_ID
-            FROM tbl_customizations c
-            JOIN tbl_user_info u ON c.User_ID = u.User_ID
-            WHERE c.Customization_ID = :id
-        ";
+    SELECT
+        p.Progress_ID AS ID,
+        pr.Product_Name,
+        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+        p.Order_Status,
+        p.Product_Status,
+        p.Total_Price,
+        p.Date_Added AS Request_Date,
+        p.LastUpdate AS Last_Update,
+        p.Progress_Pic_10,
+        p.Progress_Pic_20,
+        p.Progress_Pic_30,
+        p.Progress_Pic_40,
+        p.Progress_Pic_50,
+        p.Progress_Pic_60,
+        p.Progress_Pic_70,
+        p.Progress_Pic_80,
+        p.Progress_Pic_90,
+        p.Progress_Pic_100,
+        p.Stop_Reason,
+        p.User_ID,
+        p.Product_ID
+    FROM tbl_progress p
+    JOIN tbl_user_info u ON p.User_ID = u.User_ID
+    LEFT JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+    WHERE p.Progress_ID = :id
+";
         break;
 
     case 'pre_order':
         $query = "
             SELECT
-                po.Preorder_ID AS ID,
-                pr.Product_Name,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                po.Preorder_Status AS Order_Status,
-                po.Product_Status,
-                po.Total_Price,
-                po.Order_Date AS Request_Date,
-                po.Order_Date AS Last_Update,
-                po.Progress_Pic_10,
-                po.Progress_Pic_20,
-                po.Progress_Pic_30,
-                po.Progress_Pic_40,
-                po.Progress_Pic_50,
-                po.Progress_Pic_60,
-                po.Progress_Pic_70,
-                po.Progress_Pic_80,
-                po.Progress_Pic_90,
-                po.Progress_Pic_100,
-                po.Stop_Reason,
-                po.User_ID
-            FROM tbl_preorder po
-            JOIN tbl_user_info u ON po.User_ID = u.User_ID
-            JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-            WHERE po.Preorder_ID = :id
-        ";
-        break;
-
-    case 'ready_made':
-        $query = "
-            SELECT
                 p.Progress_ID AS ID,
-                p.Product_Name,
+                pr.Product_Name,
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
                 p.Order_Status,
                 p.Product_Status,
@@ -116,14 +88,45 @@ switch ($orderType) {
                 p.Progress_Pic_90,
                 p.Progress_Pic_100,
                 p.Stop_Reason,
-                p.User_ID
+                p.User_ID,
+                p.Product_ID
             FROM tbl_progress p
             JOIN tbl_user_info u ON p.User_ID = u.User_ID
             JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
-            WHERE p.Progress_ID = :id
+            WHERE p.Progress_ID = :id AND p.Order_Type = 'pre_order'
         ";
         break;
 
+    case 'ready_made':
+        $query = "
+            SELECT
+                p.Progress_ID AS ID,
+                pr.Product_Name,
+                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+                p.Order_Status,
+                p.Product_Status,
+                p.Total_Price,
+                p.Date_Added AS Request_Date,
+                p.LastUpdate AS Last_Update,
+                p.Progress_Pic_10,
+                p.Progress_Pic_20,
+                p.Progress_Pic_30,
+                p.Progress_Pic_40,
+                p.Progress_Pic_50,
+                p.Progress_Pic_60,
+                p.Progress_Pic_70,
+                p.Progress_Pic_80,
+                p.Progress_Pic_90,
+                p.Progress_Pic_100,
+                p.Stop_Reason,
+                p.User_ID,
+                p.Product_ID
+            FROM tbl_progress p
+            JOIN tbl_user_info u ON p.User_ID = u.User_ID
+            JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+            WHERE p.Progress_ID = :id AND p.Order_Type = 'ready_made'
+        ";
+        break;
     default:
         echo "Invalid order type.";
         exit;
@@ -234,7 +237,7 @@ $statusLabels = [
     <form action="update-progress-rec.php" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="Progress_ID" value="<?= htmlspecialchars($row['ID']) ?>">
         <input type="hidden" name="Order_Type" value="<?= htmlspecialchars($orderType) ?>">
-        
+        <input type="hidden" name="Product_ID" value="<?= htmlspecialchars($row['Product_ID']) ?>">
         <table class="table table-bordered">
             <tr><th>User</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['User_Name']) ?>" readonly></td></tr>
             <tr><th>Product Name</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['Product_Name']) ?>" readonly></td></tr>

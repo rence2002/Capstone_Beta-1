@@ -161,7 +161,7 @@ function calculatePercentage($status) {
             </div>
 
 <!-- Link to External JS -->
-<script src="dashboard.js"></script>
+<script src="../static/js/dashboard.js"></script>
 
 
  </nav>

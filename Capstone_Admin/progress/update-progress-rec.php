@@ -20,6 +20,7 @@ $Order_Type = $_POST['Order_Type'];
 $Order_Status = $_POST['Order_Status'];
 $Product_Status = $_POST['Product_Status'];
 $Stop_Reason = $_POST['Stop_Reason'];
+$Product_ID = $_POST['Product_ID'];
 
 // Validate Progress_ID and Order_Type
 if (empty($Progress_ID) || empty($Order_Type)) {
@@ -30,19 +31,23 @@ if (empty($Progress_ID) || empty($Order_Type)) {
 // Determine the correct table and primary key based on Order_Type
 $tableName = "";
 $idColumn = "";
+$progressIdColumn = "";
 
 switch ($Order_Type) {
     case 'custom':
         $tableName = "tbl_customizations";
-        $idColumn = "Customization_ID";
+        $idColumn = "Customization_ID"; // Primary key for tbl_customizations
+        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
         break;
     case 'pre_order':
         $tableName = "tbl_preorder";
-        $idColumn = "Preorder_ID";
+        $idColumn = "Preorder_ID"; // Primary key for tbl_preorder
+        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
         break;
     case 'ready_made':
         $tableName = "tbl_ready_made_orders";
-        $idColumn = "ReadyMadeOrder_ID";
+        $idColumn = "ReadyMadeOrder_ID"; // Primary key for tbl_ready_made_orders
+        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
         break;
     default:
         echo "Invalid order type.";
@@ -51,27 +56,62 @@ switch ($Order_Type) {
 
 // Handle file uploads for progress pictures
 $uploadDir = "../uploads/progress_pics/";
+$allowedTypes = ['image/jpeg', 'image/png'];
+$maxFileSize = 5 * 1024 * 1024; // 5MB
 $progressPics = [];
+
 foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage) {
     $fileInputName = "Progress_Pic_$percentage";
     if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === UPLOAD_ERR_OK) {
+        $fileType = $_FILES[$fileInputName]['type'];
+        $fileSize = $_FILES[$fileInputName]['size'];
+
+        // Validate file type and size
+        if (!in_array($fileType, $allowedTypes)) {
+            throw new Exception("Invalid file type for $percentage%. Only JPEG and PNG are allowed.");
+        }
+        if ($fileSize > $maxFileSize) {
+            throw new Exception("File size exceeds the maximum limit of 5MB for $percentage%.");
+        }
+
+        // Generate unique file name and move the file
         $fileName = uniqid() . "_" . basename($_FILES[$fileInputName]['name']);
         $filePath = $uploadDir . $fileName;
         $relativePath = "../uploads/progress_pics/" . $fileName;
 
-        // Move the uploaded file to the target directory
-        if (move_uploaded_file($_FILES[$fileInputName]['tmp_name'], $filePath)) {
-            $progressPics["Progress_Pic_$percentage"] = $relativePath;
-        } else {
-            echo "Failed to upload file for $percentage%.";
-            exit;
+        if (!move_uploaded_file($_FILES[$fileInputName]['tmp_name'], $filePath)) {
+            throw new Exception("Failed to upload file for $percentage%.");
         }
+
+        $progressPics["Progress_Pic_$percentage"] = $relativePath;
     }
 }
 
 try {
     // Start a transaction
     $pdo->beginTransaction();
+
+    // For custom orders, fetch the Customization_ID from tbl_customizations
+    if ($Order_Type === 'custom') {
+        $fetchCustomizationQuery = "
+            SELECT Customization_ID
+            FROM tbl_customizations
+            WHERE Product_ID = :Product_ID
+        ";
+        $fetchCustomizationStmt = $pdo->prepare($fetchCustomizationQuery);
+        $fetchCustomizationStmt->bindParam(':Product_ID', $Product_ID, PDO::PARAM_INT);
+        $fetchCustomizationStmt->execute();
+        $customizationRecord = $fetchCustomizationStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$customizationRecord) {
+            throw new Exception("Customization record not found for Product_ID $Product_ID.");
+        }
+
+        $Customization_ID = $customizationRecord['Customization_ID'];
+
+        // Debugging: Confirm Customization_ID
+        error_log("Fetched Customization_ID: $Customization_ID for Product_ID: $Product_ID");
+    }
 
     // Base query to update the specific table
     $query = "
@@ -87,7 +127,7 @@ try {
         $query .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
     }
 
-    $query .= " WHERE $idColumn = :Progress_ID";
+    $query .= " WHERE $idColumn = :ID";
 
     // Prepare the statement
     $stmt = $pdo->prepare($query);
@@ -96,7 +136,12 @@ try {
     $stmt->bindParam(':Order_Status', $Order_Status, PDO::PARAM_INT);
     $stmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
     $stmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
-    $stmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
+
+    if ($Order_Type === 'custom') {
+        $stmt->bindParam(':ID', $Customization_ID, PDO::PARAM_INT); // Use Customization_ID for custom orders
+    } else {
+        $stmt->bindParam(':ID', $Progress_ID, PDO::PARAM_INT); // Use Preorder_ID or ReadyMadeOrder_ID for other orders
+    }
 
     // Bind progress picture parameters if they exist
     foreach ($progressPics as $key => $value) {
@@ -104,9 +149,13 @@ try {
     }
 
     // Execute the query
-    if (!$stmt->execute()) {
-        throw new Exception("Failed to update progress record in $tableName.");
+    $rowsAffected = $stmt->execute();
+    if (!$rowsAffected || $stmt->rowCount() === 0) {
+        throw new Exception("Failed to update progress record in $tableName. Rows affected: " . $stmt->rowCount());
     }
+
+    // Debugging: Confirm rows affected
+    error_log("Updated $tableName with ID: " . ($Order_Type === 'custom' ? $Customization_ID : $Progress_ID));
 
     // Update the corresponding record in tbl_progress
     $progressQuery = "
@@ -122,7 +171,7 @@ try {
         $progressQuery .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
     }
 
-    $progressQuery .= " WHERE Progress_ID = :Progress_ID";
+    $progressQuery .= " WHERE $progressIdColumn = :Progress_ID";
 
     // Prepare the statement for tbl_progress
     $progressStmt = $pdo->prepare($progressQuery);
@@ -139,9 +188,13 @@ try {
     }
 
     // Execute the query for tbl_progress
-    if (!$progressStmt->execute()) {
-        throw new Exception("Failed to update progress record in tbl_progress.");
+    $rowsAffectedProgress = $progressStmt->execute();
+    if (!$rowsAffectedProgress || $progressStmt->rowCount() === 0) {
+        throw new Exception("Failed to update progress record in tbl_progress. Rows affected: " . $progressStmt->rowCount());
     }
+
+    // Debugging: Confirm rows affected
+    error_log("Updated tbl_progress with Progress_ID: $Progress_ID");
 
     // Check if both Order_Status and Product_Status are 100
     if ($Order_Status == 100 && $Product_Status == 100) {
@@ -149,7 +202,7 @@ try {
         $fetchQuery = "
             SELECT * 
             FROM tbl_progress 
-            WHERE Progress_ID = :Progress_ID
+            WHERE $progressIdColumn = :Progress_ID
         ";
         $fetchStmt = $pdo->prepare($fetchQuery);
         $fetchStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
@@ -187,7 +240,7 @@ try {
             // Delete the record from tbl_progress
             $deleteQuery = "
                 DELETE FROM tbl_progress 
-                WHERE Progress_ID = :Progress_ID
+                WHERE $progressIdColumn = :Progress_ID
             ";
             $deleteStmt = $pdo->prepare($deleteQuery);
             $deleteStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
