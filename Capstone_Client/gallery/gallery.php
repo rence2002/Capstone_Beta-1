@@ -60,6 +60,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <style>
         .search-form {
             position: relative;
@@ -415,7 +416,7 @@ try {
             <h2>Confirm Submission</h2>
             <p>Are you sure you want to submit this customization?</p>
             <button id="confirm-ok-button">OK</button>
-            <button id="confirm-cancel-button">Cancel</button>
+            <!-- <button id="confirm-cancel-button">Cancel</button> -->
         </div>
     </div>
 </main>

@@ -2,7 +2,8 @@
 SQLyog Ultimate - MySQL GUI v8.2 
 MySQL - 5.5.5-10.4.32-MariaDB : Database - db_api_capstone
 *********************************************************************
-*/
+*/
+
 
 /*!40101 SET NAMES utf8 */;
 

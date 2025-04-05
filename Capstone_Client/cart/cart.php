@@ -86,7 +86,7 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
     <div id="cart-container">
     <?php if (empty($cartItems)): ?>
         <div class="empty-cart">
-            <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+            <!-- <i class="fas fa-shopping-cart fa-4x text-muted"></i> -->
             <h2 class="mt-3">Your cart is empty</h2>
             <p class="text-muted">You haven't added any items to your cart yet.</p>
             <a href="../gallery/gallery.php" class="btn btn-primary browse-btn">

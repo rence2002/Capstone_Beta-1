@@ -16,7 +16,7 @@
     align-items: center;
 }
 
-.profile-icon {
+.profile-icon { 
     width: 15vw; /* Use viewport width */
     height: 15vw;
     max-width: 100px; /* Set a max width for large screens */
@@ -34,6 +34,7 @@
     color: white;
     font-weight: 500;
     margin:10px;
+    padding:0;
 }
 
 .ep--edit{
@@ -244,7 +245,20 @@
     padding: 20px;
     margin: 20px 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
 }
+.pending-order-item{
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+margin: 10px;
+padding: 10px;
+}
+.pending-order-item h3{ 
+    margin-bottom: 10px;
+    }
+
+    .pending-order-item p{ 
+        margin-bottom: 5px;
+        }
 
 .order-info,
 .progress-info,
@@ -538,7 +552,7 @@
 
 .modal-content {
     background-color: #fefefe;
-    margin: 5% auto;
+    margin: 20% auto; /* Center the modal horizontally and vertically */
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -549,13 +563,37 @@
     float: right;
     font-size: 28px;
     font-weight: bold;
+    border: none;
+    background: transparent;
 }
 
 .close:hover,
 .close:focus {
-    color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+span .close {
+    display: none;
+}
+.stopreason {
+    color: red;
+    font-style: italic; /* Make the text italic */
+}
+
+.line-md--logout {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath stroke-dasharray='36' stroke-dashoffset='36' d='M12 4h-7c-0.55 0 -1 0.45 -1 1v14c0 0.55 0.45 1 1 1h7'%3E%3Canimate fill='freeze' attributeName='stroke-dashoffset' dur='0.5s' values='36;0'/%3E%3C/path%3E%3Cpath stroke-dasharray='14' stroke-dashoffset='14' d='M9 12h11.5'%3E%3Canimate fill='freeze' attributeName='stroke-dashoffset' begin='0.6s' dur='0.2s' values='14;0'/%3E%3C/path%3E%3Cpath stroke-dasharray='6' stroke-dashoffset='6' d='M20.5 12l-3.5 -3.5M20.5 12l-3.5 3.5'%3E%3Canimate fill='freeze' attributeName='stroke-dashoffset' begin='0.8s' dur='0.2s' values='6;0'/%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
+  background-color: currentColor;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  background-color: white;
 }
 
 .logout-con {
@@ -563,28 +601,36 @@
     align-items: center;
 }
 
-.logout-btn {
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    /* background-color: #f44336; */
-    background-color: #D96C4E;
+
+
+.responsive-logout {
+    display: none; /* Hidden by default */
+}
+
+.EditButton{
     color: white;
     text-decoration: none;
+    background-color: #2697FF;
+    padding: 5px 10px;
+    text-align: center;
     border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
 }
 
-.logout-btn i {
-    margin-right: 8px;
+.WriteButton{
+    color: white;
+    text-decoration: none;
+    background-color: #2cdab4;
+    padding: 5px 10px;
+    text-align: center;
+    border-radius: 5px;
 }
 
-.logout-btn:hover {
-    background-color: #d32f2f;
+/* Hide the logout button in non-responsive mode */
+@media (min-width: 769px) {
+    .responsive-logout {
+        display: none; /* Hide the button */
+    }
 }
-
-
 
 .stepper-container {
     display: flex;
@@ -807,12 +853,6 @@
 }
 
 
-@media (max-width: 768px) {
-    .menu-links {
-        flex-direction: column; /* Stack links vertically */
-        gap: 10px;
-    }
-}
 
 @media (max-width: 600px) {
     .stepper {
@@ -839,8 +879,12 @@
 }
 
 @media (max-width: 768px) {
+    .menu-links {
+        flex-direction: column; /* Stack links vertically */
+        gap: 10px;
+    }
     .container-profile {
-        flex-direction: column; /* Stack items vertically */
+        flex-direction: row; /* Stack items vertically */
         height: auto; /* Adjust height */
         padding: 10px;
     }
@@ -850,7 +894,7 @@
     }
     .nameofuser {
         font-size: 1.5rem;
-        text-align: center;
+        
     }
     .purchase-item {
         flex-direction: column; /* Stack items vertically */
@@ -858,13 +902,67 @@
     .purchase-image-div {
         justify-content: center; /* Center images */
     }
+
+
+    .logout-btn {
+        width: 120px; /* Adjust width */
+       
+    }
+    .logout-btn i {
+        margin-left: 5px; /* Reduce space between text and icon */
+        font-size: 12px; /* Smaller icon size */
+        vertical-align: middle; /* Align icon with text */
+    }
+
+    .logout-btn:hover {
+        background-color: #d32f2f; /* Darker red on hover */
+        transform: translateX(3px); /* Slightly move the button to the right on hover */
+    }
+    .responsive-logout {
+        display: inline-block; /* Show the button */
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #ff3700; /* Button color */
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 14px;
+   
+        text-align: center;
+        margin-right:-13px;
+    }
+
+    .responsive-logout:hover {
+        background-color: #d32f2f; /* Darker color on hover */
+    }
 }
 @media (max-width: 480px) {
     .profile-icon {
-        width: 25vw;
-        height: 25vw;
+        width: 17vw;
+        height: 17vw;
     }
     .nameofuser {
         font-size: 1.2rem;
+    }
+
+    .ep--edit{
+        width: 2em;
+        height: 2em;
+    }
+
+    .logout-btn {
+       width:90px;
+       font-size: 8px;
+    }
+
+    .logout-btn a{
+        display: none;
+     }
+
+    .logout-btn i {
+        margin-left: 9px; /* Reduce space between text and icon */
+        font-size: 7px; /* Smaller icon size */
+        margin:0;
+      
     }
 }

@@ -1146,7 +1146,35 @@ label {
   text-align: center;
   position: relative;
   margin: 15% auto;
-  
+  width: auto; /* Make width flexible */
+  max-width: 80%; /* Set a maximum width */
+  min-width: 200px; /* Set a minimum width to avoid being too small */
+  box-sizing: border-box; /* Ensure padding is included in width */
+}
+
+.modal-content p {
+  margin: 0;
+  padding: 10px 0;
+  word-wrap: break-word; /* Break long words to fit within the container */
+  white-space: normal; /* Allow text to wrap to the next line */
+  overflow-wrap: break-word; /* Ensure text wraps properly in all browsers */
+}
+
+
+
+#modal-ok-button, #confirm-ok-button {
+  color: white;
+  text-decoration: none;
+  background-color: #2cdab4;
+  padding: 5px 10px;
+  text-align: center;
+  border-radius: 5px;
+  cursor: pointer; /* Add mouse pointer */
+  border: none; /* Remove border */
+}
+
+#modal-ok-button:hover, #confirm-ok-button:hover {
+  background-color: #26b89a; /* Darker shade of the original color */
 }
 
 .modal-content-logs{
@@ -1157,6 +1185,20 @@ label {
   position: relative;
   margin: 15% auto;
   width: 90%;
+}
+
+.confirm-ok-button{
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+
 }
 .close-modal {
   position: absolute;

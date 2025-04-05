@@ -156,6 +156,8 @@ echo "</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 <header>
@@ -194,13 +196,14 @@ echo "</script>
             <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
             <a class="ep--edit" href="edit-profile.php"></a>
         </div>
+      
     </div>
 
     <!-- Pending Orders Section -->
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('pending-orders')">
             <h2>Pending Orders</h2>
-            <span class="toggle-icon">â � ¼</span>
+            <span class="toggle-icon">&#9660;</span>
         </div>
         <div id="pending-orders" class="section-content">
             <?php if (empty($pendingOrdersData)): ?>
@@ -227,7 +230,7 @@ echo "</script>
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('order-status')">
             <h2>Order Status (Furniture Update)</h2>
-            <span class="toggle-icon">â � ¼</span>
+            <span class="toggle-icon">&#9660;</span>
         </div>
         <div id="order-status" class="section-content">
             <?php if (empty($progressData)): ?>
@@ -263,7 +266,7 @@ echo "</script>
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('product-status')">
             <h2>Product Status</h2>
-            <span class="toggle-icon">â � ¼</span>
+            <span class="toggle-icon">&#9660;</span>
         </div>
         <div id="product-status" class="section-content">
             <?php if (empty($progressData)): ?>
@@ -308,7 +311,7 @@ echo "</script>
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('purchase-history')">
             <h2>Purchase History</h2>
-            <span class="toggle-icon">â � ¼</span>
+            <span class="toggle-icon">&#9660;</span>
         </div>
         <div id="purchase-history" class="section-content">
             <?php if (empty($purchaseHistoryData)): ?>
@@ -334,9 +337,9 @@ echo "</script>
                         <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
                         <div class="review-btn-container">
                             <?php if (isset($purchase['Review_ID'])): ?>
-                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="btn btn-primary">Edit Review</a>
+                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="EditButton">Edit Review</a>
                             <?php else: ?>
-                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="btn btn-primary">Write Review</a>
+                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="WriteButton">Write Review</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -404,6 +407,7 @@ echo "</script>
     </div>
 </div>
 
+
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -454,7 +458,7 @@ $(document).ready(function() {
 
         var stopReasonHtml = '';
         if (stopReason && stopReason.trim() !== "") {
-            stopReasonHtml = `<p><strong>Stop Reason:</strong> ${stopReason}</p>`;
+            stopReasonHtml = `<p class="stopreason"><strong>Stop Reason:</strong> ${stopReason}</p>`;
         }
 
         if (context === 'order') {

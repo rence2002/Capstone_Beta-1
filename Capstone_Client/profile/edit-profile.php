@@ -166,11 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
                 <!-- <a class="ep--edit" href="edit-profile.php"></a> -->
             </div>
-            <!-- <div class="logout-con">
-                <a href="logout.php" class="logout-btn">
-                    <i class="fa fa-sign-out-alt"></i> Logout
-                </a>
-            </div> -->
+             <!-- Logout Button for Responsive Mode -->
+        <a href="../logout/logout.php" class="logout-btn responsive-logout ">
+    Logout <i class="fas fa-arrow-right"></i>
+</a>
         </div>
 
         <div class="edit-form">

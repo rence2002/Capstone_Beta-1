@@ -110,7 +110,6 @@ $(document).ready(function() {
                         <h2 class="modal-title">${title}</h2>
                         <p class="modal-message">${message}</p>
                         <div class="modal-buttons">
-                            <button class="modal-ok-button close-modal">Cancel</button>
                             <button class="modal-confirm-button">Confirm</button>
                         </div>
                     </div>

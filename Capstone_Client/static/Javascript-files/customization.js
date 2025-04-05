@@ -153,34 +153,78 @@ $(document).ready(function () {
     });
 
     function showModal(title, message) {
-        const modal = document.createElement('div');
-        modal.classList.add('modal');
-        modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>${title}</h2>
-                <p>${message}</p>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    
-        const closeModal = modal.querySelector('.close-modal');
-        closeModal.addEventListener('click', () => {
-            modal.remove();
-        });
-    
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+        // Check if a modal already exists
+        let existingModal = document.querySelector('.modal');
+        if (!existingModal) {
+            // Create a new modal only if it doesn't already exist
+            const modal = document.createElement('div');
+            modal.classList.add('modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Add event listener to close the modal
+            const closeModal = modal.querySelector('.close-modal');
+            closeModal.addEventListener('click', () => {
                 modal.remove();
-            }
-        });
+            });
+
+            // Close the modal when clicking outside the modal content
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        } else {
+            // Update the content of the existing modal
+            const modalContent = existingModal.querySelector('.modal-content');
+            modalContent.querySelector('h2').textContent = title;
+            modalContent.querySelector('p').textContent = message;
+        }
     }
 });
 
+
+
 document.addEventListener('DOMContentLoaded', function () {
-    // Ensure the modal is hidden on page load
+    const modalOkButton = document.getElementById('modal-ok-button');
     const printModal = document.getElementById('print-modal');
-    if (printModal) {
+
+    if (modalOkButton) {
+        modalOkButton.addEventListener('click', function () {
+            // Generate PDF from the print modal content
+            generatePDF();
+        });
+    }
+
+    function generatePDF() {
+        // Import jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // Create a new jsPDF instance
+        const doc = new jsPDF();
+
+        // Get the modal content
+        const modalContent = printModal.querySelector('.modal-content');
+
+        // Add the modal content to the PDF
+        doc.text("Customization Receipt", 10, 10); // Title
+        doc.text("====================================", 10, 20); // Separator
+
+        // Extract the modal text content
+        const modalText = modalContent.innerText || modalContent.textContent;
+        const lines = doc.splitTextToSize(modalText, 180); // Wrap text to fit the page width
+        doc.text(lines, 10, 30);
+
+        // Save the PDF
+        doc.save('customization-receipt.pdf');
+
+        // Close the modal
         printModal.style.display = 'none';
     }
 });

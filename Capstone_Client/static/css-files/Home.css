@@ -669,6 +669,7 @@ a.button:hover {
   .footer-col .icons i {
     font-size: 1.2rem;
   }
+
 }
 
 
@@ -715,7 +716,12 @@ a.button:hover {
 
   .logo{
     width: 90px;
+    transition: opacity 0.3s ease; /* Smooth transition for hiding */
    }
+
+  header.show-mobile-menu .logo {
+    display: none; /* Hide the logo when the menu is active */
+  }
 
   .nav-btn {
     visibility: hidden;
@@ -760,8 +766,7 @@ a.button:hover {
   }
   .offer {
     flex-direction: column; 
-    height: auto; 
- 
+    height: 700px;
   }
 
   .offer > div {
@@ -954,6 +959,17 @@ a.button:hover {
   width: 24rem;
   height: 24rem;
 }
+
+  #hamburger-btn {
+    display: block; /* Show the hamburger menu by default */
+    font-size: 1.7rem;
+    cursor: pointer;
+    color: #000;
+  }
+
+  header.show-mobile-menu #hamburger-btn {
+    display: none; /* Hide the hamburger menu when the menu is active */
+  }
 }
 
 

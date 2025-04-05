@@ -141,7 +141,7 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
                              alt="Profile picture" width="50" height="50"/>
                         <div class="info">
                             <h3><?php echo htmlspecialchars($review['First_Name'] . ' ' . $review['Last_Name']); ?></h3>
-                            <p>Product: <?php echo htmlspecialchars($review['Product_Name']); ?></p>
+                            <p class="product">Product: <?php echo htmlspecialchars($review['Product_Name']); ?></p>
                         </div>
                         <div class="date">
                             <?php echo date('d/m/Y', strtotime($review['Review_Date'])); ?>

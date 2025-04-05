@@ -92,9 +92,19 @@
 .review-footer .actions button:hover {
   opacity: 0.9;
 }
-.review-footer .rating {
+.review-footer .rating ,.fa-star{
   color: #ffb400;
 }
+
+.no-reviews-message p{
+  margin-top:10px;
+  margin-bottom:10px;
+}
+.fa-star{
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 .form-container {
   background-color: #fff;
   border-radius: 10px;
