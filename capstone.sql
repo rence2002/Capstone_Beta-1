@@ -2,8 +2,7 @@
 SQLyog Ultimate - MySQL GUI v8.2 
 MySQL - 5.5.5-10.4.32-MariaDB : Database - db_api_capstone
 *********************************************************************
-*/
-
+*/
 
 /*!40101 SET NAMES utf8 */;
 
@@ -59,7 +58,7 @@ CREATE TABLE `tbl_cart` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`),
   CONSTRAINT `tbl_cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_cart` */
 
@@ -117,11 +116,9 @@ CREATE TABLE `tbl_customizations` (
   PRIMARY KEY (`Customization_ID`),
   KEY `User_ID` (`User_ID`),
   CONSTRAINT `tbl_customizations_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_customizations` */
-
-insert  into `tbl_customizations`(`Customization_ID`,`User_ID`,`Furniture_Type`,`Furniture_Type_Additional_Info`,`Standard_Size`,`Desired_Size`,`Color`,`Color_Image_URL`,`Color_Additional_Info`,`Texture`,`Texture_Image_URL`,`Texture_Additional_Info`,`Wood_Type`,`Wood_Image_URL`,`Wood_Additional_Info`,`Foam_Type`,`Foam_Image_URL`,`Foam_Additional_Info`,`Cover_Type`,`Cover_Image_URL`,`Cover_Additional_Info`,`Design`,`Design_Image_URL`,`Design_Additional_Info`,`Tile_Type`,`Tile_Image_URL`,`Tile_Additional_Info`,`Metal_Type`,`Metal_Image_URL`,`Metal_Additional_Info`,`Order_Status`,`Product_Status`,`Request_Date`,`Last_Update`,`Product_ID`,`Stop_Reason`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`) values (1,'0001','salaset','','Sala Set 9x9 ft.','','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae4f8d_Color.png','dsasdsad','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae5315_Texture.jpg','dsadasdas','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae54c9_Wood.jpg','dsadsadasd','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae55ec_Foam.jpg','dsadsadsad','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae5715_Cover.jpg','dsadsadasdas','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae5841_Design.jpg','dsadsadasdasdas','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae5940_Tile.jpg','dsadsadasdasd','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67ee2e5ae5a5d_Metal.jpg','dsadsadasdasdas',10,0,'2025-04-03 14:49:21','2025-04-03 14:49:21',19,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 
 /*Table structure for table `tbl_customizations_temp` */
 
@@ -167,8 +164,6 @@ CREATE TABLE `tbl_customizations_temp` (
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_customizations_temp` */
-
-insert  into `tbl_customizations_temp`(`Temp_Customization_ID`,`User_ID`,`Furniture_Type`,`Furniture_Type_Additional_Info`,`Standard_Size`,`Desired_Size`,`Color`,`Color_Image_URL`,`Color_Additional_Info`,`Texture`,`Texture_Image_URL`,`Texture_Additional_Info`,`Wood_Type`,`Wood_Image_URL`,`Wood_Additional_Info`,`Foam_Type`,`Foam_Image_URL`,`Foam_Additional_Info`,`Cover_Type`,`Cover_Image_URL`,`Cover_Additional_Info`,`Design`,`Design_Image_URL`,`Design_Additional_Info`,`Tile_Type`,`Tile_Image_URL`,`Tile_Additional_Info`,`Metal_Type`,`Metal_Image_URL`,`Metal_Additional_Info`,`Order_Status`,`Request_Date`,`Last_Update`) values (14,'0001','bedframe','','Full XL 54x80 in.','','Weathered Oak',NULL,'','Semi Glossy',NULL,'','Plywood 1/8',NULL,'','Uratex',NULL,'','Velvet',NULL,'','Shabby Chic',NULL,'','Quartz',NULL,'','Tubular',NULL,'',0,'2025-04-03 14:13:03','2025-04-03 14:13:03');
 
 /*Table structure for table `tbl_order_request` */
 
@@ -228,8 +223,6 @@ CREATE TABLE `tbl_preorder` (
 
 /*Data for the table `tbl_preorder` */
 
-insert  into `tbl_preorder`(`Preorder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Preorder_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,3,'0001',1,'2000.00',10,'2025-04-03 09:30:07',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
-
 /*Table structure for table `tbl_prod_info` */
 
 DROP TABLE IF EXISTS `tbl_prod_info`;
@@ -255,7 +248,7 @@ CREATE TABLE `tbl_prod_info` (
 
 /*Data for the table `tbl_prod_info` */
 
-insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','bedframe','Bed Frame - Full XL 54x80 in.','Blue','200','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-02 09:27:50','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade'),(4,'Custom Chair Order','Custom order from request #1',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 13:59:06','2025-04-02 13:59:06',NULL,'custom'),(5,'Custom Chair Order','Custom order from request #2',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 14:23:20','2025-04-02 14:23:20',NULL,'custom'),(6,'Custom Table Order','Custom order from request #3',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 14:25:30','2025-04-02 14:25:30',NULL,'custom'),(7,'Custom Table Order','Custom order from request #4',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 14:26:37','2025-04-02 14:26:37',NULL,'custom'),(8,'Custom Chair Order','Custom order from request #5',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 14:35:08','2025-04-02 14:35:08',NULL,'custom'),(9,'Custom Sala Set Order','Custom order from request #6',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-02 14:35:51','2025-04-02 14:35:51',NULL,'custom'),(10,'Custom Sala Set Order','Custom order from request #7',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 12:53:30','2025-04-03 12:53:30',NULL,'custom'),(11,'Custom Sala Set Order','Custom order from request #8',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 12:54:50','2025-04-03 12:54:50',NULL,'custom'),(12,'Custom Sala Set Order','Custom order from request #9',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 12:56:47','2025-04-03 12:56:47',NULL,'custom'),(13,'Custom Sala Set Order','Custom order from request #10',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 12:58:47','2025-04-03 12:58:47',NULL,'custom'),(14,'Custom Bed Frame Order','Custom order from request #11',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 13:32:21','2025-04-03 13:32:21',NULL,'custom'),(15,'Custom Bed Frame Order','Custom order from request #12',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 13:32:58','2025-04-03 13:32:58',NULL,'custom'),(16,'Custom Table Order','Custom order from request #13',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 13:55:56','2025-04-03 13:55:56',NULL,'custom'),(17,'Custom Bedframe Order','Custom order from request #14',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 14:13:03','2025-04-03 14:13:03',NULL,'custom'),(18,'Custom Salaset Order','Custom order from request #15',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-03 14:44:42','2025-04-03 14:44:42',NULL,'custom'),(19,'Custom salaset','Custom order from request #5','Custom Furniture',NULL,NULL,NULL,NULL,NULL,'',NULL,'2025-04-03 14:49:21','2025-04-03 14:49:21',NULL,'custom');
+insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','bedframe','Bed Frame - Full XL 54x80 in.','Blue','200','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-02 09:27:50','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade');
 
 /*Table structure for table `tbl_progress` */
 
@@ -292,8 +285,6 @@ CREATE TABLE `tbl_progress` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_progress` */
-
-insert  into `tbl_progress`(`Progress_ID`,`User_ID`,`Product_ID`,`Product_Name`,`Order_Type`,`Order_Status`,`Product_Status`,`Quantity`,`Total_Price`,`Date_Added`,`LastUpdate`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`,`Progress_Pic_10`) values (1,'0001',1,'Sofa','ready_made',50,90,1,'2000.00','2025-04-03 09:29:03','2025-04-03 14:08:17','../uploads/progress_pics/67edf191c99cb_sofa2.jpg','../uploads/progress_pics/67edf191c9ab5_sofa.jpg','../uploads/progress_pics/67edf191c9bcf_ck.png','../uploads/progress_pics/67edf191c9ef8_Foam.jpg','../uploads/progress_pics/67edf191ca012_OC 2.jpg','../uploads/progress_pics/67edf191ca0cb_Office Chair.jpg','../uploads/progress_pics/67edf191ca191_Cover.jpg','../uploads/progress_pics/67edf191ca2c0_bed 3.jpg','../uploads/progress_pics/67edf191ca39a_Design.jpg','typhoon','../uploads/progress_pics/67edf191c8f83_sofa3.jpg'),(3,'0001',19,'N/A','custom',20,20,1,'0.00','2025-04-03 14:49:21','2025-04-04 11:17:04',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'',NULL);
 
 /*Table structure for table `tbl_purchase_history` */
 
@@ -351,8 +342,6 @@ CREATE TABLE `tbl_ready_made_orders` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_ready_made_orders` */
-
-insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,1,'0001',1,'2000.00',50,'2025-04-03 09:29:03',90,'../uploads/progress_pics/67edf191c8f83_sofa3.jpg','../uploads/progress_pics/67edf191c99cb_sofa2.jpg','../uploads/progress_pics/67edf191c9ab5_sofa.jpg','../uploads/progress_pics/67edf191c9bcf_ck.png','../uploads/progress_pics/67edf191c9ef8_Foam.jpg','../uploads/progress_pics/67edf191ca012_OC 2.jpg','../uploads/progress_pics/67edf191ca0cb_Office Chair.jpg','../uploads/progress_pics/67edf191ca191_Cover.jpg','../uploads/progress_pics/67edf191ca2c0_bed 3.jpg','../uploads/progress_pics/67edf191ca39a_Design.jpg','typhoon');
 
 /*Table structure for table `tbl_reviews` */
 
