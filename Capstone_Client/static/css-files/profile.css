@@ -463,6 +463,17 @@ padding: 10px;
    
 }
 
+
+.modal-title{
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+.product-status{
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #333;
+}
 .progress-item{
     margin-bottom: 10%;
 }
@@ -508,8 +519,11 @@ padding: 10px;
 .progress-image {
     max-width: 200px;
     border-radius: 4px;
-    margin-top: 10px;
+    margin-bottom: 10px;
+    width:200px;
+    height:200px;
 }
+
 
 .empty-message {
     text-align: center;
@@ -565,6 +579,7 @@ padding: 10px;
     font-weight: bold;
     border: none;
     background: transparent;
+    margin-top: -50px;
 }
 
 .close:hover,

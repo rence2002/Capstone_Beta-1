@@ -446,15 +446,15 @@ $(document).ready(function() {
         } else if (context === 'product') {
             modalTitle.text('Product Details');
         }
-
         var pictureHtml = ''; // Initialize picture HTML
         if (progressPicUrl && progressPicUrl.trim() !== "") {
             var basePath = window.location.origin + "/Capstone_Beta/Capstone_Client/";
             var absoluteUrl = basePath + progressPicUrl.replace("../", ""); // Remove "../" from the path
-            pictureHtml = `<img src="${absoluteUrl}" alt="Progress Picture" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
+            pictureHtml = `<div class="product-image"><img src="${absoluteUrl}" alt="Progress Picture" class="progress-image"></div>`;
         } else {
-            pictureHtml = `<p>No Picture Available</p>`;
+            pictureHtml = `<p class="no-picture">No Picture Available</p>`;
         }
+
 
         var stopReasonHtml = '';
         if (stopReason && stopReason.trim() !== "") {
@@ -464,22 +464,22 @@ $(document).ready(function() {
         if (context === 'order') {
             var orderDetails = `
                 ${pictureHtml}
-                <p><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
-                <p><strong>Order Status:</strong> ${orderStatusMap[progress.Order_Status] || 'Status Unknown'}</p>
-                <p><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
-                <p><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
-                <p><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
+                <p class="product-status"><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
+                <p class="product-status"><strong>Order Status:</strong> ${orderStatusMap[progress.Order_Status] || 'Status Unknown'}</p>
+                <p class="product-status"><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
+                <p class="product-status"><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
+                <p class="product-status"><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
                 ${stopReasonHtml}
             `;
             modalBody.html(orderDetails);
         } else if (context === 'product') {
             var productDetails = `
                 ${pictureHtml}
-                <p><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
-                <p><strong>Product Status:</strong> ${productStatusLabels[stepStatus] || 'Status Unknown'}</p>
-                <p><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
-                <p><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
-                <p><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
+                <p class="product-status"><strong>Product Name:</strong> ${progress.Product_Name || 'Unknown Product'}</p>
+                <p class="product-status"><strong>Product Status:</strong> ${productStatusLabels[stepStatus] || 'Status Unknown'}</p>
+                <p class="product-status"><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
+                <p class="product-status"><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
+                <p class="product-status"><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
                 ${stopReasonHtml}
             `;
             modalBody.html(productDetails);
