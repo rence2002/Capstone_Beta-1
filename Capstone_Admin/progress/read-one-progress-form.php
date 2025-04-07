@@ -215,7 +215,7 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
     <div class="button-container">
     
         <a href="read-all-progress-form.php" class="buttonBack">Back to List</a>
-        <a href="../progress/update-progress-form.php?id=<?= urlencode($row['ID']) ?>" class="buttonEdit">Edit</a>
+        <td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Edit</a></td>
     </div>
 </div>
 
