@@ -173,10 +173,6 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
  <br><br><br>
 <div class="container_boxes">
     <h4>PROGRESS DETAILS</h4>
-    <!-- <div class="button-container">
-        <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-        <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a>
-    </div> -->
     
     <table class="table table-bordered">
         <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
