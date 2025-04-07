@@ -212,14 +212,27 @@ echo "</script>
                 <?php foreach ($pendingOrdersData as $order): ?>
                     <div class="pending-order-item">
                         <h3><?= htmlspecialchars($order['Product_Name']) ?? 'Custom Order' ?></h3>
-                        <?php if ($order['Customization_ID']): ?>
-                            <p><strong>Order Type:</strong> Custom Order</p>
-                        <?php else: ?>
-                            <p><strong>Order Type:</strong> <?= htmlspecialchars($order['Order_Type']) ?></p>
-                        <?php endif; ?>
+                        <p><strong>Order Type:</strong> <?= htmlspecialchars($order['Order_Type']) ?></p>
                         <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
                         <p><strong>Total Price:</strong> <?= htmlspecialchars($order['Total_Price']) ?></p>
                         <p><strong>Request Date:</strong> <?= htmlspecialchars($order['Request_Date']) ?></p>
+                        
+                        <!-- Display Order Status -->
+                        <?php if ($order['Processed'] == 1): ?>
+                            <?php if ($order['Order_Status'] == 1): ?>
+                                <p class="order-status approved">Status: Approved</p>
+                            <?php elseif ($order['Order_Status'] == -1): ?>
+                                <p class="order-status rejected">Status: Rejected</p>
+                            <?php endif; ?>
+                            
+                            <!-- Okay Button -->
+                            <form method="POST" action="delete_order_request.php">
+                                <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
+                                <button type="submit" class="okay-btn">Okay</button>
+                            </form>
+                        <?php else: ?>
+                            <p class="order-status pending">Status: Pending</p>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -495,6 +508,44 @@ function toggleSection(sectionId) {
     } else {
         section.classList.add('active');
     }
+}
+</script>
+<script>
+function deleteOrderRequest(requestId, button) {
+    if (!confirm("Are you sure you want to delete this order?")) {
+        return;
+    }
+
+    // Send an AJAX request to delete the order
+    fetch('delete_order_request.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `request_id=${encodeURIComponent(requestId)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the order item from the DOM
+            const orderItem = button.closest('.pending-order-item');
+            if (orderItem) {
+                orderItem.remove();
+            }
+
+            // Check if there are no more pending orders
+            const pendingOrdersContainer = document.getElementById('pending-orders');
+            if (pendingOrdersContainer && pendingOrdersContainer.children.length === 0) {
+                pendingOrdersContainer.innerHTML = '<p>No pending orders</p>';
+            }
+        } else {
+            alert(data.message || "Failed to delete the order. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("An error occurred. Please try again.");
+    });
 }
 </script>
 </body>

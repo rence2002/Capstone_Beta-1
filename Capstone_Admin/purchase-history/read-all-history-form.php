@@ -25,69 +25,8 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
-// Fetch purchase history records from multiple tables
+// Initialize the search variable
 $search = isset($_GET['search']) ? $_GET['search'] : '';
-$query = "
-    SELECT 
-        'custom' AS Order_Type,
-        c.Customization_ID AS ID,
-        c.Furniture_Type AS Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        c.Order_Status,
-        c.Product_Status,
-        p.Price AS Price,
-        c.Last_Update AS Last_Update,
-        c.User_ID
-    FROM tbl_customizations c
-    JOIN tbl_user_info u ON c.User_ID = u.User_ID
-    LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
-    WHERE c.Order_Status = 100 AND c.Product_Status = 100 AND
-    (u.First_Name LIKE :search 
-    OR u.Last_Name LIKE :search 
-    OR c.Furniture_Type LIKE :search)
-    UNION
-    SELECT 
-        'pre_order' AS Order_Type,
-        po.Preorder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        po.Preorder_Status AS Order_Status,
-        po.Product_Status,
-        pr.Price AS Price,
-        po.Order_Date AS Last_Update,
-         u.User_ID
-    FROM tbl_preorder po
-    JOIN tbl_user_info u ON po.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-    WHERE po.Preorder_Status = 100 AND po.Product_Status = 100 AND
-    (u.First_Name LIKE :search 
-    OR u.Last_Name LIKE :search 
-    OR pr.Product_Name LIKE :search)
-    UNION
-    SELECT 
-        'ready_made' AS Order_Type,
-        rmo.ReadyMadeOrder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        rmo.Order_Status,
-        rmo.Product_Status,
-        pr.Price AS Price,
-        rmo.Order_Date AS Last_Update,
-        u.User_ID
-    FROM tbl_ready_made_orders rmo
-    JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-    WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100 AND
-    (u.First_Name LIKE :search 
-    OR u.Last_Name LIKE :search 
-    OR pr.Product_Name LIKE :search)
-    ORDER BY Last_Update DESC
-";
-$stmt = $pdo->prepare($query);
-$searchParam = '%' . $search . '%';
-$stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
-$stmt->execute();
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Order Status Map
 $orderStatusLabels = [
@@ -119,78 +58,140 @@ $productStatusLabels = [
     100 => 'Sold / Installed',
 ];
 
-// Function to insert data into tbl_purchase_history
-function insertIntoPurchaseHistory($pdo, $orderType, $id, $userId, $productName, $price) {
-    $query = "INSERT INTO tbl_purchase_history (User_ID, Product_ID, Product_Name, Quantity, Total_Price, Order_Type, Order_Status, Product_Status)
-              VALUES (:user_id, :product_id, :product_name, 1, :total_price, :order_type, 100, 100)";
+if (!empty($search)) {
+    $query = "
+        SELECT 
+            'custom' AS Order_Type,
+            c.Customization_ID AS ID,
+            c.Furniture_Type AS Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            c.Order_Status,
+            c.Product_Status,
+            p.Price AS Price,
+            c.Last_Update AS Last_Update,
+            c.User_ID
+        FROM tbl_customizations c
+        JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
+        WHERE c.Order_Status = 100 AND c.Product_Status = 100 AND
+        (u.First_Name LIKE :search 
+        OR u.Last_Name LIKE :search 
+        OR c.Furniture_Type LIKE :search)
+        UNION
+        SELECT 
+            'pre_order' AS Order_Type,
+            po.Preorder_ID AS ID,
+            pr.Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            po.Preorder_Status AS Order_Status,
+            po.Product_Status,
+            pr.Price AS Price,
+            po.Order_Date AS Last_Update,
+            u.User_ID
+        FROM tbl_preorder po
+        JOIN tbl_user_info u ON po.User_ID = u.User_ID
+        JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
+        WHERE po.Preorder_Status = 100 AND po.Product_Status = 100 AND
+        (u.First_Name LIKE :search 
+        OR u.Last_Name LIKE :search 
+        OR pr.Product_Name LIKE :search)
+        UNION
+        SELECT 
+            'ready_made' AS Order_Type,
+            rmo.ReadyMadeOrder_ID AS ID,
+            pr.Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            rmo.Order_Status,
+            rmo.Product_Status,
+            pr.Price AS Price,
+            rmo.Order_Date AS Last_Update,
+            u.User_ID
+        FROM tbl_ready_made_orders rmo
+        JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
+        JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
+        WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100 AND
+        (u.First_Name LIKE :search 
+        OR u.Last_Name LIKE :search 
+        OR pr.Product_Name LIKE :search)
+        ORDER BY Last_Update DESC
+    ";
     $stmt = $pdo->prepare($query);
-    $stmt->bindParam(':user_id', $userId, PDO::PARAM_STR);
-    $stmt->bindParam(':product_id', $id, PDO::PARAM_INT);
-    $stmt->bindParam(':product_name', $productName, PDO::PARAM_STR);
-    $stmt->bindParam(':total_price', $price, PDO::PARAM_STR);
-    $stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
     $stmt->execute();
-}
-
-// Function to automatically delete data if status changes
-function deleteIfStatusChanged($pdo, $orderType, $id, $currentStatus) {
-    $tableName = "";
-    $statusColumn = "";
-    $idColumn = "";
-
-    if ($orderType == 'custom') {
-        $tableName = "tbl_customizations";
-        $statusColumn = "Order_Status";
-        $idColumn = "Customization_ID";
-    } elseif ($orderType == 'pre_order') {
-        $tableName = "tbl_preorder";
-        $statusColumn = "Preorder_Status";
-        $idColumn = "Preorder_ID";
-    } elseif ($orderType == 'ready_made') {
-        $tableName = "tbl_ready_made_orders";
-        $statusColumn = "Order_Status";
-        $idColumn = "ReadyMadeOrder_ID";
-    } else {
-        return;
-    }
-
-    // Check if the status has changed
-    $checkQuery = "SELECT $statusColumn, User_ID FROM $tableName WHERE $idColumn = :id";
-    $stmt = $pdo->prepare($checkQuery);
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Fetch all records if no search query is provided
+    $query = "
+        SELECT 
+            'custom' AS Order_Type,
+            c.Customization_ID AS ID,
+            c.Furniture_Type AS Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            c.Order_Status,
+            c.Product_Status,
+            p.Price AS Price,
+            c.Last_Update AS Last_Update,
+            c.User_ID
+        FROM tbl_customizations c
+        JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
+        WHERE c.Order_Status = 100 AND c.Product_Status = 100
+        UNION
+        SELECT 
+            'pre_order' AS Order_Type,
+            po.Preorder_ID AS ID,
+            pr.Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            po.Preorder_Status AS Order_Status,
+            po.Product_Status,
+            pr.Price AS Price,
+            po.Order_Date AS Last_Update,
+            u.User_ID
+        FROM tbl_preorder po
+        JOIN tbl_user_info u ON po.User_ID = u.User_ID
+        JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
+        WHERE po.Preorder_Status = 100 AND po.Product_Status = 100
+        UNION
+        SELECT 
+            'ready_made' AS Order_Type,
+            rmo.ReadyMadeOrder_ID AS ID,
+            pr.Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            rmo.Order_Status,
+            rmo.Product_Status,
+            pr.Price AS Price,
+            rmo.Order_Date AS Last_Update,
+            u.User_ID
+        FROM tbl_ready_made_orders rmo
+        JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
+        JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
+        WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100
+        ORDER BY Last_Update DESC
+    ";
+    $stmt = $pdo->prepare($query);
     $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    if ($row && $row[$statusColumn] != $currentStatus) {
-        // Insert into purchase history if status is 100
-        if ($currentStatus == 100) {
-            $productQuery = "SELECT Product_Name, Price FROM tbl_prod_info WHERE Product_ID = :product_id";
-            $productStmt = $pdo->prepare($productQuery);
-            $productStmt->bindParam(':product_id', $id, PDO::PARAM_INT);
-            $productStmt->execute();
-            $product = $productStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($product) {
-                insertIntoPurchaseHistory($pdo, $orderType, $id, $row['User_ID'], $product['Product_Name'], $product['Price']);
-            }
-        }
-
-        // Delete the record
-        $deleteQuery = "DELETE FROM $tableName WHERE $idColumn = :id";
-        $stmt = $pdo->prepare($deleteQuery);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+if (isset($_GET['search'])) {
+    foreach ($rows as $row) {
+        $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 0;
+        echo '
+        <tr>
+            <td>' . htmlspecialchars($row['Order_Type']) . '</td>
+            <td>' . htmlspecialchars($row['User_Name']) . '</td>
+            <td>' . htmlspecialchars($row['Product_Name']) . '</td>
+            <td>' . htmlspecialchars($orderStatusLabels[$row['Order_Status']] ?? "Unknown") . '</td>
+            <td>' . htmlspecialchars($productStatusLabels[$row['Product_Status']] ?? "Unknown") . '</td>
+            <td>' . $totalPrice . '</td>
+            <td style="text-align: center;">
+                <a class="buttonView" href="read-one-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a>
+            </td>
+        </tr>';
     }
+    exit; // Stop further execution for AJAX requests
 }
-
-// Check and delete data if status changed
-foreach ($rows as $row) {
-    deleteIfStatusChanged($pdo, $row['Order_Type'], $row['ID'], $row['Order_Status']);
-}
-
-// Refetch the data after potential deletions
-$stmt->execute();
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -250,8 +251,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -280,47 +283,44 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-            <table width="100%" border="1" cellspacing="5">
+                <div id="purchase-history-list">
+    <table width="100%" border="1" cellspacing="5">
+        <thead>
+            <tr>
+                <th>ORDER TYPE</th>
+                <th>USER NAME</th>
+                <th>PRODUCT NAME</th>
+                <th>ORDER STATUS</th>
+                <th>PRODUCT STATUS</th>
+                <th>TOTAL PRICE</th>
+                <th style="text-align: center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($rows as $row): ?>
                 <tr>
-                    <th>ORDER TYPE</th>
-                    <th>USER NAME</th>
-                    <th>PRODUCT NAME</th>
-                    <th>ORDER STATUS</th>
-                    <th>PRODUCT STATUS</th>
-                    <th>TOTAL PRICE</th>
-                    <th style="text-align: center;">ACTIONS</th>
+                    <td><?= htmlspecialchars($row['Order_Type']) ?></td>
+                    <td><?= htmlspecialchars($row['User_Name']) ?></td>
+                    <td><?= htmlspecialchars($row['Product_Name']) ?></td>
+                    <td><?= htmlspecialchars($orderStatusLabels[$row['Order_Status']] ?? "Unknown") ?></td>
+                    <td><?= htmlspecialchars($productStatusLabels[$row['Product_Status']] ?? "Unknown") ?></td>
+                    <td>
+                        <?php
+                            $totalPrice = 0;
+                            if (isset($row['Price'])) {
+                                $totalPrice = number_format((float) $row['Price'], 2, '.', '');
+                            }
+                        ?>
+                        <?= $totalPrice ?>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonView" href="read-one-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a>
+                    </td>
                 </tr>
-                <?php foreach ($rows as $row): ?>
-                    <tr>
-                        <td>
-                            <?= htmlspecialchars($row['Order_Type']) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($row['User_Name']) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($row['Product_Name']) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($orderStatusLabels[$row['Order_Status']] ?? "Unknown") ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($productStatusLabels[$row['Product_Status']] ?? "Unknown") ?>
-                        </td>
-                        <td>
-                            <?php
-                                $totalPrice = 0;
-                                if(isset($row['Price'])){
-                                     $totalPrice = number_format((float) $row['Price'], 2, '.', '');
-                                }
-                            ?>
-                            <?= $totalPrice ?>
-                        </td>
-                        <td style="text-align: center;"><a class="buttonView" href="read-one-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a></td>
-                    </tr>
-                <?php endforeach; ?>
-            </table>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
         </div>
     </section>
 
@@ -353,6 +353,23 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
+        });
+
+        document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+            const searchValue = this.value.trim();
+
+            // Determine the URL based on whether the search bar is empty
+            const url = searchValue ? `read-all-history-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-history-form.php`;
+
+            // Send an AJAX request to fetch results
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    // Update the purchase history list with the filtered results
+                    const tableBody = document.querySelector('#purchase-history-list table tbody');
+                    tableBody.innerHTML = data.trim(); // Ensure no extra whitespace is added
+                })
+                .catch(error => console.error('Error fetching search results:', error));
         });
     </script>
 </body>

@@ -36,6 +36,7 @@ $query = "
         o.Order_Status 
     FROM tbl_order_request o
     JOIN tbl_user_info u ON o.User_ID = u.User_ID
+    WHERE o.Order_Status = 0
 ";
 $stmt = $pdo->prepare($query);
 $stmt->execute();

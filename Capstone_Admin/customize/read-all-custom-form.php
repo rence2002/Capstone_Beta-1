@@ -21,6 +21,81 @@ if (!$admin) {
 }
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
+
+/**
+ * Get the color for the progress bar based on the order status.
+ */
+function getColorForStatus($status) {
+    if ($status >= 90) {
+        return '#28a745'; // Green for completed or near completion
+    } elseif ($status >= 50) {
+        return '#ffc107'; // Yellow for mid-production
+    } elseif ($status > 0) {
+        return '#17a2b8'; // Blue for initial stages
+    } else {
+        return '#dc3545'; // Red for not started or issues
+    }
+}
+
+// Check if the request is an AJAX search request
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "
+        SELECT 
+            c.Customization_ID, 
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
+            c.Furniture_Type, 
+            c.Order_Status 
+        FROM tbl_customizations c
+        JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        WHERE u.First_Name LIKE :search 
+        OR u.Last_Name LIKE :search 
+        OR c.Furniture_Type LIKE :search
+        OR c.Order_Status LIKE :search
+    ";
+    $stmt = $pdo->prepare($query);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmt->execute();
+    $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the table rows for AJAX requests
+    echo '<table>
+        <tr>
+            <th>Customization ID</th>
+            <th>User Name</th>
+            <th>Furniture Type</th>
+            <th>Order Status</th>
+            <th colspan="3" style="text-align: center;">ACTIONS</th>
+        </tr>';
+    foreach ($customizations as $customization) {
+        $customizationID = htmlspecialchars($customization["Customization_ID"]);
+        $userName = htmlspecialchars($customization["User_Name"]);
+        $furnitureType = htmlspecialchars($customization["Furniture_Type"]);
+        $orderStatus = $customization["Order_Status"];
+        echo '
+        <tr>
+            <td>'.$customizationID.'</td>
+            <td>'.$userName.'</td>
+            <td>'.$furnitureType.'</td>
+            <td>
+                <div class="progress" style="width: 150px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: '.$orderStatus.'%; background-color: '.getColorForStatus($orderStatus).';" 
+                         aria-valuenow="'.$orderStatus.'" aria-valuemin="0" aria-valuemax="100">
+                        '.$orderStatus.'%
+                    </div>
+                </div>
+            </td>
+            <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>
+            <td style="text-align: center;"><a class="buttonEdit" href="update-custom-form.php?id='.$customizationID.'" target="_parent">Edit</a></td>
+            <td style="text-align: center;"><a class="buttonDelete" href="delete-custom-form.php?id='.$customizationID.'" target="_parent">Delete</a></td>
+        </tr>';
+    }
+    echo '</table>';
+    exit; // Stop further execution for AJAX requests
+}
+
 // Fetch customization records from the database
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
@@ -105,8 +180,10 @@ $orderStatusMap = [
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
                 <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
@@ -125,55 +202,43 @@ $orderStatusMap = [
                 <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-                    <tr>
-                        <th>Customization ID</th>
-                        <th>User Name</th>
-                        <th>Furniture Type</th>
-                        <th>Order Status</th>
-                        <th colspan="3" style="text-align: center;">ACTIONS</th>
-                    </tr>
-                    <?php
-                    foreach ($customizations as $customization) { 
-                        $customizationID = htmlspecialchars($customization["Customization_ID"]);
-                        $userName = htmlspecialchars($customization["User_Name"]);
-                        $furnitureType = htmlspecialchars($customization["Furniture_Type"]);
-                        $orderStatus = $customization["Order_Status"];
-                        echo '
+                <div id="customization-list">
+                    <table>
                         <tr>
-                            <td>'.$customizationID.'</td>
-                            <td>'.$userName.'</td>
-                            <td>'.$furnitureType.'</td>
-                            <td>
-                                <div class="progress" style="width: 150px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: '.$orderStatus.'%; background-color: '.getColorForStatus($orderStatus).';" 
-                                         aria-valuenow="'.$orderStatus.'" aria-valuemin="0" aria-valuemax="100">
-                                        '.$orderStatus.'%
+                            <th>Customization ID</th>
+                            <th>User Name</th>
+                            <th>Furniture Type</th>
+                            <th>Order Status</th>
+                            <th colspan="3" style="text-align: center;">ACTIONS</th>
+                        </tr>
+                        <?php
+                        foreach ($customizations as $customization) { 
+                            $customizationID = htmlspecialchars($customization["Customization_ID"]);
+                            $userName = htmlspecialchars($customization["User_Name"]);
+                            $furnitureType = htmlspecialchars($customization["Furniture_Type"]);
+                            $orderStatus = $customization["Order_Status"];
+                            echo '
+                            <tr>
+                                <td>'.$customizationID.'</td>
+                                <td>'.$userName.'</td>
+                                <td>'.$furnitureType.'</td>
+                                <td>
+                                    <div class="progress" style="width: 150px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: '.$orderStatus.'%; background-color: '.getColorForStatus($orderStatus).';" 
+                                             aria-valuenow="'.$orderStatus.'" aria-valuemin="0" aria-valuemax="100">
+                                            '.$orderStatus.'%
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>
-                            <td style="text-align: center;"><a class="buttonEdit" href="update-custom-form.php?id='.$customizationID.'" target="_parent">Edit</a></td>
-                            <td style="text-align: center;"><a class="buttonDelete" href="delete-custom-form.php?id='.$customizationID.'" target="_parent">Delete</a></td>
-                        </tr>';
-                    }
-                    /**
-                     * Function to map order status to color
-                     */
-                    function getColorForStatus($status) {
-                        if ($status < 30) {
-                            return '#ff0000'; // Red for initial stages
-                        } elseif ($status < 60) {
-                            return '#ffa500'; // Orange for mid stages
-                        } elseif ($status < 90) {
-                            return '#ffff00'; // Yellow for nearing completion
-                        } else {
-                            return '#008000'; // Green for completed
+                                </td>
+                                <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>
+                                <td style="text-align: center;"><a class="buttonEdit" href="update-custom-form.php?id='.$customizationID.'" target="_parent">Edit</a></td>
+                                <td style="text-align: center;"><a class="buttonDelete" href="delete-custom-form.php?id='.$customizationID.'" target="_parent">Delete</a></td>
+                            </tr>';
                         }
-                    }
-                    ?>
-                </table>
+                        ?>
+                    </table>
+                </div>
             </form>
         </div>
     </section>
@@ -203,6 +268,20 @@ $orderStatusMap = [
                 // Toggle the display of the dropdown menu
                 dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
+        });
+
+        document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+            const searchValue = this.value;
+
+            // Send an AJAX request to fetch filtered results
+            fetch(`read-all-custom-form.php?search=${encodeURIComponent(searchValue)}`)
+                .then(response => response.text())
+                .then(data => {
+                    // Update the customization list with the filtered results
+                    const customizationList = document.getElementById('customization-list');
+                    customizationList.innerHTML = data;
+                })
+                .catch(error => console.error('Error fetching search results:', error));
         });
     </script>
 </body>

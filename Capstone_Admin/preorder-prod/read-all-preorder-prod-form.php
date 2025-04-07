@@ -27,29 +27,8 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
-// Fetch preorder records from the database
+// Initialize the search variable
 $search = isset($_GET['search']) ? $_GET['search'] : '';
-$query = "
-    SELECT 
-        po.Preorder_ID,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        p.Product_Name,
-        po.Total_Price,
-        po.Preorder_Status,
-        po.Order_Date
-    FROM tbl_preorder po
-    JOIN tbl_user_info u ON po.User_ID = u.User_ID
-    JOIN tbl_prod_info p ON po.Product_ID = p.Product_ID
-    WHERE u.First_Name LIKE :search 
-    OR u.Last_Name LIKE :search 
-    OR p.Product_Name LIKE :search
-    OR po.Preorder_Status LIKE :search
-";
-$stmt = $pdo->prepare($query);
-$searchParam = '%' . $search . '%';
-$stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
-$stmt->execute();
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Preorder Status mapping
 $statusLabels = [
@@ -64,6 +43,92 @@ $statusLabels = [
     80 => 'Installed',
     100 => 'Complete'
 ];
+
+// Fetch all preorder records if no search query is provided
+if (!isset($_GET['search'])) {
+    $query = "
+        SELECT 
+            po.Preorder_ID,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            p.Product_Name,
+            po.Total_Price,
+            po.Preorder_Status,
+            po.Order_Date
+        FROM tbl_preorder po
+        JOIN tbl_user_info u ON po.User_ID = u.User_ID
+        JOIN tbl_prod_info p ON po.Product_ID = p.Product_ID
+    ";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Check if the request is an AJAX search request
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "
+        SELECT 
+            po.Preorder_ID,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            p.Product_Name,
+            po.Total_Price,
+            po.Preorder_Status,
+            po.Order_Date
+        FROM tbl_preorder po
+        JOIN tbl_user_info u ON po.User_ID = u.User_ID
+        JOIN tbl_prod_info p ON po.Product_ID = p.Product_ID
+        WHERE u.First_Name LIKE :search 
+        OR u.Last_Name LIKE :search 
+        OR p.Product_Name LIKE :search
+        OR po.Preorder_Status LIKE :search
+    ";
+    $stmt = $pdo->prepare($query);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the table rows for AJAX requests
+    echo '<table>
+        <tr>
+            <th>User Name</th>
+            <th>Product Name</th>
+            <th>Total Price</th>
+            <th>Preorder Status</th>
+            <th colspan="3" style="text-align: center;">ACTIONS</th>
+        </tr>';
+    foreach ($rows as $row) {
+        $preorderID = htmlspecialchars($row["Preorder_ID"]);
+        $userName = htmlspecialchars($row["User_Name"]);
+        $productName = htmlspecialchars($row["Product_Name"]);
+        $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+        $preorderStatus = htmlspecialchars($statusLabels[$row["Preorder_Status"]] ?? 'Unknown');
+        $progressPercent = $row["Preorder_Status"]; // Preorder status as progress
+
+        echo '
+        <tr>
+            <td>'.$userName.'</td>
+            <td>'.$productName.'</td>
+            <td>₱'.$totalPrice.'</td>
+            <td>
+                <div class="progress" style="height: 20px; width: 150px;">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                        style="width: '.$progressPercent.'%;" 
+                        aria-valuenow="'.$progressPercent.'" 
+                        aria-valuemin="0" 
+                        aria-valuemax="100">
+                        '.$progressPercent.'%
+                    </div>
+                </div>
+            </td>
+            <td style="text-align: center;"><a class="buttonView" href="read-one-preorder-prod-form.php?id='.$preorderID.'" target="_parent">View</a></td>
+            <td style="text-align: center;"><a class="buttonEdit" href="update-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Edit</a></td>
+            <td style="text-align: center;"><a class="buttonDelete" href="delete-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Delete</a></td>
+        </tr>';
+    }
+    echo '</table>';
+    exit; // Stop further execution for AJAX requests
+}
 ?>
 
 <!DOCTYPE html>
@@ -124,8 +189,10 @@ $statusLabels = [
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -157,51 +224,48 @@ $statusLabels = [
         <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-        <table>
-            <tr>
-                <th>User Name</th>
-                <th>Product Name</th>
-                <th>Total Price</th>
-                <th>Preorder Status</th>
-                <th colspan="3" style="text-align: center;">ACTIONS</th>
-            </tr>
-            <?php
-            error_reporting(0);
-            foreach ($rows as $row) { 
-                $preorderID = htmlspecialchars($row["Preorder_ID"]);
-                $userName = htmlspecialchars($row["User_Name"]);
-                $productName = htmlspecialchars($row["Product_Name"]);
-                $quantity = htmlspecialchars($row["Quantity"]);
-                $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
-                $preorderStatus = htmlspecialchars($statusLabels[$row["Preorder_Status"]] ?? 'Unknown');
-                $progressPercent = $row["Preorder_Status"]; // Preorder status as progress
-
-                echo '
+        <div id="preorder-list">
+            <table>
                 <tr>
-                    <td>'.$userName.'</td>
-                    <td>'.$productName.'</td>
-                    <td>₱'.$totalPrice.'</td> <!-- Correctly displaying Total Price -->
-                    <td>
-                        <div class="progress" style="height: 20px; width: 150px;">
-                            <div class="progress-bar bg-primary" role="progressbar" 
-                                style="width: '.$progressPercent.'%;" 
-                                aria-valuenow="'.$progressPercent.'" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100">
-                                '.$progressPercent.'% <!-- Display percentage only -->
+                    <th>User Name</th>
+                    <th>Product Name</th>
+                    <th>Total Price</th>
+                    <th>Preorder Status</th>
+                    <th colspan="3" style="text-align: center;">ACTIONS</th>
+                </tr>
+                <?php
+                foreach ($rows as $row) { 
+                    $preorderID = htmlspecialchars($row["Preorder_ID"]);
+                    $userName = htmlspecialchars($row["User_Name"]);
+                    $productName = htmlspecialchars($row["Product_Name"]);
+                    $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+                    $preorderStatus = htmlspecialchars($statusLabels[$row["Preorder_Status"]] ?? 'Unknown');
+                    $progressPercent = $row["Preorder_Status"]; // Preorder status as progress
+
+                    echo '
+                    <tr>
+                        <td>'.$userName.'</td>
+                        <td>'.$productName.'</td>
+                        <td>₱'.$totalPrice.'</td>
+                        <td>
+                            <div class="progress" style="height: 20px; width: 150px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                    style="width: '.$progressPercent.'%;" 
+                                    aria-valuenow="'.$progressPercent.'" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    '.$progressPercent.'%
+                                </div>
                             </div>
-                        </div>
-                    </td>
-
-                    <td style="text-align: center;"><a class="buttonView" href="read-one-preorder-prod-form.php?id='.$preorderID.'" target="_parent">View</a></td>
-                    <td style="text-align: center;"><a class="buttonEdit" href="update-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Edit</a></td>
-                    <td style="text-align: center;"><a class="buttonDelete" href="delete-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Delete</a></td>
-                </tr>';
-            }
-            ?>
-        </table>
-
+                        </td>
+                        <td style="text-align: center;"><a class="buttonView" href="read-one-preorder-prod-form.php?id='.$preorderID.'" target="_parent">View</a></td>
+                        <td style="text-align: center;"><a class="buttonEdit" href="update-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Edit</a></td>
+                        <td style="text-align: center;"><a class="buttonDelete" href="delete-preorder-prod-form.php?id='.$preorderID.'" target="_parent">Delete</a></td>
+                    </tr>';
+                }
+                ?>
+            </table>
+        </div>
     </form>
 </div>
 </section>
@@ -234,6 +298,20 @@ $statusLabels = [
             // Toggle the display of the dropdown menu
             dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
         });
+    });
+
+    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+        const searchValue = this.value;
+
+        // Send an AJAX request to fetch filtered results
+        fetch(`read-all-preorder-prod-form.php?search=${encodeURIComponent(searchValue)}`)
+            .then(response => response.text())
+            .then(data => {
+                // Update the preorder list with the filtered results
+                const preorderList = document.getElementById('preorder-list');
+                preorderList.innerHTML = data;
+            })
+            .catch(error => console.error('Error fetching search results:', error));
     });
 </script>
 </body>

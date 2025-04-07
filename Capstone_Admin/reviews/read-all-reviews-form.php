@@ -51,6 +51,23 @@ $searchParam = '%' . $search . '%';
 $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if (isset($_GET['search'])) {
+    foreach ($rows as $row) {
+        echo '
+        <tr>
+            <td>' . htmlspecialchars($row['User_Name']) . '</td>
+            <td>' . htmlspecialchars($row['Product_Name'] ?? 'N/A') . '</td>
+            <td>' . htmlspecialchars($row['Rating']) . '</td>
+            <td>' . htmlspecialchars($row['Review_Text']) . '</td>
+            <td>' . htmlspecialchars($row['Review_Date']) . '</td>
+            <td style="text-align: center;">
+                <a class="buttonView" href="read-one-review-form.php?id=' . htmlspecialchars($row['Review_ID']) . '" target="_parent">View</a>
+            </td>
+        </tr>';
+    }
+    exit; // Stop further execution for AJAX requests
+}
 ?>
 
 <!DOCTYPE html>
@@ -111,8 +128,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -143,29 +162,34 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-            <table width="100%" border="1" cellspacing="5">
-                <tr>
-                    <th>User</th>
-                    <th>Product</th>
-                    <th>Rating</th>
-                    <th>Review</th>
-                    <th>Review Date</th>
-                    <th colspan="3" style="text-align: center;">ACTIONS</th>
-                </tr>
-                <?php foreach ($rows as $row): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['User_Name']); ?></td>
-                     <td><?php echo htmlspecialchars($row['Product_Name'] ?? 'N/A'); ?></td>
-                    <td><?php echo htmlspecialchars($row['Rating']); ?></td>
-                    <td><?php echo htmlspecialchars($row['Review_Text']); ?></td>
-                    <td><?php echo htmlspecialchars($row['Review_Date']); ?></td>
-                   <td style="text-align: center;"><a class="buttonView" href="read-one-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">View</a></td>
-                <!-- <td style="text-align: center;"><a class="buttonEdit" href="update-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Edit</a></td>
-                <td style="text-align: center;"><a class="buttonDelete" href="delete-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']) ?>" target="_parent">Delete</a></td> -->
-                </tr>
-                <?php endforeach; ?>
-            </table>
+                <div id="reviews-list">
+                    <table width="100%" border="1" cellspacing="5">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Product</th>
+                                <th>Rating</th>
+                                <th>Review</th>
+                                <th>Review Date</th>
+                                <th colspan="3" style="text-align: center;">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($rows as $row): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['User_Name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Product_Name'] ?? 'N/A'); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Rating']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Review_Text']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Review_Date']); ?></td>
+                                    <td style="text-align: center;">
+                                        <a class="buttonView" href="read-one-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']); ?>" target="_parent">View</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
         </div>
     </section>
 <script>
@@ -200,6 +224,23 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
         });
     });
-    </script>
+
+    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+        const searchValue = this.value.trim();
+
+        // Determine the URL based on whether the search bar is empty
+        const url = searchValue ? `read-all-reviews-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-reviews-form.php`;
+
+        // Send an AJAX request to fetch results
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // Update the reviews list with the filtered results
+                const tableBody = document.querySelector('#reviews-list table tbody');
+                tableBody.innerHTML = data.trim(); // Ensure no extra whitespace is added
+            })
+            .catch(error => console.error('Error fetching search results:', error));
+    });
+</script>
 </body>
 </html>

@@ -27,6 +27,86 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
+// Check if the request is an AJAX search request
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "
+        SELECT 
+            p.Product_ID,
+            p.Product_Name,
+            p.Stock,
+            p.Price,
+            p.ImageURL,
+            COALESCE(AVG(r.Rating), 0) AS AverageRating
+        FROM tbl_prod_info p
+        LEFT JOIN tbl_reviews r ON p.Product_ID = r.Product_ID
+        WHERE p.product_type != 'custom' AND (p.Product_Name LIKE :search
+        OR p.Category LIKE :search
+        OR p.Description LIKE :search)
+        GROUP BY p.Product_ID, p.Product_Name
+    ";
+    $stmt = $pdo->prepare($query);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the table rows for AJAX requests
+    echo '<table width="100%" border="1" cellspacing="5">
+        <tr>
+            <th>PRODUCT NAME</th>
+            <th>STOCK</th>
+            <th>PRICE</th>
+            <th>IMAGE</th>
+            <th>Rating</th>
+            <th colspan="3" style="text-align: center;">ACTIONS</th>
+        </tr>';
+    foreach ($rows as $row) {
+        $productID = htmlspecialchars($row["Product_ID"]);
+        $productName = htmlspecialchars($row["Product_Name"]);
+        $stock = htmlspecialchars($row["Stock"]);
+        $price = htmlspecialchars($row["Price"]);
+        $imageURL = htmlspecialchars($row["ImageURL"]);
+        $averageRating = htmlspecialchars($row['AverageRating']);
+
+        // Split the ImageURL string by commas and fetch the first image
+        $imageURLs = explode(',', $imageURL);
+        $firstImageURL = $imageURLs[0]; // Get the first image
+
+        echo '
+        <tr>
+            <td>'.$productName.'</td>
+            <td>'.$stock.'</td>
+            <td>'.$price.'</td>
+            <td>';
+        if (!empty($firstImageURL)) {
+            echo '<img src="' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
+        } else {
+            echo '<img src="../static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
+        }
+        echo '</td>
+            <td>';
+        if ($averageRating > 0) {
+            echo $averageRating . ' / 5';
+        } else {
+            echo 'N/A';
+        }
+        echo '</td>
+            <td style="text-align: center;">
+                <a class="buttonView" href="read-one-product-form.php?id='.$productID.'" target="_parent">View</a>
+            </td>
+            <td style="text-align: center;">
+                <a class="buttonEdit" href="update-product-form.php?id='.$productID.'" target="_parent">Edit</a>
+            </td>
+            <td style="text-align: center;">
+                <a class="buttonDelete" href="delete-product-form.php?id='.$productID.'" target="_parent">Delete</a>
+            </td>
+        </tr>';
+    }
+    echo '</table>';
+    exit; // Stop further execution for AJAX requests
+}
+
 // Fetch product records from the database, excluding products with 'custom' product_type
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
@@ -109,8 +189,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -140,64 +222,65 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-        <table width="100%" border="1" cellspacing="5">
-            <tr>
-                <th>PRODUCT NAME</th>
-                <th>STOCK</th>
-                <th>PRICE</th>
-                <th>IMAGE</th>
-                <th>Rating</th>
-                <th colspan="3" style="text-align: center;">ACTIONS</th>
-            </tr>
-            <?php
-            foreach ($rows as $row) {
-                $productID = htmlspecialchars($row["Product_ID"]);
-                $productName = htmlspecialchars($row["Product_Name"]);
-                $stock = htmlspecialchars($row["Stock"]);
-                $price = htmlspecialchars($row["Price"]);
-                $imageURL = htmlspecialchars($row["ImageURL"]);
-                $averageRating = htmlspecialchars($row['AverageRating']);
+        <div id="product-list">
+            <table width="100%" border="1" cellspacing="5">
+                <tr>
+                    <th>PRODUCT NAME</th>
+                    <th>STOCK</th>
+                    <th>PRICE</th>
+                    <th>IMAGE</th>
+                    <th>Rating</th>
+                    <th colspan="3" style="text-align: center;">ACTIONS</th>
+                </tr>
+                <?php
+                foreach ($rows as $row) {
+                    $productID = htmlspecialchars($row["Product_ID"]);
+                    $productName = htmlspecialchars($row["Product_Name"]);
+                    $stock = htmlspecialchars($row["Stock"]);
+                    $price = htmlspecialchars($row["Price"]);
+                    $imageURL = htmlspecialchars($row["ImageURL"]);
+                    $averageRating = htmlspecialchars($row['AverageRating']);
 
-                // Split the ImageURL string by commas and fetch the first image
-                $imageURLs = explode(',', $imageURL);
-                $firstImageURL = $imageURLs[0]; // Get the first image
-            ?>
-            <tr>
-                <td><?php echo $productName; ?></td>
-                <td><?php echo $stock; ?></td>
-                <td><?php echo $price; ?></td>
-                <td>
-                    <?php
-                    // Check if the first image URL is not empty or null
-                    if (!empty($firstImageURL)) {
-                        echo '<img src="' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
-                    } else {
-                        echo '<img src="../static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
-                    }
-                    ?>
-                </td>
-                <td>
-                    <?php
-                     if ($averageRating > 0) {
-                        echo $averageRating . ' / 5';
-                     } else {
-                         echo 'N/A';
-                     }
-                     ?>
-                </td>
-                <td style="text-align: center;">
-                    <a class="buttonView" href="read-one-product-form.php?id=<?php echo $productID; ?>" target="_parent">View</a>
-                </td>
-                <td style="text-align: center;">
-                    <a class="buttonEdit" href="update-product-form.php?id=<?php echo $productID; ?>" target="_parent">Edit</a>
-                </td>
-                <td style="text-align: center;">
-                    <a class="buttonDelete" href="delete-product-form.php?id=<?php echo $productID; ?>" target="_parent">Delete</a>
-                </td>
-            </tr>
-            <?php } ?>
-        </table>
+                    // Split the ImageURL string by commas and fetch the first image
+                    $imageURLs = explode(',', $imageURL);
+                    $firstImageURL = $imageURLs[0]; // Get the first image
+                ?>
+                <tr>
+                    <td><?php echo $productName; ?></td>
+                    <td><?php echo $stock; ?></td>
+                    <td><?php echo $price; ?></td>
+                    <td>
+                        <?php
+                        // Check if the first image URL is not empty or null
+                        if (!empty($firstImageURL)) {
+                            echo '<img src="' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
+                        } else {
+                            echo '<img src="../static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
+                        }
+                        ?>
+                    </td>
+                    <td>
+                        <?php
+                         if ($averageRating > 0) {
+                            echo $averageRating . ' / 5';
+                         } else {
+                             echo 'N/A';
+                         }
+                         ?>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonView" href="read-one-product-form.php?id=<?php echo $productID; ?>" target="_parent">View</a>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonEdit" href="update-product-form.php?id=<?php echo $productID; ?>" target="_parent">Edit</a>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonDelete" href="delete-product-form.php?id=<?php echo $productID; ?>" target="_parent">Delete</a>
+                    </td>
+                </tr>
+                <?php } ?>
+            </table>
+        </div>
     </div>
 
 </section>
@@ -233,7 +316,21 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
         });
     });
-    </script>
+
+    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+        const searchValue = this.value;
+
+        // Send an AJAX request to fetch filtered results
+        fetch(`read-all-product-form.php?search=${encodeURIComponent(searchValue)}`)
+            .then(response => response.text())
+            .then(data => {
+                // Update the product list with the filtered results
+                const productList = document.getElementById('product-list');
+                productList.innerHTML = data;
+            })
+            .catch(error => console.error('Error fetching search results:', error));
+    });
+</script>
 
 </body>
 </html>

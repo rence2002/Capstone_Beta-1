@@ -24,6 +24,78 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
+// Check if the request is an AJAX search request
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "
+        SELECT
+            Progress_ID AS ID,
+            Product_Name,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            Order_Type,
+            Order_Status,
+            Product_Status,
+            Total_Price,
+            LastUpdate
+        FROM tbl_progress p
+        JOIN tbl_user_info u ON p.User_ID = u.User_ID
+        WHERE (u.First_Name LIKE :search
+        OR u.Last_Name LIKE :search
+        OR p.Product_Name LIKE :search)
+        ORDER BY LastUpdate DESC
+    ";
+    $stmt = $pdo->prepare($query);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the table rows for AJAX requests
+    echo '<table width="100%" border="1" cellspacing="5">
+        <tr>
+            <th>ORDER TYPE</th>
+            <th>USER NAME</th>
+            <th>PRODUCT NAME</th>
+            <th>ORDER STATUS</th>
+            <th>PRODUCT STATUS</th>
+            <th>TOTAL PRICE</th>
+            <th colspan="3" style="text-align: center;">ACTIONS</th>
+        </tr>';
+    foreach ($rows as $row) {
+        $orderStatusPercentage = calculatePercentage($row['Order_Status']);
+        $productStatusPercentage = calculatePercentage($row['Product_Status']);
+        echo '
+        <tr>
+            <td>' . htmlspecialchars($row['Order_Type']) . '</td>
+            <td>' . htmlspecialchars($row['User_Name']) . '</td>
+            <td>' . htmlspecialchars($row['Product_Name']) . '</td>
+            <td>
+                <div class="status-bar">
+                    <div class="status-bar-fill order-status-bar" style="width: ' . $orderStatusPercentage . '%;">
+                        ' . $orderStatusPercentage . '%
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="status-bar">
+                    <div class="status-bar-fill product-status-bar" style="width: ' . $productStatusPercentage . '%;">
+                        ' . $productStatusPercentage . '%
+                    </div>
+                </div>
+            </td>
+            <td>' . number_format((float) $row['Total_Price'], 2, '.', '') . '</td>
+            <td style="text-align: center;"><a class="buttonView" href="read-one-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a></td>';
+        if ($row['Order_Status'] != 100) {
+            echo '<td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">Edit</a></td>';
+        } else {
+            echo '<td style="text-align: center;"></td>';
+        }
+        echo '</tr>';
+    }
+    echo '</table>';
+    exit; // Stop further execution for AJAX requests
+}
+
 // Fetch all progress records from tbl_progress
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
@@ -143,8 +215,10 @@ function calculatePercentage($status) {
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -174,67 +248,57 @@ function calculatePercentage($status) {
                 <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 <!-- <a href="../purchase-history/read-all-history-form.php" class="buttonBack">Read All Purchase History</a> -->
             </div>
-                <table>
-            <table width="100%" border="1" cellspacing="5">
-                <tr>
-                    <th>ORDER TYPE</th>
-                    <th>USER NAME</th>
-                    <th>PRODUCT NAME</th>
-                    <th>ORDER STATUS</th>
-                    <th>PRODUCT STATUS</th>
-                    <th>TOTAL PRICE</th>
-                    <th colspan="3" style="text-align: center;">ACTIONS</th>
-                </tr>
-                <?php foreach ($rows as $row): ?>
-                    <?php
-                    // Fetch Product_Name dynamically if missing
-                    if (empty($row['Product_Name'])) {
-                        $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
-                        $stmt->execute([$row['Product_ID']]);
-                        $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-                        $row['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
-                    }
-                    ?>
+            <div id="progress-list">
+                <table width="100%" border="1" cellspacing="5">
                     <tr>
-                        <td>
-                            <?= htmlspecialchars($row['Order_Type']) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($row['User_Name']) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($row['Product_Name']) ?>
-                        </td>
-                        <td>
-                            <div class="status-bar">
-                                <div class="status-bar-fill order-status-bar" style="width: <?= calculatePercentage($row['Order_Status']) ?>%;">
-                                    <?= calculatePercentage($row['Order_Status']) ?>%
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="status-bar">
-                                <div class="status-bar-fill product-status-bar" style="width: <?= calculatePercentage($row['Product_Status']) ?>%;">
-                                    <?= calculatePercentage($row['Product_Status']) ?>%
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <?= number_format((float) $row['Total_Price'], 2, '.', '') ?>
-                        </td>
-                        <td style="text-align: center;"><a class="buttonView" href="read-one-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a></td>
-                        <?php if($row['Order_Status'] != 100): ?>
-                            <td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Edit</a></td>
-                            
-                        <?php else: ?>
-                            <td style="text-align: center;"></td>
-                            <td style="text-align: center;"></td>
-
-                        <?php endif; ?>
-                        
+                        <th>ORDER TYPE</th>
+                        <th>USER NAME</th>
+                        <th>PRODUCT NAME</th>
+                        <th>ORDER STATUS</th>
+                        <th>PRODUCT STATUS</th>
+                        <th>TOTAL PRICE</th>
+                        <th colspan="3" style="text-align: center;">ACTIONS</th>
                     </tr>
-                <?php endforeach; ?>
-            </table>
+                    <?php foreach ($rows as $row): ?>
+                        <?php
+                        // Fetch Product_Name dynamically if missing
+                        if (empty($row['Product_Name'])) {
+                            $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+                            $stmt->execute([$row['Product_ID']]);
+                            $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+                            $row['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
+                        }
+                        ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['Order_Type']) ?></td>
+                            <td><?= htmlspecialchars($row['User_Name']) ?></td>
+                            <td><?= htmlspecialchars($row['Product_Name']) ?></td>
+                            <td>
+                                <div class="status-bar">
+                                    <div class="status-bar-fill order-status-bar" style="width: <?= calculatePercentage($row['Order_Status']) ?>%;">
+                                        <?= calculatePercentage($row['Order_Status']) ?>%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-bar">
+                                    <div class="status-bar-fill product-status-bar" style="width: <?= calculatePercentage($row['Product_Status']) ?>%;">
+                                        <?= calculatePercentage($row['Product_Status']) ?>%
+                                    </div>
+                                </div>
+                            </td>
+                            <td><?= number_format((float) $row['Total_Price'], 2, '.', '') ?></td>
+                            <td style="text-align: center;"><a class="buttonView" href="read-one-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a></td>
+                            <?php if($row['Order_Status'] != 100): ?>
+                                <td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Edit</a></td>
+                            <?php else: ?>
+                                <td style="text-align: center;"></td>
+                                <td style="text-align: center;"></td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
         </div>
     </section>
 
@@ -267,6 +331,20 @@ function calculatePercentage($status) {
 
                 dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
+        });
+
+        document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+            const searchValue = this.value;
+
+            // Send an AJAX request to fetch filtered results
+            fetch(`read-all-progress-form.php?search=${encodeURIComponent(searchValue)}`)
+                .then(response => response.text())
+                .then(data => {
+                    // Update the progress list with the filtered results
+                    const progressList = document.getElementById('progress-list');
+                    progressList.innerHTML = data;
+                })
+                .catch(error => console.error('Error fetching search results:', error));
         });
     </script>
 </body>

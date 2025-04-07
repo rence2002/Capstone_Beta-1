@@ -27,6 +27,67 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
+// Handle AJAX search requests
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "
+        SELECT 
+            tbl_cart.Cart_ID,
+            tbl_user_info.First_Name AS User_Name,
+            tbl_prod_info.Product_Name,
+            tbl_cart.Order_Type,
+            tbl_cart.Quantity,
+            tbl_cart.Total_Price
+        FROM tbl_cart
+        JOIN tbl_user_info ON tbl_cart.User_ID = tbl_user_info.User_ID
+        JOIN tbl_prod_info ON tbl_cart.Product_ID = tbl_prod_info.Product_ID
+        WHERE tbl_user_info.First_Name LIKE :search 
+        OR tbl_user_info.Last_Name LIKE :search 
+        OR tbl_prod_info.Product_Name LIKE :search
+        OR tbl_cart.Order_Type LIKE :search
+    ";
+    $stmt = $pdo->prepare($query);
+    $searchParam = '%' . $search . '%';
+    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the full table structure for AJAX requests
+    echo '<table width="100%" border="1" cellspacing="5">
+        <tr>
+            <th>USER NAME</th>
+            <th>PRODUCT NAME</th>
+            <th>ORDER TYPE</th>
+            <th>QUANTITY</th>
+            <th>TOTAL PRICE</th>
+            <th colspan="3" style="text-align: center;">ACTIONS</th>
+        </tr>';
+
+    foreach ($rows as $row) { 
+        $cartID = htmlspecialchars($row["Cart_ID"]);
+        $userName = htmlspecialchars($row["User_Name"]);
+        $productName = htmlspecialchars($row["Product_Name"]);
+        $orderType = htmlspecialchars($row["Order_Type"]);
+        $quantity = htmlspecialchars($row["Quantity"]);
+        $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+
+        echo '
+        <tr>
+            <td>'.$userName.'</td>
+            <td>'.$productName.'</td>
+            <td>'.$orderType.'</td>
+            <td>'.$quantity.'</td>
+            <td>'.$totalPrice.'</td>
+            <td><a class="buttonView" href="read-one-cart-form.php?id='.$cartID.'" target="_parent">View</a></td>
+            <td><a class="buttonEdit" href="update-cart-form.php?id='.$cartID.'" target="_parent">Edit</a></td>
+            <td><a class="buttonDelete" href="delete-cart-form.php?id='.$cartID.'" target="_parent">Delete</a></td>
+        </tr>';
+    }
+
+    echo '</table>';
+    exit; // Stop further execution for AJAX requests
+}
+
 // Fetch cart records from the database
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
@@ -108,8 +169,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <input type="text" id="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
             </div>
 
 
@@ -139,38 +199,40 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-    <table width="100%" border="1" cellspacing="5">
-        <tr>
-            <th>USER NAME</th>
-            <th>PRODUCT NAME</th>
-            <th>ORDER TYPE</th>
-            <th>QUANTITY</th>
-            <th>TOTAL PRICE</th>
-            <th colspan="3" style="text-align: center;">ACTIONS</th>
-        </tr>
-        <?php
-        foreach ($rows as $row) { 
-            $cartID = htmlspecialchars($row["Cart_ID"]);
-            $userName = htmlspecialchars($row["User_Name"]);
-            $productName = htmlspecialchars($row["Product_Name"]);
-            $orderType = htmlspecialchars($row["Order_Type"]);
-            $quantity = htmlspecialchars($row["Quantity"]);
-            $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
-
-            echo '
+    <div id="cart-list">
+        <table width="100%" border="1" cellspacing="5">
             <tr>
-                <td>'.$userName.'</td>
-                <td>'.$productName.'</td>
-                <td>'.$orderType.'</td>
-                <td>'.$quantity.'</td>
-                <td>'.$totalPrice.'</td>
-                <td><a class="buttonView" href="read-one-cart-form.php?id='.$cartID.'" target="_parent">View</a></td>
-                <td><a class="buttonEdit" href="update-cart-form.php?id='.$cartID.'" target="_parent">Edit</a></td>
-                <td><a class="buttonDelete" href="delete-cart-form.php?id='.$cartID.'" target="_parent">Delete</a></td>
-            </tr>';
-        }
-        ?>
-    </table>
+                <th>USER NAME</th>
+                <th>PRODUCT NAME</th>
+                <th>ORDER TYPE</th>
+                <th>QUANTITY</th>
+                <th>TOTAL PRICE</th>
+                <th colspan="3" style="text-align: center;">ACTIONS</th>
+            </tr>
+            <?php
+            foreach ($rows as $row) { 
+                $cartID = htmlspecialchars($row["Cart_ID"]);
+                $userName = htmlspecialchars($row["User_Name"]);
+                $productName = htmlspecialchars($row["Product_Name"]);
+                $orderType = htmlspecialchars($row["Order_Type"]);
+                $quantity = htmlspecialchars($row["Quantity"]);
+                $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+
+                echo '
+                <tr>
+                    <td>'.$userName.'</td>
+                    <td>'.$productName.'</td>
+                    <td>'.$orderType.'</td>
+                    <td>'.$quantity.'</td>
+                    <td>'.$totalPrice.'</td>
+                    <td><a class="buttonView" href="read-one-cart-form.php?id='.$cartID.'" target="_parent">View</a></td>
+                    <td><a class="buttonEdit" href="update-cart-form.php?id='.$cartID.'" target="_parent">Edit</a></td>
+                    <td><a class="buttonDelete" href="delete-cart-form.php?id='.$cartID.'" target="_parent">Delete</a></td>
+                </tr>';
+            }
+            ?>
+        </table>
+    </div>
 </div>
 </section>
 <script>
@@ -206,7 +268,19 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
+document.getElementById('search').addEventListener('input', function () {
+    const searchValue = this.value;
 
+    // Send an AJAX request to fetch filtered results
+    fetch(`read-all-cart-form.php?search=${encodeURIComponent(searchValue)}`)
+        .then(response => response.text())
+        .then(data => {
+            // Update the cart list with the filtered results
+            const cartList = document.getElementById('cart-list');
+            cartList.innerHTML = data;
+        })
+        .catch(error => console.error('Error fetching search results:', error));
+});
     </script>
 </body>
 </html>

@@ -15,18 +15,18 @@ if (!isset($_SESSION['admin_id'])) {
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $requestID = $_GET['id'];
 
-    // Prepare the DELETE query to remove the order request
-    $stmt = $pdo->prepare("DELETE FROM tbl_order_request WHERE Request_ID = :requestID");
-    $stmt->bindParam(':requestID', $requestID);
+    // Prepare the UPDATE query to update the order request
+    $stmt = $pdo->prepare("UPDATE tbl_order_request SET Order_Status = -1, Processed = 1 WHERE Request_ID = ?");
+    $stmt->execute([$requestID]);
 
-    // Execute the statement
-    if ($stmt->execute()) {
-        echo "Request has been deleted successfully.";
+    // Check if the statement executed successfully
+    if ($stmt->rowCount() > 0) {
+        echo "Request has been updated successfully.";
         // Redirect to the order request list page or another page
-        header("Location: read-all-request-form.php?message=Request deleted successfully.");
+        header("Location: read-all-request-form.php?message=Request updated successfully.");
         exit();
     } else {
-        echo "Error deleting request.";
+        echo "Error updating request.";
     }
 } else {
     echo "Invalid Request ID.";

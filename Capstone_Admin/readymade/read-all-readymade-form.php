@@ -65,6 +65,36 @@ $statusLabels = [
     80 => 'Installed',
     100 => 'Complete'
 ];
+
+if (isset($_GET['search'])) {
+    foreach ($rows as $row) {
+        $orderID = htmlspecialchars($row["ReadyMadeOrder_ID"]);
+        $userName = htmlspecialchars($row["User_Name"]);
+        $productName = htmlspecialchars($row["Product_Name"]);
+        $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+        $orderStatusValue = (int)$row["Order_Status"];
+        $progressPercent = min(max($orderStatusValue, 0), 100);
+        $orderStatus = htmlspecialchars($statusLabels[$orderStatusValue] ?? 'Unknown');
+
+        echo '
+        <tr>
+            <td>' . $userName . '</td>
+            <td>' . $productName . '</td>
+            <td>' . $totalPrice . '</td>
+            <td>
+                <div class="progress" style="width: 150px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: ' . $progressPercent . '%;" aria-valuenow="' . $progressPercent . '" aria-valuemin="0" aria-valuemax="100">
+                        ' . $progressPercent . '%
+                    </div>
+                </div>
+            </td>
+            <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=' . $orderID . '" target="_parent">View</a></td>
+            <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=' . $orderID . '" target="_parent">Edit</a></td>
+            <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=' . $orderID . '" target="_parent">Delete</a></td>
+        </tr>';
+    }
+    exit; // Stop further execution for AJAX requests
+}
 ?>
 
 <!DOCTYPE html>
@@ -125,8 +155,10 @@ $statusLabels = [
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -155,45 +187,38 @@ $statusLabels = [
     <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
-    <table width="100%" border="1" cellspacing="5">
-        <tr>
-            <th>USER NAME</th>
-            <th>PRODUCT NAME</th>
-            <th>TOTAL PRICE</th>
-            <th>ORDER STATUS</th>
-            <th colspan="3" style="text-align: center;">ACTIONS</th>
-        </tr>
-        <?php
-        foreach ($rows as $row) { 
-            $orderID = htmlspecialchars($row["ReadyMadeOrder_ID"]);
-            $userName = htmlspecialchars($row["User_Name"]);
-            $productName = htmlspecialchars($row["Product_Name"]);
-            $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
-            $orderStatusValue = (int)$row["Order_Status"]; // Ensure it's an integer
-            $progressPercent = min(max($orderStatusValue, 0), 100); // Clamp between 0 and 100
-            $orderStatus = htmlspecialchars($statusLabels[$orderStatusValue] ?? 'Unknown');
-        
-            echo '
-            <tr>
-                <td>'.$userName.'</td>
-                <td>'.$productName.'</td>
-                <td>'.$totalPrice.'</td>
-                <td>
-                    <div class="progress" style="width: 150px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: '.$progressPercent.'%;" aria-valuenow="'.$progressPercent.'" aria-valuemin="0" aria-valuemax="100">
-                            '.$progressPercent.'%
-                        </div>
-                    </div>
-                </td>
-                <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id='.$orderID.'" target="_parent">View</a></td>
-                <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id='.$orderID.'" target="_parent">Edit</a></td>
-                <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id='.$orderID.'" target="_parent">Delete</a></td>
-            </tr>';
-        }
-        
-        ?>
-    </table>
+    <div id="ready-made-orders-list">
+        <table width="100%" border="1" cellspacing="5">
+            <thead>
+                <tr>
+                    <th>USER NAME</th>
+                    <th>PRODUCT NAME</th>
+                    <th>TOTAL PRICE</th>
+                    <th>ORDER STATUS</th>
+                    <th colspan="3" style="text-align: center;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rows as $row): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row["User_Name"]) ?></td>
+                        <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
+                        <td><?= number_format((float)$row["Total_Price"], 2, '.', '') ?></td>
+                        <td>
+                            <div class="progress" style="width: 150px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: <?= min(max((int)$row["Order_Status"], 0), 100) ?>%;" aria-valuenow="<?= min(max((int)$row["Order_Status"], 0), 100) ?>" aria-valuemin="0" aria-valuemax="100">
+                                    <?= min(max((int)$row["Order_Status"], 0), 100) ?>%
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">View</a></td>
+                        <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Edit</a></td>
+                        <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Delete</a></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 </section>
@@ -231,7 +256,22 @@ $statusLabels = [
         });
     });
 
+    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+        const searchValue = this.value.trim();
 
-    </script>
+        // Determine the URL based on whether the search bar is empty
+        const url = searchValue ? `read-all-readymade-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-readymade-form.php`;
+
+        // Send an AJAX request to fetch results
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // Update the ready-made orders list with the filtered results
+                const tableBody = document.querySelector('#ready-made-orders-list table tbody');
+                tableBody.innerHTML = data.trim(); // Ensure no extra whitespace is added
+            })
+            .catch(error => console.error('Error fetching search results:', error));
+    });
+</script>
 </body>
 </html>

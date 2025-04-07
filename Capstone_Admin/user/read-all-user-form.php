@@ -46,6 +46,23 @@ $searchParam = '%' . $search . '%';
 $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if (isset($_GET['search'])) {
+    foreach ($rows as $row) {
+        echo '
+        <tr>
+            <td>' . htmlspecialchars($row["User_ID"]) . '</td>
+            <td>' . htmlspecialchars($row["Last_Name"]) . '</td>
+            <td>' . htmlspecialchars($row["First_Name"]) . '</td>
+            <td>' . htmlspecialchars($row["Mobile_Number"]) . '</td>
+            <td>' . htmlspecialchars($row["Status"]) . '</td>
+            <td><a class="buttonView" href="read-one-user-form.php?id=' . htmlspecialchars($row["User_ID"]) . '" target="_parent">View</a></td>
+            <td><a class="buttonEdit" href="update-user-form.php?id=' . htmlspecialchars($row["User_ID"]) . '" target="_parent">Edit</a></td>
+            <td><a class="buttonDelete" href="delete-user-form.php?id=' . htmlspecialchars($row["User_ID"]) . '" target="_parent">Delete</a></td>
+        </tr>';
+    }
+    exit; // Stop further execution for AJAX requests
+}
 ?>
 
 <!DOCTYPE html>
@@ -106,8 +123,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+                <form method="GET" action="">
+                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <button type="submit"><i class="bx bx-search"></i></button>
+                </form>
             </div>
 
 
@@ -136,38 +155,34 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
                 </div>
-                <table>
+                <div id="user-list">
     <table width="100%" border="1" cellspacing="5">
-        <tr>
-            <th>USER ID</th>
-            <th>LAST NAME</th>
-            <th>FIRST NAME</th>
-            <th>MOBILE NUMBER</th> 
-            <th>STATUS</th>
-            <th colspan="3">ACTIONS</th>
-        </tr>
-        <?php
-        foreach ($rows as $row) { 
-            $userID = htmlspecialchars($row["User_ID"]);
-            $lname = htmlspecialchars($row["Last_Name"]);
-            $fname = htmlspecialchars($row["First_Name"]);
-            $mobile = htmlspecialchars($row["Mobile_Number"]);
-            $status = htmlspecialchars($row["Status"]);
-
-            echo '
+        <thead>
             <tr>
-                <td>'.$userID.'</td>
-                <td>'.$lname.'</td>
-                <td>'.$fname.'</td>
-                <td>'.$mobile.'</td>
-                <td>'.$status.'</td>
-                <td><a class="buttonView" href="read-one-user-form.php?id='.$userID.'" target="_parent">View</a></td>
-                <td><a class="buttonEdit" href="update-user-form.php?id='.$userID.'" target="_parent">Edit</a></td>
-                <td><a class="buttonDelete" href="delete-user-form.php?id='.$userID.'" target="_parent">Delete</a></td>
-            </tr>';
-        }
-        ?>
+                <th>USER ID</th>
+                <th>LAST NAME</th>
+                <th>FIRST NAME</th>
+                <th>MOBILE NUMBER</th>
+                <th>STATUS</th>
+                <th colspan="3">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($rows as $row): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row["User_ID"]) ?></td>
+                    <td><?= htmlspecialchars($row["Last_Name"]) ?></td>
+                    <td><?= htmlspecialchars($row["First_Name"]) ?></td>
+                    <td><?= htmlspecialchars($row["Mobile_Number"]) ?></td>
+                    <td><?= htmlspecialchars($row["Status"]) ?></td>
+                    <td><a class="buttonView" href="read-one-user-form.php?id=<?= htmlspecialchars($row["User_ID"]) ?>" target="_parent">View</a></td>
+                    <td><a class="buttonEdit" href="update-user-form.php?id=<?= htmlspecialchars($row["User_ID"]) ?>" target="_parent">Edit</a></td>
+                    <td><a class="buttonDelete" href="delete-user-form.php?id=<?= htmlspecialchars($row["User_ID"]) ?>" target="_parent">Delete</a></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
     </table>
+</div>
 </div>
 </section>
 <script>
@@ -202,6 +217,23 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
         });
     });
-    </script>
+
+    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+        const searchValue = this.value.trim();
+
+        // Determine the URL based on whether the search bar is empty
+        const url = searchValue ? `read-all-user-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-user-form.php`;
+
+        // Send an AJAX request to fetch results
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // Update the user list with the filtered results
+                const tableBody = document.querySelector('#user-list table tbody');
+                tableBody.innerHTML = data.trim(); // Ensure no extra whitespace is added
+            })
+            .catch(error => console.error('Error fetching search results:', error));
+    });
+</script>
 </body>
 </html>

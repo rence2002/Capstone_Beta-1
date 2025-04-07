@@ -2,11 +2,13 @@
 session_start();
 include '../config/database.php';
 
+// Ensure the admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../index.php");
     exit();
 }
 
+// Validate the request ID
 $requestID = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
 if (!$requestID) {
@@ -16,13 +18,14 @@ if (!$requestID) {
 try {
     $pdo->beginTransaction();
 
-    // Fetch order request
+    // Fetch the order request
     $orderRequest = fetchOrderRequest($pdo, $requestID);
 
     if (!$orderRequest) {
-        die("Order request not found.");
+        throw new Exception("Order request not found.");
     }
 
+    // Process the order based on its type
     switch ($orderRequest['Order_Type']) {
         case 'ready_made':
             processReadyMade($pdo, $orderRequest);
@@ -40,8 +43,9 @@ try {
             throw new Exception("Unsupported order type.");
     }
 
-    // Delete the processed request
-    deleteOrderRequest($pdo, $requestID);
+    // Update the order request instead of deleting it
+    $stmt = $pdo->prepare("UPDATE tbl_order_request SET Order_Status = 1, Processed = 1 WHERE Request_ID = ?");
+    $stmt->execute([$requestID]);
 
     $pdo->commit();
     header("Location: read-all-request-form.php");
@@ -52,18 +56,21 @@ try {
     die("Error processing request: " . $e->getMessage());
 }
 
+/**
+ * Fetch the order request from tbl_order_request.
+ */
 function fetchOrderRequest($pdo, $requestID) {
     $stmt = $pdo->prepare("SELECT * FROM tbl_order_request WHERE Request_ID = ?");
     $stmt->execute([$requestID]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Process a ready-made order.
+ */
 function processReadyMade($pdo, $orderRequest) {
     // Fetch the product name from tbl_prod_info
-    $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
-    $stmt->execute([$orderRequest['Product_ID']]);
-    $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-    $productName = $productInfo['Product_Name'] ?? 'N/A'; // Default to 'N/A' if not found
+    $productName = fetchProductName($pdo, $orderRequest['Product_ID']);
 
     // Insert into tbl_ready_made_orders
     $stmt = $pdo->prepare("
@@ -82,6 +89,9 @@ function processReadyMade($pdo, $orderRequest) {
     insertIntoProgress($pdo, $orderRequest, 'ready_made', 10, 90, $productName);
 }
 
+/**
+ * Process a pre-order.
+ */
 function processPreOrder($pdo, $orderRequest) {
     // Insert into tbl_preorder
     $stmt = $pdo->prepare("
@@ -100,6 +110,9 @@ function processPreOrder($pdo, $orderRequest) {
     insertIntoProgress($pdo, $orderRequest, 'pre_order', 10, 0);
 }
 
+/**
+ * Process a custom order.
+ */
 function processCustomOrder($pdo, $orderRequest, $requestID) {
     // Fetch temporary customization
     $customization = fetchTemporaryCustomization($pdo, $orderRequest['Customization_ID']);
@@ -108,16 +121,16 @@ function processCustomOrder($pdo, $orderRequest, $requestID) {
         throw new Exception("Customization request not found.");
     }
 
-    // 1. Create custom product
+    // Create a custom product
     $newProductID = createCustomProduct($pdo, $customization, $requestID);
 
     // Fetch the product name from tbl_prod_info
     $productName = fetchProductName($pdo, $newProductID);
 
-    // 2. Move to permanent customizations
-    $newCustomizationID = moveToPermanentCustomizations($pdo, $customization, $newProductID);
+    // Move to permanent customizations
+    moveToPermanentCustomizations($pdo, $customization, $newProductID);
 
-    // 3. Insert into tbl_progress
+    // Insert into tbl_progress
     insertIntoProgress($pdo, [
         'User_ID' => $customization['User_ID'],
         'Product_ID' => $newProductID,
@@ -126,16 +139,22 @@ function processCustomOrder($pdo, $orderRequest, $requestID) {
         'Total_Price' => 0.00
     ], 'custom', 10, 0);
 
-    // 4. Cleanup temporary data
+    // Cleanup temporary data
     cleanupTemporaryData($pdo, $orderRequest['Customization_ID']);
 }
 
+/**
+ * Fetch temporary customization data.
+ */
 function fetchTemporaryCustomization($pdo, $tempCustomizationID) {
     $stmt = $pdo->prepare("SELECT * FROM tbl_customizations_temp WHERE Temp_Customization_ID = ?");
     $stmt->execute([$tempCustomizationID]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Create a custom product in tbl_prod_info.
+ */
 function createCustomProduct($pdo, $customization, $requestID) {
     $stmt = $pdo->prepare("
         INSERT INTO tbl_prod_info 
@@ -148,6 +167,9 @@ function createCustomProduct($pdo, $customization, $requestID) {
     return $pdo->lastInsertId();
 }
 
+/**
+ * Fetch the product name from tbl_prod_info.
+ */
 function fetchProductName($pdo, $productID) {
     $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
     $stmt->execute([$productID]);
@@ -155,6 +177,9 @@ function fetchProductName($pdo, $productID) {
     return $result['Product_Name'] ?? 'N/A';
 }
 
+/**
+ * Move temporary customization to permanent customizations.
+ */
 function moveToPermanentCustomizations($pdo, $customization, $newProductID) {
     $stmt = $pdo->prepare("
         INSERT INTO tbl_customizations (
@@ -209,19 +234,30 @@ function moveToPermanentCustomizations($pdo, $customization, $newProductID) {
         10, // Order_Status
         0  // Product_Status
     ]);
-    return $pdo->lastInsertId();
 }
 
-function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $productStatus, $productName = 'N/A') {
+/**
+ * Insert progress data into tbl_progress.
+ */
+function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $productStatus, $productName = null) {
+    // Fetch the product name if not provided
+    if (empty($productName)) {
+        $stmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+        $stmt->execute([$orderRequest['Product_ID']]);
+        $productInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+        $productName = $productInfo['Product_Name'] ?? 'N/A';
+    }
+
+    // Insert progress data into tbl_progress
     $stmt = $pdo->prepare("
         INSERT INTO tbl_progress 
-        (User_ID, Product_ID, Product_Name, Order_Type, Order_Status, Product_Status, Quantity, Total_Price)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (User_ID, Product_ID, Product_Name, Order_Type, Order_Status, Product_Status, Quantity, Total_Price, Date_Added, LastUpdate)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     ");
     $stmt->execute([
         $orderRequest['User_ID'],
         $orderRequest['Product_ID'],
-        $productName, // Use the product name passed as a parameter
+        $productName,
         $orderType,
         $orderStatus,
         $productStatus,
@@ -230,14 +266,17 @@ function insertIntoProgress($pdo, $orderRequest, $orderType, $orderStatus, $prod
     ]);
 }
 
+/**
+ * Cleanup temporary customization data.
+ */
 function cleanupTemporaryData($pdo, $tempCustomizationID) {
-    $stmt = $pdo->prepare("
-        DELETE FROM tbl_customizations_temp 
-        WHERE Temp_Customization_ID = ?
-    ");
+    $stmt = $pdo->prepare("DELETE FROM tbl_customizations_temp WHERE Temp_Customization_ID = ?");
     $stmt->execute([$tempCustomizationID]);
 }
 
+/**
+ * Delete the order request from tbl_order_request.
+ */
 function deleteOrderRequest($pdo, $requestID) {
     $stmt = $pdo->prepare("DELETE FROM tbl_order_request WHERE Request_ID = ?");
     $stmt->execute([$requestID]);

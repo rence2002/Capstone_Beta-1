@@ -296,7 +296,12 @@ $statusLabels = [
                         <td><input type="file" name="Progress_Pic_<?= $percentage ?>" class="form-control-file"></td>
                         <td>
                             <?php if (!empty($row[$picKey])): ?>
-                                <img src="../<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" class="img-thumbnail" style="max-width: 100px;">
+                                <img src="../uploads/progress_pics/<?= htmlspecialchars(basename($row[$picKey])) ?>" 
+                                     alt="Progress <?= $percentage ?>%" 
+                                     class="img-thumbnail" 
+                                     style="max-width: 100px;">
+                            <?php else: ?>
+                                <span>No image uploaded</span>
                             <?php endif; ?>
                         </td>
                     </tr>
