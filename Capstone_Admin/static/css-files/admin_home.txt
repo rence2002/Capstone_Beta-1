@@ -6,70 +6,23 @@
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
-
-.logo-details {
-  display: flex; /* Use Flexbox */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  height: 200px; /* Set a height for vertical centering */
-}
-
-.logo_name img {
-  width: 130px; /* Set the desired width */
-  height: auto; /* Maintain aspect ratio */
-  cursor: pointer;
-}
 .sidebar{
   position: fixed;
   height: 100%;
   width: 240px;
-  background:  #383838;
+  background:  #B99470;
   transition: all 0.5s ease;
-  overflow: hidden; /* Hide overflowing content */
+  visibility: hidden;
 }
 .sidebar.active{
-  width: 600px;
+  width: 60px;
 }
 .sidebar .logo-details{
   height: 80px;
   display: flex;
   align-items: center;
+  align-content: center;
 }
-
-/* Hide the logo when the sidebar is not active */
-.sidebar .logo-details .logo_name {
-  opacity: 0; /* Make the logo invisible */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
-}
-
-.sidebar.active .logo-details .logo_name {
-  opacity: 1; /* Make the logo visible when the sidebar is active */
-}
-
-/* Hide the navigation list when the sidebar is not active */
-.sidebar .nav-links {
-  opacity: 0; /* Make the navigation list invisible */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
-}
-
-.sidebar.active .nav-links {
-  opacity: 1; /* Make the navigation list visible when the sidebar is active */
-}
-
-/* Hide the navigation list items and links when the sidebar is not active */
-.sidebar .nav-links li,
-.sidebar .nav-links li a {
-  opacity: 0; /* Make the list items and links invisible */
-  pointer-events: none; /* Prevent interaction */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
-}
-
-.sidebar.active .nav-links li,
-.sidebar.active .nav-links li a {
-  opacity: 1; /* Make the list items and links visible */
-  pointer-events: auto; /* Allow interaction */
-}
-
 .sidebar .logo-details i{
   font-size: 28px;
   font-weight: 500;
@@ -82,16 +35,19 @@
   font-size: 24px;
   font-weight: 500;
 }
+
+.logo-details {
+  display: flex; /* Use Flexbox */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 200px; /* Set a height for vertical centering */
+}
+.logo_name img {
+  width: 100px; /* Set the desired width */
+  height: auto; /* Maintain aspect ratio */
+}
 .sidebar .nav-links{
   margin-top: 10px;
-  opacity: 1; /* Fully visible */
-  transition: opacity 0.5s ease; /* Smooth transition for opacity */
-  padding-left: 1rem;
-
-}
-
-.sidebar .nav-links ul li{
-  padding-left: 1rem;
 }
 .sidebar .nav-links li{
   position: relative;
@@ -107,10 +63,10 @@
   transition: all 0.4s ease;
 }
 .sidebar .nav-links li a.active{
-  background:  #B99470;
+  background: #383838;
 }
 .sidebar .nav-links li a:hover{
-  background:  #000000;
+  background: #000000;
 }
 .sidebar .nav-links li i{
   min-width: 60px;
@@ -123,7 +79,6 @@
   font-size: 15px;
   font-weight: 400;
   white-space: nowrap;
-  padding: 10px;
 }
 .sidebar .nav-links .log_out{
   position: absolute;
@@ -170,15 +125,13 @@
 nav .sidebar-button i{
   font-size: 35px;
   margin-right: 10px;
-  cursor: pointer;
 }
 .home-section nav .search-box{
   position: relative;
   height: 50px;
   max-width: 550px;
   width: 100%;
-  margin: 0 10px;
-  margin-top: -10px;
+  margin: 0 20px;
 }
 nav .search-box input{
   height: 100%;
@@ -204,7 +157,6 @@ nav .search-box .bx-search{
   color: #fff;
   font-size: 22px;
   transition: all 0.4 ease;
-  margin-top: 6px;
 }
 .home-section nav .profile-details{
   display: flex;
@@ -569,96 +521,3 @@ a.button:hover {
 
 
 }
-
-input:invalid + span:after {
-  position: absolute;
-  content: "✖";
-  padding-left: 1rem;
-  color: #d9534f;
-  font-size: 2rem;
-  line-height: 54px;
-}
-
-input:valid + span:after {
-  position: absolute;
-  content: "✓";
-  padding-left: 1rem;
-  color: #5cb85c;
-  font-size: 2rem;
-  line-height: 54px;
-}
-
-#txtMobile {
-  width: calc(100% - 2.5rem);
-  padding: 1rem;
-  font-family: Poppins, sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.05rem;
-  color: var(--primary-color);
-  background-color: var(--primary-bg-color);
-  border: 2px solid var(--secondary-color);
-  background-image: none;
-  border-radius: 5px;
-  outline: none;  
-  box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%);
-  -webkit-transition: all .2s;
-  -moz-transition: all .2s;
-  transition: all .2s
-}
-
-#txtMobile:focus {
-  outline: 0;
-}
-
-#txtMobile:valid {
-  border-color: #3c763d78;
-}
-
-#txtMobile:focus:invalid {
-  border-color: rgb(217 83 79 / 60%);
-}
-
-.button-container {
-  display: flex;
-  margin-top: 1rem;
-}
-
-.buttonUpdate, .buttonDelete, .buttonBack {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.buttonUpdate {
-  background-color: #5cb85c;
-  color: white;
-}
-
-.buttonDelete {
-  background-color: #d9534f;
-  color: white;
-}
-
-.buttonBack {
-  background-color: #387de4;
-  color: white;
-}
-
-.buttonBack,  .buttonUpdate, .buttonDelete, .buttonEdit, .buttonView{
-  color: white;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-
-
-.iti__flag-container {
-  display: none;
-}
-
-
-
