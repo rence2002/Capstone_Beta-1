@@ -28,7 +28,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Fetch product data for dropdown (only readymade products)
 $productQuery = "SELECT Product_ID, Product_Name, Price, GLB_File_URL FROM tbl_prod_info WHERE product_type = 'readymade'";
@@ -135,9 +135,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
        
 
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
     <div class="dropdown" id="profileDropdown">
         <a href="../admin/read-one-admin-form.php">Settings</a>

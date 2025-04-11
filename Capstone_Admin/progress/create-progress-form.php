@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Fetch users from the database
 $userStmt = $pdo->prepare("SELECT User_ID, First_Name FROM tbl_user_info");
@@ -100,9 +100,9 @@ $preorderStatus = isset($_GET['preorderStatus']) ? $_GET['preorderStatus'] : 'Pe
            
 
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
     <div class="dropdown" id="profileDropdown">
         <a href="../admin/read-one-admin-form.php">Settings</a>

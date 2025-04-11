@@ -23,7 +23,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Fetch reviews with user names and product names
 $search = isset($_GET['search']) ? $_GET['search'] : '';

@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Initialize the search variable
 $search = isset($_GET['search']) ? $_GET['search'] : '';

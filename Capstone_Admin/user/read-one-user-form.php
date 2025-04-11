@@ -24,7 +24,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Fetch user data from the database
 if (isset($_GET['id'])) {

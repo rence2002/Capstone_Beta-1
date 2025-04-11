@@ -23,7 +23,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
 
 // Fetch order details
 $orderId = $_GET['id'];
@@ -150,6 +150,7 @@ $productStatusMap = [
                 <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
+
 
                 <div class="dropdown" id="profileDropdown">
                     <!-- Modified link here -->
