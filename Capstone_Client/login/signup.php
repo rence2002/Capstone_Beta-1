@@ -36,7 +36,8 @@
             top: 0;
             opacity: 0;
         }
-         #profilePicPreview {
+
+        #profilePicPreview {
             max-width: 200px;
             max-height: 200px;
             margin-top: 10px;
@@ -55,10 +56,6 @@
             <h1>Create Your Account</h1>
             <form method="POST" action="signup-rec.php" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="userId">User ID (Optional)</label>
-                    <input type="text" id="userId" name="userId" placeholder="Enter a unique user ID">
-                </div>
-                 <div class="form-group">
                     <label for="firstName">First Name</label>
                     <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
                 </div>
@@ -94,10 +91,9 @@
                     <label for="profilePic">Profile Picture</label>
                     <div class="upload-btn-wrapper">
                         <button class="btn">Upload a file</button>
-                        <input type="file" name="profilePic" id="profilePic" accept="image/*" onchange="previewProfilePic(event)"/>
+                        <input type="file" name="profilePic" id="profilePic" accept="image/*" onchange="previewProfilePic(event)" />
                         <img id="profilePicPreview" src="#" alt="Profile Picture Preview" style="display: none;">
                     </div>
-                     <img id="profilePicPreview" src="#" alt="Profile Picture Preview" style="display: none;">
                 </div>
                 <div class="form-options">
                     <label><input type="checkbox" name="terms" id="terms" required> I agree to the <a href="#">Terms and Conditions</a></label>
@@ -131,25 +127,16 @@
                 toggleButton.innerHTML = '<span class="entypo--switch2"></span>'; // Switch to light mode icon
             }
         });
-          function previewProfilePic(event) {
+
+        function previewProfilePic(event) {
             var reader = new FileReader();
-            reader.onload = function(){
-              var output = document.getElementById('profilePicPreview');
-              output.src = reader.result;
-              output.style.display = 'block'; // Show the image
+            reader.onload = function () {
+                var output = document.getElementById('profilePicPreview');
+                output.src = reader.result;
+                output.style.display = 'block'; // Show the image
             };
             reader.readAsDataURL(event.target.files[0]);
-          }
-
-          function previewProfilePic(event) {
-    var reader = new FileReader();
-    reader.onload = function(){
-      var output = document.getElementById('profilePicPreview');
-      output.src = reader.result;
-      output.style.display = 'block'; // Show the image
-    };
-    reader.readAsDataURL(event.target.files[0]);
-  }
+        }
     </script>
 </body>
 
