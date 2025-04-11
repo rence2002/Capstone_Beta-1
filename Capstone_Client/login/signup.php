@@ -100,7 +100,7 @@
                 </div>
                 <div class="buttons">
                     <button type="submit" class="signup">Sign up</button>
-                    <a href="../index.php"><button type="button" class="login">Login</button></a>
+                    <a href="../index.php" class="login">Login</a>
                 </div>
             </form>
             <div class="terms">
