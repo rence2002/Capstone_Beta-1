@@ -1,0 +1,344 @@
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+body {
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+/* Light mode styles */
+body {
+  background-color: #f0f0f0; /* Light background */
+  color: #000; /* Dark text */
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background-color: #121212; /* Dark background */
+  color: #ffffff; /* Light text */
+}
+
+.theme-toggle {
+  position: fixed; /* Fixed position */
+  top: 20px; /* Distance from top */
+  right: 20px; /* Distance from right */
+  padding: 10px 20px; /* Padding for the button */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  font-size: 16px; /* Font size */
+  background-color: none;
+}
+
+.theme-toggle button {
+  background-color: none;
+}
+
+
+.entypo--switch1 {
+  display: inline-block;
+  width: 3em;
+  height: 3em;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='white' d='M13 3H7a7 7 0 1 0 0 14h6a7 7 0 1 0 0-14m0 12a5 5 0 1 1 .001-10.001A5 5 0 0 1 13 15'/%3E%3C/svg%3E");
+  transform: scaleX(-1); /* Flips the icon vertically */
+}
+.entypo--switch2 {
+  display: inline-block;
+  width: 3em;
+  height: 3em;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='black' d='M13 3H7a7 7 0 1 0 0 14h6a7 7 0 1 0 0-14m0 12a5 5 0 1 1 .001-10.001A5 5 0 0 1 13 15'/%3E%3C/svg%3E");
+}
+
+
+.container {
+  display: flex;
+  flex-direction: row; /* Row layout for larger screens */
+  width: 900px;
+  height:580px;
+  box-shadow: -5px -7px 54px 17px rgba(87,87,87,0.41);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.left, .right {
+  width: 50%; /* Each takes half the width */
+  box-sizing: border-box;
+}
+.left {
+  background-color: #fff;
+  padding: 40px;
+  overflow-y: auto; /* Allow vertical scrolling */
+}
+
+.left h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #8b4513; /* SaddleBrown text color */
+}
+.left p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #8b4513; /* SaddleBrown text color */
+}
+.social-login {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.social-login button {
+  width: 48%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.social-login .facebook {
+  background-color: #3b5998;
+  color: #fff;
+}
+.social-login .xing {
+  background-color: #006567;
+  color: #fff;
+}
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #aaa;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #8b4513; /* SaddleBrown text color */
+}
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.form-options label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #8b4513; /* SaddleBrown text color */
+}
+.form-options input {
+  margin-right: 5px;
+}
+.form-options a {
+  font-size: 14px;
+  color: #8b4513; /* SaddleBrown text color */
+  text-decoration: none;
+}
+.form-options a:hover {
+  text-decoration: underline;
+}
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  gap:10px;
+  
+  
+}
+.buttons a {
+  width: 48%;
+  text-align: center;
+  text-decoration: none;
+}
+.buttons button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.buttons .signup {
+  background: linear-gradient(90deg, #d2b48c, #deb887); /* Tan to BurlyWood gradient */
+  color: #fff;
+  width: 160px;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+.buttons .signup:hover {
+  background: linear-gradient(90deg, #d2b48c, white); /* Reverse gradient on hover */
+  color:  #d2b48c; /* Dark text on hover */
+  border: 1px solid  #d2b48c;
+}
+
+.buttons .login {
+  background-color: #fff;
+  color: #d2b48c; /* Tan text color */
+  border: 1px solid #d2b48c; /* Tan border color */
+  width: 160px;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+.buttons .login:hover {
+  background: linear-gradient(90deg, #a18a6b, #d2b48c);  /* Tan background on hover */
+  color: #fff; /* White text on hover */
+}
+.terms {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 20px;
+}
+.terms a {
+  color: #8b4513; /* SaddleBrown text color */
+  text-decoration: none;
+}
+.terms a:hover {
+  text-decoration: underline;
+}
+.right {
+  background: linear-gradient(135deg, #d2b48c, #deb887, #f5deb3, #ffe4c4); /* Tan to Bisque gradient */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.right model-viewer {
+  width: 100%;
+  height: 100%;
+}
+.right .close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.right .close i {
+  color: #fff;
+  font-size: 16px;
+}
+#termsButton, #signupTermsButton{
+  background-color: white;
+  color:#8b4513;
+  border: none;
+  cursor: pointer;
+}
+#termsButton:hover,
+#signupTermsButton:hover{
+text-decoration: underline;
+}
+
+
+
+
+
+
+@media (max-width: 768px) {
+  .container {
+      flex-direction: column; /* Stack sections vertically */
+      width: 100%; /* Full width */
+      height: auto; /* Adjust height */
+  }
+  
+  .left, .right {
+      width: 100%; /* Full width for both sections */
+      height: auto; /* Adjust height */
+  }
+  
+  .left {
+      padding: 20px; /* Reduce padding */
+  }
+  
+  .right {
+      padding: 20px; /* Add padding for better spacing */
+  }
+
+  .social-login button {
+    width: 100%; /* Full width for buttons */
+    margin-bottom: 10px; /* Add spacing */
+  }
+
+  .buttons a {
+    width: 100%; /* Full width for buttons */
+    margin-bottom: 10px; /* Add spacing */
+  }
+}
+
+@media (max-width: 480px) {
+
+  .container {
+    height: 100vh; /* Make height fit to screen */
+    width: auto; /* Adjust width for smaller screens */
+    display: flex;
+    flex-direction: column; /* Stack sections vertically */
+    justify-content: space-between; /* Evenly space left and right sections */
+  }
+
+  .left h1 {
+    font-size: 20px; /* Smaller font size */
+  }
+
+  .left p {
+    font-size: 14px; /* Smaller font size */
+  }
+
+  .form-group input {
+    padding: 8px; /* Reduce padding */
+    font-size: 12px; /* Smaller font size */
+  }
+
+  .buttons button {
+    padding: 8px; /* Reduce padding */
+    font-size: 12px; /* Smaller font size */
+  }
+
+  .entypo--switch1, .entypo--switch2 {
+    display: none;
+  }
+
+  .right model-viewer {
+    height:400px; /* Adjust height to fit the screen */
+  }
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* spacing between buttons */
+    align-items: center;
+  }
+
+  .buttons button {
+    width: 100%;
+    max-width: 200px;
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .buttons .signup,
+  .buttons .login {
+    width: 100%;
+  }
+}

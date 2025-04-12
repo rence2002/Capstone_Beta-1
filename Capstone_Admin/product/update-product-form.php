@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Check if product ID is set in GET request
 if (!isset($_GET['id'])) {

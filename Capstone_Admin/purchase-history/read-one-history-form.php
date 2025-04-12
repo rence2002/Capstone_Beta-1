@@ -23,7 +23,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Get the Purchase_ID from the URL
 $purchaseID = $_GET['id'] ?? null;

@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 try {
     // Query to fetch order details along with product name, 3D model URL, and user full name

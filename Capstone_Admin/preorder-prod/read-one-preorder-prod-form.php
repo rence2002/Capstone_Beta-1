@@ -24,7 +24,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Check if Preorder_ID is passed in the URL
 if (isset($_GET['id'])) {

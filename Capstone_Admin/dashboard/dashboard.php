@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 ?>
 
 <!DOCTYPE html>

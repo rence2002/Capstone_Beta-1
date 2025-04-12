@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Fetch ready-made order records from the database
 $search = isset($_GET['search']) ? $_GET['search'] : '';

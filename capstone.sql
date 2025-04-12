@@ -38,6 +38,8 @@ CREATE TABLE `tbl_admin_info` (
 
 /*Data for the table `tbl_admin_info` */
 
+insert  into `tbl_admin_info`(`Admin_ID`,`Last_Name`,`First_Name`,`Middle_Name`,`Home_Address`,`Email_Address`,`Mobile_Number`,`Status`,`Password`,`PicPath`,`verification_code`,`verification_code_expiry`) values ('xAUV8soBGn','Mantua','Clarence','Badilla','388 Marlboro Country, San Vicente, Santa Rita, Pampanga','rence.b.m@gmail.com','+639622100810','Active','$2y$10$MHDmuAiA929BEfVM9pjZs.VwsIybz8Dpaw7vvcuEV43IG8LxQdU1K','uploads/admin/1743557097_profile.jpg',NULL,NULL);
+
 /*Table structure for table `tbl_cart` */
 
 DROP TABLE IF EXISTS `tbl_cart`;
@@ -56,9 +58,11 @@ CREATE TABLE `tbl_cart` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_cart_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`),
   CONSTRAINT `tbl_cart_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_cart` */
+
+insert  into `tbl_cart`(`Cart_ID`,`User_ID`,`Product_ID`,`Quantity`,`Price`,`Total_Price`,`Order_Type`,`Date_Added`) values (1,'0001',2,1,'2000.00','2000.00','ready_made','2025-04-07 09:30:05');
 
 /*Table structure for table `tbl_customizations` */
 
@@ -114,9 +118,11 @@ CREATE TABLE `tbl_customizations` (
   PRIMARY KEY (`Customization_ID`),
   KEY `User_ID` (`User_ID`),
   CONSTRAINT `tbl_customizations_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_customizations` */
+
+insert  into `tbl_customizations`(`Customization_ID`,`User_ID`,`Furniture_Type`,`Furniture_Type_Additional_Info`,`Standard_Size`,`Desired_Size`,`Color`,`Color_Image_URL`,`Color_Additional_Info`,`Texture`,`Texture_Image_URL`,`Texture_Additional_Info`,`Wood_Type`,`Wood_Image_URL`,`Wood_Additional_Info`,`Foam_Type`,`Foam_Image_URL`,`Foam_Additional_Info`,`Cover_Type`,`Cover_Image_URL`,`Cover_Additional_Info`,`Design`,`Design_Image_URL`,`Design_Additional_Info`,`Tile_Type`,`Tile_Image_URL`,`Tile_Additional_Info`,`Metal_Type`,`Metal_Image_URL`,`Metal_Additional_Info`,`Order_Status`,`Product_Status`,`Request_Date`,`Last_Update`,`Product_ID`,`Stop_Reason`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`) values (1,'0001','chair','','Chair - 20x21 in.','','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67f32b2a8a9f8_Color.png','Brown','Smooth',NULL,'','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67f32b2a8ac06_Wood.jpg','Mahogany','Uratex',NULL,'dadsadas','German Leather',NULL,'','Rustic',NULL,'','',NULL,'','Tubular',NULL,'',10,10,'2025-04-07 09:34:53','2025-04-07 16:51:27',5,'','../uploads/progress_pics/67f3357ced4d6_sofa3.jpg','../uploads/progress_pics/67f3357ced6c4_sofa2.jpg',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 
 /*Table structure for table `tbl_customizations_temp` */
 
@@ -185,9 +191,11 @@ CREATE TABLE `tbl_order_request` (
   CONSTRAINT `tbl_order_request_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_3` FOREIGN KEY (`Customization_ID`) REFERENCES `tbl_customizations_temp` (`Temp_Customization_ID`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_order_request` */
+
+insert  into `tbl_order_request`(`Request_ID`,`User_ID`,`Product_ID`,`Customization_ID`,`Quantity`,`Order_Type`,`Order_Status`,`Total_Price`,`Request_Date`,`Processed`) values (17,'0001',3,NULL,3,'pre_order',-1,'6000.00','2025-04-07 16:44:19',1),(18,'0001',1,NULL,2,'pre_order',-1,'4000.00','2025-04-07 16:45:22',1),(19,'0001',1,NULL,1,'pre_order',-1,'2000.00','2025-04-07 16:46:17',1),(20,'0001',3,NULL,1,'ready_made',-1,'2000.00','2025-04-07 16:48:41',1),(21,'0001',2,NULL,1,'ready_made',-1,'2000.00','2025-04-07 16:51:08',1);
 
 /*Table structure for table `tbl_preorder` */
 
@@ -222,6 +230,8 @@ CREATE TABLE `tbl_preorder` (
 
 /*Data for the table `tbl_preorder` */
 
+insert  into `tbl_preorder`(`Preorder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Preorder_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,3,'0001',2,'2000.00',10,'2025-04-07 09:34:54',10,'../uploads/progress_pics/67f33591ebb2d_OC 2.jpg','../uploads/progress_pics/67f33591ec4c9_OC 3.jpg',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'');
+
 /*Table structure for table `tbl_prod_info` */
 
 DROP TABLE IF EXISTS `tbl_prod_info`;
@@ -247,7 +257,7 @@ CREATE TABLE `tbl_prod_info` (
 
 /*Data for the table `tbl_prod_info` */
 
-insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','bedframe','Bed Frame - Full XL 54x80 in.','Blue','200','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-02 09:27:50','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade');
+insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','bedframe','Bed Frame - Full XL 54x80 in.','Blue','200','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-02 09:27:50','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade'),(4,'Custom Chair Order','Custom order from request #1',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-07 09:32:26','2025-04-07 09:32:26',NULL,'custom'),(5,'Custom chair','Custom order from request #3','Custom Furniture',NULL,NULL,NULL,NULL,NULL,'',NULL,'2025-04-07 09:34:53','2025-04-07 09:34:53',NULL,'custom');
 
 /*Table structure for table `tbl_progress` */
 
@@ -285,6 +295,8 @@ CREATE TABLE `tbl_progress` (
 
 /*Data for the table `tbl_progress` */
 
+insert  into `tbl_progress`(`Progress_ID`,`User_ID`,`Product_ID`,`Product_Name`,`Order_Type`,`Order_Status`,`Product_Status`,`Quantity`,`Total_Price`,`Date_Added`,`LastUpdate`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`,`Progress_Pic_10`) values (1,'0001',5,'N/A','custom',0,0,1,'0.00','2025-04-07 09:34:53','2025-04-07 16:51:27','../uploads/progress_pics/67f3357ced6c4_sofa2.jpg',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'','../uploads/progress_pics/67f3357ced4d6_sofa3.jpg');
+
 /*Table structure for table `tbl_purchase_history` */
 
 DROP TABLE IF EXISTS `tbl_purchase_history`;
@@ -308,6 +320,8 @@ CREATE TABLE `tbl_purchase_history` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_purchase_history` */
+
+insert  into `tbl_purchase_history`(`Purchase_ID`,`User_ID`,`Product_ID`,`Product_Name`,`Quantity`,`Total_Price`,`Order_Type`,`Purchase_Date`,`Order_Status`,`Product_Status`) values (1,'0001',3,'Dining Set',2,'2000.00','pre_order','2025-04-07 16:48:12',10,0);
 
 /*Table structure for table `tbl_ready_made_orders` */
 
@@ -341,6 +355,8 @@ CREATE TABLE `tbl_ready_made_orders` (
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_ready_made_orders` */
+
+insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`) values (1,1,'0001',1,'2000.00',20,'2025-04-07 09:34:54',90,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'');
 
 /*Table structure for table `tbl_reviews` */
 
@@ -384,6 +400,8 @@ CREATE TABLE `tbl_user_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_user_info` */
+
+insert  into `tbl_user_info`(`User_ID`,`Last_Name`,`First_Name`,`Middle_Name`,`Home_Address`,`Email_Address`,`Mobile_Number`,`Status`,`Password`,`PicPath`,`reset_code`,`reset_code_expiry`) values ('0001','Mantua','Clarence','Badilla','388 Marlboro Country, San Vicente, Santa Rita, Pampanga','rence.b.m@gmail.com','09622100810','Active','$2y$10$IvXk3AOaDgxjWK23VBEy/eZkzJugIfKCQquiB8DASFBu6b9JBE5wa','uploads/user/0001_profile.jpg',NULL,NULL);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

@@ -51,14 +51,15 @@ if ($pass !== $confirmPass) {
 // HANDLE FILE UPLOAD
 $picPath = '';
 if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
-    $targetDir = "../uploads/admin/";
-    $targetFile = $targetDir . basename($_FILES["filePic"]["name"]);
+    $targetDir = $_SERVER['DOCUMENT_ROOT'] . "/Capstone_Beta/Capstone_Beta/uploads/admin/"; // Adjusted to be relative to the web root
     if (!is_dir($targetDir)) {
         mkdir($targetDir, 0777, true);
     }
+    $fileName = time() . "_" . basename($_FILES["filePic"]["name"]);
+    $targetFilePath = $targetDir . $fileName;
 
     // Validate file type and size
-    $fileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+    $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
     $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
     if (!in_array($fileType, $allowedTypes)) {
         die("Error: Only JPG, JPEG, PNG, and GIF files are allowed.");
@@ -67,8 +68,8 @@ if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
         die("Error: File size exceeds the 5MB limit.");
     }
 
-    if (move_uploaded_file($_FILES["filePic"]["tmp_name"], $targetFile)) {
-        $picPath = "../uploads/admin/" . basename($_FILES["filePic"]["name"]); // Save the relative path
+    if (move_uploaded_file($_FILES["filePic"]["tmp_name"], $targetFilePath)) {
+        $picPath = "../uploads/admin/" . $fileName; // Save the relative path
     } else {
         die("Error: Failed to upload file.");
     }

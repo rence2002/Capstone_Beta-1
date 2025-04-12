@@ -21,7 +21,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Get the ID and order type from the URL
 if (!isset($_GET['id']) || !isset($_GET['order_type'])) {

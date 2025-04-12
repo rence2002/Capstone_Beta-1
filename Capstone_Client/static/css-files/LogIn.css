@@ -63,9 +63,9 @@ body.dark-mode {
   display: flex;
   flex-direction: row; /* Row layout for larger screens */
   width: 900px;
-  height: 500px;
+  height:580px;
   box-shadow: -5px -7px 54px 17px rgba(87,87,87,0.41);
-  border-radius: 10px;
+  /* border-radius: 10px; */
   overflow: hidden;
 }
 
@@ -82,7 +82,7 @@ body.dark-mode {
 .left h1 {
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: #8b4513; /* SaddleBrown text color */
 }
 .left p {
@@ -159,6 +159,9 @@ body.dark-mode {
 .buttons {
   display: flex;
   justify-content: space-between;
+  gap:10px;
+  
+  
 }
 .buttons a {
   width: 48%;
@@ -176,11 +179,25 @@ body.dark-mode {
 .buttons .signup {
   background: linear-gradient(90deg, #d2b48c, #deb887); /* Tan to BurlyWood gradient */
   color: #fff;
+  width: 160px;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
 }
+.buttons .signup:hover {
+  background: linear-gradient(90deg, #d2b48c, white); /* Reverse gradient on hover */
+  color:  #d2b48c; /* Dark text on hover */
+  border: 1px solid  #d2b48c;
+}
+
 .buttons .login {
   background-color: #fff;
   color: #d2b48c; /* Tan text color */
   border: 1px solid #d2b48c; /* Tan border color */
+  width: 200px;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+.buttons .login:hover {
+  background: linear-gradient(90deg, #a18a6b, #d2b48c);  /* Tan background on hover */
+  color: #fff; /* White text on hover */
 }
 .terms {
   font-size: 12px;
@@ -224,36 +241,115 @@ body.dark-mode {
   color: #fff;
   font-size: 16px;
 }
-
+#termsButton, #signupTermsButton{
+  background-color: white;
+  color:#8b4513;
+  border: none;
+  cursor: pointer;
+}
+#termsButton:hover,
+#signupTermsButton:hover{
+text-decoration: underline;
+}
 
 @media (max-width: 768px) {
   .container {
-      flex-direction: column; /* Column layout for smaller screens */
-      width: 100%; /* Full width */
-      height: auto; /* Auto height */
+      flex-direction: column; /* Stack sections vertically */
+      width: 90%; /* Adjust width for smaller screens */
+      height: auto; /* Allow height to adjust dynamically */
   }
   
   .left, .right {
       width: 100%; /* Full width for both sections */
-      height: auto; /* Auto height */
+      height: auto; /* Adjust height */
   }
   
-  .right {
-      padding: 20px; /* Padding for the right section */
+  .left {
+      padding: 20px; /* Reduce padding */
+  }
+  
+  .left h1 {
+      font-size: 20px; /* Smaller font size */
+  }
+  
+  .left p {
+      font-size: 14px; /* Smaller font size */
+  }
+  
+  .form-group input {
+      padding: 8px; /* Reduce padding */
+      font-size: 12px; /* Smaller font size */
+  }
+  
+  .buttons button {
+      padding: 18px; /* Reduce padding */
+      font-size: 12px; /* Smaller font size */
+  }
+  
+  .right model-viewer {
+      height: 300px; /* Adjust height to fit the screen */
+  }
+  
+  .buttons {
+      flex-direction: column; /* Stack buttons vertically */
+  
+      align-items: center;
+  }
+  
+  .buttons button {
+      width: 100%;
+      max-width: 200px; /* Limit button width */
+  }
+  
+  .buttons .signup,
+  .buttons .login {
+      width: 100%; /* Full width for buttons */
   }
 }
 
 @media (max-width: 480px) {
-  .right model-viewer {
-      height: 300px; /* Adjust height for mobile view */
+  .container {
+      height: auto; /* Adjust height for smaller screens */
+      width: 100%; /* Full width */
+      margin:10px;
+      
   }
   
-  .left {
-      padding: 20px; /* Padding for the left section */
+  .left h1 {
+      font-size: 18px; /* Smaller font size */
+  }
+  
+  .left p {
+      font-size: 12px; /* Smaller font size */
+  }
+  
+  .form-group input {
+      font-size: 10px; /* Smaller font size */
+  }
+  
+  .buttons button {
+      font-size: 10px; /* Smaller font size */
+  }
+  
+  .right model-viewer {
+      height: 250px; /* Further reduce height */
+  }
+  
+  .theme-toggle {
+      top: 10px; /* Adjust position */
+      right: 10px; /* Adjust position */
+      font-size: 12px; /* Smaller font size */
   }
 
-  .entypo--switch1, .entypo--switch2 {
-    width: 1em; /* Smaller icon size */
-    height: 1em; /* Smaller icon size */
+  .entypo--switch1 {
+    display: none;
+  }
+  .entypo--switch2 {
+    display: none;
+   
+  }
+
+  .buttons .signup {
+   width: 200px; /* Full width for buttons */
   }
 }

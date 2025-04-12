@@ -22,7 +22,7 @@ if ($pdo) {
         exit();
     }
     $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+    $profilePicPath = htmlspecialchars($admin['PicPath']);
 }
 
 // Query to select preorder record details along with product and user information

@@ -25,7 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = str_replace('../', '', htmlspecialchars($admin['PicPath']));
+$profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Check if a Review_ID is passed via GET parameter
 if (isset($_GET['id'])) {
@@ -129,9 +129,9 @@ if (isset($_GET['id'])) {
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-                <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button"></i>
+    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+    <span class="admin_name"><?php echo $adminName; ?></span>
+    <i class="bx bx-chevron-down dropdown-button"></i>
 
     <div class="dropdown" id="profileDropdown">
         <a href="../admin/read-one-admin-form.php">Settings</a>
