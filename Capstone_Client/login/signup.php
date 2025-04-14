@@ -142,7 +142,7 @@
                 </div>
                 <div class="buttons">
                     <button type="submit" class="signup" id="signupSubmitButton" disabled>Sign up</button>
-                    <a href="../index.php"><button type="button" class="login">Login</button></a>
+                    <a href="login.php"><button type="button" class="login">Login</button></a>
                 </div>
             </form>
             <div id="signupTermsModal" class="modal" style="display: none;">
