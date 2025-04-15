@@ -78,7 +78,7 @@ unset($_SESSION['registration_success']);
            <div class="success-container">
                 <h1>Registration Successful!</h1>
                 <p>Your account has been successfully created. You can now log in.</p>
-                <a href="../index.php">Continue to Login</a>
+                <a href="login.php">Continue to Login</a>
             </div>
         </div>
     </div>
