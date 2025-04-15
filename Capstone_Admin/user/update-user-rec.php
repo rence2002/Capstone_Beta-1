@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = htmlspecialchars($_POST['txtStatus']);
     $password = $_POST['txtPass']; // New password field
     $confirmPassword = $_POST['txtConfirm'];
+    $idVerified = isset($_POST['idVerified']) ? 'Valid' : 'Invalid'; // Checkbox for ID verification
 
     // If password is entered, check for confirmation and hash it
     if (!empty($password)) {
@@ -67,7 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 Home_Address = :homeAddress, 
                 Email_Address = :email, 
                 Mobile_Number = :mobile, 
-                Status = :status" . 
+                Status = :status, 
+                ID_Verification_Status = :idVerificationStatus" . 
                 ($hashedPassword ? ", Password = :password" : "") . 
                 ($picPath ? ", PicPath = :picPath" : "") . 
                 " WHERE User_ID = :userID";
@@ -81,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':mobile', $mobile);
     $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':idVerificationStatus', $idVerified);
     if ($hashedPassword) {
         $stmt->bindParam(':password', $hashedPassword);
     }
@@ -123,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = htmlspecialchars($user["Email_Address"]);
         $mobile = htmlspecialchars($user["Mobile_Number"]);
         $status = htmlspecialchars($user["Status"]);
+        $validIDPath = htmlspecialchars($user["Valid_ID_Path"]);
     } else {
         echo "No user ID provided.";
         exit();

@@ -53,6 +53,7 @@ if (isset($_GET['id'])) {
     $mobile = htmlspecialchars($user["Mobile_Number"]);
     $status = htmlspecialchars($user["Status"]);
     $picPath = htmlspecialchars($user["PicPath"]);
+    $validIDPath = htmlspecialchars($user["Valid_ID_Path"]);
 } else {
     echo "No user ID provided.";
     exit();
@@ -195,7 +196,20 @@ if (isset($_GET['id'])) {
                         <td>Upload New Profile Picture:</td>
                         <td><input type="file" name="PicPath" accept="image/*"></td>
                     </tr>
-                    
+                    <tr>
+                        <td>Valid ID:</td>
+                        <td>
+                            <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" style="width: 100px; height: 100px;">
+                            <br>
+                            <label>
+                                <input type="radio" name="idVerificationStatus" value="Valid" <?php echo ($user['ID_Verification_Status'] === 'Valid') ? 'checked' : ''; ?>> Mark as Valid
+                            </label>
+                            <br>
+                            <label>
+                                <input type="radio" name="idVerificationStatus" value="Invalid" <?php echo ($user['ID_Verification_Status'] === 'Invalid') ? 'checked' : ''; ?>> Mark as Invalid
+                            </label>
+                        </td>
+                    </tr>
                 </table>
                 <!-- Separated buttons -->
                 <div class="button-container">
