@@ -161,6 +161,11 @@ $validIDPath = htmlspecialchars($user["Valid_ID_Path"]); // Fetch the user's val
                         <td>Valid ID:</td>
                         <td><img src="../<?php echo $validIDPath; ?>" alt="Valid ID" style="width: 100px; height: 100px;"></td>
                     </tr>
+                    <!-- Display ID Validation Status -->
+                    <tr>
+                        <td>ID Validation Status:</td>
+                        <td><?php echo htmlspecialchars($user['ID_Verification_Status']); ?></td>
+                    </tr>
                 </table>
                 <div class="button-container">
                     <a href="read-all-user-form.php" target="_parent" class="buttonBack">Back to List</a>

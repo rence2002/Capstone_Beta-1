@@ -381,6 +381,7 @@ CREATE TABLE `tbl_user_info` (
   `Password` varchar(150) DEFAULT NULL,
   `PicPath` varchar(750) DEFAULT NULL,
   `Valid_ID_Path` varchar(255) DEFAULT NULL,
+  `ID_Verification_Status` enum('Valid','Invalid') DEFAULT 'Invalid',
   `reset_code` int(11) DEFAULT NULL,
   `reset_code_expiry` datetime DEFAULT NULL,
   PRIMARY KEY (`User_ID`)
@@ -388,7 +389,7 @@ CREATE TABLE `tbl_user_info` (
 
 /*Data for the table `tbl_user_info` */
 
-insert  into `tbl_user_info`(`User_ID`,`Last_Name`,`First_Name`,`Middle_Name`,`Home_Address`,`Email_Address`,`Mobile_Number`,`Status`,`Password`,`PicPath`,`Valid_ID_Path`,`reset_code`,`reset_code_expiry`) values ('user_67fdb6ef7e16b','Mantua','Clarence','Badilla','388 Marlboro Country, San Vicente, Santa Rita, Pampanga','rence.b.m@gmail.com','09622100810','Active','$2y$10$jbmrnKEsFZullOBlKhVIkeskXEupskicE5bkyClsIO9lFuUOINFbi','uploads/user/user_67fdb6ef7e16b_profile.jpg','uploads/user/validid/user_67fdb6ef7e16b_validid_test.png',NULL,NULL);
+insert  into `tbl_user_info`(`User_ID`,`Last_Name`,`First_Name`,`Middle_Name`,`Home_Address`,`Email_Address`,`Mobile_Number`,`Status`,`Password`,`PicPath`,`Valid_ID_Path`,`ID_Verification_Status`,`reset_code`,`reset_code_expiry`) values ('user_67fdb6ef7e16b','Mantua','Clarence','Badilla','388 Marlboro Country, San Vicente, Santa Rita, Pampanga','rence.b.m@gmail.com','09622100810','Active','$2y$10$jbmrnKEsFZullOBlKhVIkeskXEupskicE5bkyClsIO9lFuUOINFbi','uploads/user/user_67fdb6ef7e16b_profile.jpg','uploads/user/validid/user_67fdb6ef7e16b_validid_test.png','Invalid',NULL,NULL);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

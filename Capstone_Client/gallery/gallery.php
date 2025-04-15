@@ -80,6 +80,52 @@ try {
         .clear-search.show {
             display: block; /* Show when there's a search term */
         }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -207,6 +253,7 @@ try {
         <!-- Furniture Type -->
         <div class="cus-boxed">
             <label for="furniture">Furniture Type:</label>
+            <p class="dropdown-description" id="furniture-description">Select the type of furniture you want to customize. You can also upload a custom design.</p>
             <select id="furniture" name="furniture">
                 <option value="" disabled selected>Select one</option>
                 <option value="chair">Chair</option>
@@ -224,9 +271,33 @@ try {
             </div>
         </div>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const furnitureSelect = document.getElementById("furniture");
+                const description = document.getElementById("furniture-description");
+
+                // Define descriptions for each furniture type
+                const descriptions = {
+                    chair: "Customize your chair with unique designs and materials.",
+                    table: "Choose the perfect table size, material, and finish.",
+                    salaset: "Create a sala set that fits your living room style.",
+                    bedframe: "Design a bed frame that matches your bedroom aesthetic.",
+                    custom: "Upload your custom design and bring your vision to life.",
+                    default: "Select the type of furniture you want to customize. You can also upload a custom design."
+                };
+
+                // Update description based on selected furniture type
+                furnitureSelect.addEventListener("change", function () {
+                    const selectedValue = furnitureSelect.value;
+                    description.textContent = descriptions[selectedValue] || descriptions.default;
+                });
+            });
+        </script>
+
         <!-- Sizes -->
         <div class="cus-boxed">
             <label for="sizes">Sizes:</label>
+            <p class="dropdown-description">Select the size for your furniture. You can also upload a custom design.</p>
             <select id="sizes" name="sizes">
                 <option value="" disabled selected>Select one</option>
             </select>
@@ -239,6 +310,7 @@ try {
         <!-- Color -->
         <div class="cus-boxed">
             <label for="color">Color:</label>
+            <p class="dropdown-description" id="color-description">Select the color for your furniture. You can also upload a custom design.</p>
             <select id="color" name="color">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -257,51 +329,120 @@ try {
             </div>
         </div>
 
-        <!-- Texture -->
-        <div class="cus-boxed">
-            <label for="texture">Texture:</label>
-            <select id="texture" name="texture">
-                <option value="" disabled selected>Select one</option>
-                <option value="custom">Custom</option>
-                <option value="High Gloss">High Gloss</option>
-                <option value="Brushed">Brushed</option>
-                <option value="Textured">Textured</option>
-                <option value="Smooth">Smooth</option>
-                <option value="Semi Glossy">Semi Glossy</option>
-                <option value="Duco Finish">Duco Finish</option>
-                <option value="Rustic">Rustic</option>
-            </select>
-            <div id="texture-custom-options" style="display: none;">
-                <label for="texture-info">Texture Additional Info:</label>
-                <input type="text" id="texture-info" name="texture-info" placeholder="Enter additional info">
-                <label for="fileTextureImage">Upload Texture Image:</label>
-                <input type="file" id="fileTextureImage" name="fileTextureImage" accept="image/*">
-                <div id="texture-image-preview" class="image-preview"></div>
-            </div>
-        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const colorSelect = document.getElementById("color");
+                const colorDescription = document.getElementById("color-description");
 
-        <!-- Wood -->
-        <div class="cus-boxed">
-            <label for="woods">Wood:</label>
-            <select id="woods" name="wood">
-                <option value="" disabled selected>Select one</option>
-                <option value="custom">Custom</option>
-                <option value="Nara">Nara</option>
-                <option value="Plywood 1/4">Plywood 1/4</option>
-                <option value="Plywood 1/8">Plywood 1/8</option>
-            </select>
-            <div id="woods-custom-options" style="display: none;">
-                <label for="wood-info">Wood Additional Info:</label>
-                <input type="text" id="wood-info" name="wood-info" placeholder="Enter additional info">
-                <label for="fileWoodImage">Upload Wood Image:</label>
-                <input type="file" id="fileWoodImage" name="fileWoodImage" accept="image/*">
-                <div id="wood-image-preview" class="image-preview"></div>
-            </div>
-        </div>
+                // Define descriptions for each color
+                const colorDescriptions = {
+                    custom: "Upload your custom color design and bring your vision to life.",
+                    Teak: "Teak is a warm, golden-brown color perfect for classic furniture.",
+                    "Weathered Oak": "Weathered Oak gives a rustic and aged look to your furniture.",
+                    "Antique White": "Antique White adds a vintage and elegant touch.",
+                    Black: "Black is a bold and modern choice for any furniture style.",
+                    "Driftwood Gray": "Driftwood Gray offers a neutral and contemporary finish.",
+                    default: "Select the color for your furniture. You can also upload a custom design."
+                };
+
+                // Update description based on selected color
+                colorSelect.addEventListener("change", function () {
+                    const selectedColor = colorSelect.value;
+                    colorDescription.textContent = colorDescriptions[selectedColor] || colorDescriptions.default;
+                });
+            });
+        </script>
+
+        <!-- Texture -->
+<div class="cus-boxed">
+    <label for="texture">Texture:</label>
+    <p class="dropdown-description" id="texture-description">Select the texture for your furniture. You can also upload a custom design.</p>
+    <select id="texture" name="texture">
+        <option value="" disabled selected>Select one</option>
+        <option value="custom">Custom</option>
+        <option value="High Gloss">High Gloss</option>
+        <option value="Brushed">Brushed</option>
+        <option value="Textured">Textured</option>
+        <option value="Smooth">Smooth</option>
+        <option value="Semi Glossy">Semi Glossy</option>
+        <option value="Duco Finish">Duco Finish</option>
+        <option value="Rustic">Rustic</option>
+    </select>
+    <div id="texture-custom-options" style="display: none;">
+        <label for="texture-info">Texture Additional Info:</label>
+        <input type="text" id="texture-info" name="texture-info" placeholder="Enter additional info">
+        <label for="fileTextureImage">Upload Texture Image:</label>
+        <input type="file" id="fileTextureImage" name="fileTextureImage" accept="image/*">
+        <div id="texture-image-preview" class="image-preview"></div>
+    </div>
+</div>
+
+<!-- Wood -->
+<div class="cus-boxed">
+    <label for="woods">Wood:</label>
+    <p class="dropdown-description" id="wood-description">Select the type of wood you want for your furniture. You can also upload a custom design.</p>
+    <select id="woods" name="wood">
+        <option value="" disabled selected>Select one</option>
+        <option value="custom">Custom</option>
+        <option value="Nara">Nara</option>
+        <option value="Plywood 1/4">Plywood 1/4</option>
+        <option value="Plywood 1/8">Plywood 1/8</option>
+    </select>
+    <div id="woods-custom-options" style="display: none;">
+        <label for="wood-info">Wood Additional Info:</label>
+        <input type="text" id="wood-info" name="wood-info" placeholder="Enter additional info">
+        <label for="fileWoodImage">Upload Wood Image:</label>
+        <input type="file" id="fileWoodImage" name="fileWoodImage" accept="image/*">
+        <div id="wood-image-preview" class="image-preview"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Texture Logic
+        const textureSelect = document.getElementById("texture");
+        const textureDescription = document.getElementById("texture-description");
+
+        const textureDescriptions = {
+            custom: "Upload your custom texture design and bring your vision to life.",
+            "High Gloss": "High Gloss provides a shiny and reflective finish.",
+            Brushed: "Brushed texture adds a subtle, linear pattern.",
+            Textured: "Textured finish adds depth and character to your furniture.",
+            Smooth: "Smooth finish offers a sleek and polished look.",
+            "Semi Glossy": "Semi Glossy provides a balanced shine.",
+            "Duco Finish": "Duco Finish offers a durable and vibrant coating.",
+            Rustic: "Rustic texture gives a natural and aged appearance.",
+            default: "Select the texture for your furniture. You can also upload a custom design."
+        };
+
+        textureSelect.addEventListener("change", function () {
+            const selectedTexture = textureSelect.value;
+            textureDescription.textContent = textureDescriptions[selectedTexture] || textureDescriptions.default;
+        });
+
+        // Wood Logic
+        const woodSelect = document.getElementById("woods");
+        const woodDescription = document.getElementById("wood-description");
+
+        const woodDescriptions = {
+            custom: "Upload your custom wood design and bring your vision to life.",
+            Nara: "Nara wood is known for its durability and elegant grain.",
+            "Plywood 1/4": "Plywood 1/4 is lightweight and versatile for various designs.",
+            "Plywood 1/8": "Plywood 1/8 is thin and ideal for intricate details.",
+            default: "Select the type of wood you want for your furniture. You can also upload a custom design."
+        };
+
+        woodSelect.addEventListener("change", function () {
+            const selectedWood = woodSelect.value;
+            woodDescription.textContent = woodDescriptions[selectedWood] || woodDescriptions.default;
+        });
+    });
+</script>
 
         <!-- Foam -->
         <div class="cus-boxed">
             <label for="foam">Foam:</label>
+            <p class="dropdown-description" id="foam-description">Choose the type of foam for your furniture. You can also provide additional details or upload a custom design.</p>
             <select id="foam" name="foam">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -319,6 +460,7 @@ try {
         <!-- Cover -->
         <div class="cus-boxed">
             <label for="cover">Cover:</label>
+            <p class="dropdown-description" id="cover-description">Select the type of cover for your furniture. You can also upload a custom design.</p>
             <select id="cover" name="cover">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -337,9 +479,48 @@ try {
             </div>
         </div>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Foam Logic
+                const foamSelect = document.getElementById("foam");
+                const foamDescription = document.getElementById("foam-description");
+
+                const foamDescriptions = {
+                    custom: "Upload your custom foam design and bring your vision to life.",
+                    Uratex: "Uratex foam provides premium comfort and durability.",
+                    default: "Choose the type of foam for your furniture. You can also provide additional details or upload a custom design."
+                };
+
+                foamSelect.addEventListener("change", function () {
+                    const selectedFoam = foamSelect.value;
+                    foamDescription.textContent = foamDescriptions[selectedFoam] || foamDescriptions.default;
+                });
+
+                // Cover Logic
+                const coverSelect = document.getElementById("cover");
+                const coverDescription = document.getElementById("cover-description");
+
+                const coverDescriptions = {
+                    custom: "Upload your custom cover design and bring your vision to life.",
+                    "German Leather": "German Leather offers a luxurious and durable finish.",
+                    "Korean Leather": "Korean Leather provides a sleek and modern look.",
+                    Velvet: "Velvet adds a soft and elegant touch to your furniture.",
+                    "Italian Leather": "Italian Leather is known for its premium quality and style.",
+                    "Linen Type": "Linen Type is a breathable and natural fabric choice.",
+                    default: "Select the type of cover for your furniture. You can also upload a custom design."
+                };
+
+                coverSelect.addEventListener("change", function () {
+                    const selectedCover = coverSelect.value;
+                    coverDescription.textContent = coverDescriptions[selectedCover] || coverDescriptions.default;
+                });
+            });
+        </script>
+
         <!-- Design -->
         <div class="cus-boxed">
             <label for="design">Design:</label>
+            <p class="dropdown-description" id="design-description">Select the design for your furniture. You can also upload a custom design.</p>
             <select id="design" name="design">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -361,6 +542,7 @@ try {
         <!-- Tiles -->
         <div class="cus-boxed">
             <label for="tiles">Tiles:</label>
+            <p class="dropdown-description" id="tiles-description">Select the type of tiles for your furniture. You can also upload a custom design.</p>
             <select id="tiles" name="tiles">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -378,9 +560,51 @@ try {
             </div>
         </div>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Design Logic
+                const designSelect = document.getElementById("design");
+                const designDescription = document.getElementById("design-description");
+
+                const designDescriptions = {
+                    custom: "Upload your custom design and bring your vision to life.",
+                    Eclectic: "Eclectic design combines various styles for a unique look.",
+                    "Shabby Chic": "Shabby Chic offers a vintage and cozy aesthetic.",
+                    Rustic: "Rustic design emphasizes natural and rugged elements.",
+                    "Asian Inspired": "Asian Inspired design reflects cultural elegance.",
+                    Farmhouse: "Farmhouse design is warm, simple, and inviting.",
+                    default: "Select the design for your furniture. You can also upload a custom design."
+                };
+
+                designSelect.addEventListener("change", function () {
+                    const selectedDesign = designSelect.value;
+                    designDescription.textContent = designDescriptions[selectedDesign] || designDescriptions.default;
+                });
+
+                // Tiles Logic
+                const tilesSelect = document.getElementById("tiles");
+                const tilesDescription = document.getElementById("tiles-description");
+
+                const tilesDescriptions = {
+                    custom: "Upload your custom tile design and bring your vision to life.",
+                    Porcelain: "Porcelain tiles are durable and versatile for any furniture.",
+                    Quartz: "Quartz tiles offer a sleek and modern finish.",
+                    Marble: "Marble tiles add a luxurious and timeless touch.",
+                    Granite: "Granite tiles are strong and perfect for heavy-duty use.",
+                    default: "Select the type of tiles for your furniture. You can also upload a custom design."
+                };
+
+                tilesSelect.addEventListener("change", function () {
+                    const selectedTile = tilesSelect.value;
+                    tilesDescription.textContent = tilesDescriptions[selectedTile] || tilesDescriptions.default;
+                });
+            });
+        </script>
+
         <!-- Metal -->
         <div class="cus-boxed">
             <label for="metal">Metal:</label>
+            <p class="dropdown-description" id="metal-description">Select the type of metal for your furniture. You can also upload a custom design.</p>
             <select id="metal" name="metal">
                 <option value="" disabled selected>Select one</option>
                 <option value="custom">Custom</option>
@@ -396,9 +620,29 @@ try {
             </div>
         </div>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Metal Logic
+                const metalSelect = document.getElementById("metal");
+                const metalDescription = document.getElementById("metal-description");
+
+                const metalDescriptions = {
+                    custom: "Upload your custom metal design and bring your vision to life.",
+                    "Flat Bar": "Flat Bar metal is strong and ideal for structural designs.",
+                    Tubular: "Tubular metal offers a lightweight and modern look.",
+                    default: "Select the type of metal for your furniture. You can also upload a custom design."
+                };
+
+                metalSelect.addEventListener("change", function () {
+                    const selectedMetal = metalSelect.value;
+                    metalDescription.textContent = metalDescriptions[selectedMetal] || metalDescriptions.default;
+                });
+            });
+        </script>
+
         <!-- Submit and Reset Buttons -->
         <div class="cus-boxed">
-            <button id="submit-button">Submit</button>
+        <button id="submit-button" class="btn" disabled>Submit</button>
             <button id="reset-button">Reset</button>
         </div>
     </div>
@@ -423,6 +667,17 @@ try {
             <!-- <button id="confirm-cancel-button">Cancel</button> -->
         </div>
     </div>
+
+    <!-- Modal for ID Verification Warning -->
+    <div id="idVerificationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2>Action Restricted</h2>
+            <p>Your ID verification status is either <strong>Unverified</strong> or <strong>Invalid</strong>. Please verify your ID to proceed with customization.</p>
+            <p>Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
+            <button id="closeModalButton" class="btn">Close</button>
+        </div>
+    </div>
 </main>
 <footer class="footer">
     </footer>
@@ -430,5 +685,49 @@ try {
     <script src="../static/Javascript-files/customization.js"></script>
     <script src="../static/Javascript-files/gallery.js"></script>
     <script src="../static/Javascript-files/jQuery.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const submitButton = document.getElementById("submit-button");
+    const modal = document.getElementById("idVerificationModal");
+    const closeModal = document.getElementById("closeModal");
+    const closeModalButton = document.getElementById("closeModalButton");
+
+    // Fetch the user's ID verification status from the server
+    let idVerificationStatus = "<?php
+        $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
+        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo $user['ID_Verification_Status'];
+    ?>";
+
+    console.log("ID Verification Status:", idVerificationStatus);
+
+    // Enable the submit button only if the ID verification status is "Valid"
+    if (idVerificationStatus === "Valid") {
+        submitButton.disabled = false;
+    }
+
+    console.log("Submit Button Disabled:", submitButton.disabled);
+
+    // Show modal if the button is clicked while disabled
+    submitButton.addEventListener("click", function (e) {
+        if (submitButton.disabled) {
+            e.preventDefault();
+            console.log("Showing Modal...");
+            modal.style.display = "flex"; // Show the modal
+        }
+    });
+
+    // Close the modal when the close button is clicked
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none"; // Hide the modal
+    });
+
+    closeModalButton.addEventListener("click", function () {
+        modal.style.display = "none"; // Hide the modal
+    });
+});
+</script>
 </body>
 </html>

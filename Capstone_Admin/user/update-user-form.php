@@ -199,7 +199,7 @@ if (isset($_GET['id'])) {
                     <tr>
                         <td>Valid ID:</td>
                         <td>
-                            <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" style="width: 100px; height: 100px;">
+                            <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" style="width: 400px; height: 250px; object-fit: cover; border: 1px solid #ccc;">
                             <br>
                             <label>
                                 <input type="radio" name="idVerificationStatus" value="Valid" <?php echo ($user['ID_Verification_Status'] === 'Valid') ? 'checked' : ''; ?>> Mark as Valid
@@ -207,6 +207,10 @@ if (isset($_GET['id'])) {
                             <br>
                             <label>
                                 <input type="radio" name="idVerificationStatus" value="Invalid" <?php echo ($user['ID_Verification_Status'] === 'Invalid') ? 'checked' : ''; ?>> Mark as Invalid
+                            </label>
+                            <br>
+                            <label>
+                                <input type="radio" name="idVerificationStatus" value="Unverified" <?php echo ($user['ID_Verification_Status'] === 'Unverified') ? 'checked' : ''; ?>> Mark as Unverified
                             </label>
                         </td>
                     </tr>

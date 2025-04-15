@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = htmlspecialchars($_POST['txtStatus']);
     $password = $_POST['txtPass']; // New password field
     $confirmPassword = $_POST['txtConfirm'];
-    $idVerified = isset($_POST['idVerified']) ? 'Valid' : 'Invalid'; // Checkbox for ID verification
+    $idVerificationStatus = isset($_POST['idVerificationStatus']) ? $_POST['idVerificationStatus'] : 'Unverified'; // Get the ID verification status from the form
 
     // If password is entered, check for confirmation and hash it
     if (!empty($password)) {
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':mobile', $mobile);
     $stmt->bindParam(':status', $status);
-    $stmt->bindParam(':idVerificationStatus', $idVerified);
+    $stmt->bindParam(':idVerificationStatus', $idVerificationStatus); // Bind the ID verification status
     if ($hashedPassword) {
         $stmt->bindParam(':password', $hashedPassword);
     }

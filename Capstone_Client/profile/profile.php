@@ -158,6 +158,52 @@ echo "</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+.basic-info-container {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.basic-info-container h2 {
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.basic-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.basic-info-table td {
+    padding: 8px 10px;
+    vertical-align: top;
+}
+
+.basic-info-table td:first-child {
+    font-weight: bold;
+    color: #555;
+    width: 30%;
+}
+
+.status-valid {
+    color: green;
+    font-weight: bold;
+}
+
+.status-invalid {
+    color: red;
+    font-weight: bold;
+}
+
+.status-unverified {
+    color: orange;
+    font-weight: bold;
+}
+</style>
 </head>
 <body>
 <header>
@@ -198,7 +244,40 @@ echo "</script>
             <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
             <a class="ep--edit" href="edit-profile.php"></a>
         </div>
-      
+    </div>
+
+    <!-- Basic User Information Section -->
+    <div class="basic-info-container">
+        <h2>Basic Information</h2>
+        <table class="basic-info-table">
+            <tr>
+                <td><strong>Full Name:</strong></td>
+                <td><?= htmlspecialchars($user['First_Name'] . " " . $user['Last_Name']) ?></td>
+            </tr>
+            <tr>
+                <td><strong>Email Address:</strong></td>
+                <td><?= htmlspecialchars($user['Email_Address']) ?></td>
+            </tr>
+            <tr>
+                <td><strong>Mobile Number:</strong></td>
+                <td><?= htmlspecialchars($user['Mobile_Number']) ?></td>
+            </tr>
+            <tr>
+                <td><strong>Valid ID Status:</strong></td>
+                <td>
+                    <?php
+                    $idStatus = htmlspecialchars($user['ID_Verification_Status']);
+                    if ($idStatus === 'Valid') {
+                        echo "<span class='status-valid'>Valid</span>";
+                    } elseif ($idStatus === 'Invalid') {
+                        echo "<span class='status-invalid'>Invalid</span>";
+                    } else {
+                        echo "<span class='status-unverified'>Unverified</span>";
+                    }
+                    ?>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <!-- Pending Orders Section -->

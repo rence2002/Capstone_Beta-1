@@ -148,20 +148,14 @@ if (!$product) {
                     </div>
                     <div class="button-readone" style="flex: 2">
                         <?php if ($product['Stock'] > 0): ?>
-                            <!-- Buy Now Button (Visible when stock is available) -->
-                            <button class="single-product-buy-btn" id="buy-now">
-                                Buy Now
-                            </button>
+                            <!-- Buy Now Button -->
+                            <button class="single-product-buy-btn" id="buy-now" disabled>Buy Now</button>
                         <?php else: ?>
-                            <!-- Pre-Order Button (Visible when stock is 0) -->
-                            <button class="single-product-preorder-btn" id="pre-order">
-                                Pre-Order
-                            </button>
+                            <!-- Pre-Order Button -->
+                            <button class="single-product-preorder-btn" id="pre-order" disabled>Pre-Order</button>
                         <?php endif; ?>
-                        <!-- Add to Cart Button (Always visible) -->
-                        <button class="single-product-cart-btn" id="add-to-cart">
-                            Add To Cart
-                        </button>
+                        <!-- Add to Cart Button -->
+                        <button class="single-product-cart-btn" id="add-to-cart" disabled>Add To Cart</button>
                     </div>
                 </div>
             </div>
@@ -234,6 +228,65 @@ if (!$product) {
     </div>
 </div>
 
+<!-- Modal for ID Verification Warning -->
+<div id="idVerificationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal" id="closeModal">&times;</span>
+        <h2>Action Restricted</h2>
+        <p>Your ID verification status is either <strong>Unverified</strong> or <strong>Invalid</strong>. Please verify your ID to proceed with this action.</p>
+        <p>Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
+        <button id="closeModalButton" class="btn">Close</button>
+    </div>
+</div>
+
+<style>
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+</style>
+
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="../static/Javascript-files/script.js"></script>
     <script src="../static/Javascript-files/readone.js"></script>
@@ -267,7 +320,58 @@ if (!$product) {
             updateActiveImage(currentIndex);
         });
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buyNowButton = document.getElementById("buy-now");
+    const preOrderButton = document.getElementById("pre-order");
+    const addToCartButton = document.getElementById("add-to-cart");
 
+    // Fetch the user's ID verification status from the server
+    let idVerificationStatus = "<?php
+        $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
+        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo $user['ID_Verification_Status'];
+    ?>";
+
+    // Enable buttons only if the ID verification status is "Valid"
+    if (idVerificationStatus === "Valid") {
+        if (buyNowButton) buyNowButton.disabled = false;
+        if (preOrderButton) preOrderButton.disabled = false;
+        if (addToCartButton) addToCartButton.disabled = false;
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("idVerificationModal");
+    const closeModal = document.getElementById("closeModal");
+    const closeModalButton = document.getElementById("closeModalButton");
+
+    const buttons = [document.getElementById("buy-now"), document.getElementById("pre-order"), document.getElementById("add-to-cart")];
+
+    buttons.forEach(button => {
+        if (button) {
+            button.addEventListener("click", function (e) {
+                if (button.disabled) {
+                    e.preventDefault();
+                    modal.style.display = "flex";
+                }
+            });
+        }
+    });
+
+    // Close the modal
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+    closeModalButton.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+});
+</script>
 </body>
 
 </html>
