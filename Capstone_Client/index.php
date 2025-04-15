@@ -14,7 +14,7 @@ $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Define the base path for 3D files
-$base3DPath = "http://localhost/Caps/Capstone_Client/uploads/product/3d/";
+$base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d/";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -104,17 +104,19 @@ $base3DPath = "http://localhost/Caps/Capstone_Client/uploads/product/3d/";
     <h2 class="sampleAr">Our Sample Products</h2>
     <div class="products">
       <?php foreach ($products as $product): ?>
-        <div class="product">
-          <model-viewer 
-            src="<?= $base3DPath . basename($product['GLB_File_URL']) ?>" 
-            alt="<?= htmlspecialchars($product['Product_Name']) ?>" 
-            ar ar-modes="scene-viewer webxr quick-look" 
-            auto-rotate 
-            camera-controls>
-          </model-viewer>
-          <h3><?= htmlspecialchars($product['Product_Name']) ?></h3>
-          <p>₱ <?= number_format($product['Price'], 2) ?></p>
-        </div>
+        <a href="login/signup.php" class="product-link">
+          <div class="product">
+            <model-viewer 
+              src="<?= $base3DPath . basename($product['GLB_File_URL']) ?>" 
+              alt="<?= htmlspecialchars($product['Product_Name']) ?>" 
+              ar ar-modes="scene-viewer webxr quick-look" 
+              auto-rotate 
+              camera-controls>
+            </model-viewer>
+            <h3><?= htmlspecialchars($product['Product_Name']) ?></h3>
+            <p>₱ <?= number_format($product['Price'], 2) ?></p>
+          </div>
+        </a>
       <?php endforeach; ?>
     </div>
   </section>

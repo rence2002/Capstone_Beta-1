@@ -3,8 +3,12 @@
 include("../config/database.php");
 session_start();
 
+// Send verification email using PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 // INITIALIZE VARIABLES AND HANDLE USER INPUT
-$userId = $_POST['userId'] ?? "user_" . uniqid(); // Make user ID optional
+$userId = $_POST['userId'] ?? "user_" . uniqid(); // Generate a unique user ID
 $lname = $_POST['lastName'] ?? '';
 $fname = $_POST['firstName'] ?? '';
 $middleName = $_POST['middleName'] ?? '';
@@ -13,11 +17,7 @@ $email = $_POST['email'] ?? '';
 $mobileNumber = $_POST['mobileNumber'] ?? '';
 $pass = $_POST['password'] ?? '';
 $confirmPass = $_POST['confirm-password'] ?? '';
-$terms = $_POST['terms'] ?? null; // Get terms and conditions.
-
-// SET STATUS AUTOMATICALLY
-$status = 'Active'; // Set the status to 'Active' or any other default value
-
+$status = 'Inactive'; // Set the status to 'Inactive' until email verification
 $errors = [];
 
 // VALIDATE INPUT
@@ -25,12 +25,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = "Error: Invalid email address format.";
 }
 
-// Validate home address
-if (!empty($homeAddress) && !preg_match('/^[a-zA-Z0-9\s\-\.,#]+$/', $homeAddress)) {
-    $errors[] = "Error: Invalid home address format.";
-}
-
-//Validate mobile number
 if (!empty($mobileNumber)) {
     $mobileNumber = preg_replace('/[^0-9]/', '', $mobileNumber); // Remove non-numeric characters
     if (strlen($mobileNumber) !== 11) {
@@ -38,15 +32,10 @@ if (!empty($mobileNumber)) {
     }
 }
 
-//Check if terms and condition is checked.
-if (!isset($terms)) {
-    $errors[] = "You must agree to the terms and conditions";
-}
-// VALIDATE PASSWORD MATCH
 if ($pass !== $confirmPass) {
     $errors[] = "Error: Password and Confirm Password do not match.";
 }
-// VALIDATE PASSWORD COMPLEXITY
+
 if (strlen($pass) < 8) {
     $errors[] = "Error: Password must be at least 8 characters long.";
 }
@@ -59,36 +48,40 @@ if (empty($lname)) {
     $errors[] = "Error: Last name is required.";
 }
 
-// Check if User ID is unique
-try {
-    $stmt = $pdo->prepare("SELECT User_ID FROM tbl_user_info WHERE User_ID = :userId");
-    $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
-    $stmt->execute();
-    if ($stmt->fetch()) {
-        $errors[] = "Error: User ID is already taken.";
-    }
-} catch (PDOException $e) {
-    $errors[] = "Database error: " . $e->getMessage();
-}
-
-// Handle file upload
+// Handle profile picture upload
 $profilePicPath = null;
 if (isset($_FILES['profilePic']) && $_FILES['profilePic']['error'] === UPLOAD_ERR_OK) {
     $uploadDir = '../uploads/user/'; // Directory to store uploaded files
     $profilePicName = basename($_FILES['profilePic']['name']); // Get the file name
     $profilePicPath = $uploadDir . $userId . '_' . $profilePicName;
-    $tempName = $_FILES['profilePic']['tmp_name']; //temporary path
+    $tempName = $_FILES['profilePic']['tmp_name']; // Temporary path
 
-    // Check if the upload directory exists and is writable
-    if (!is_dir($uploadDir) || !is_writable($uploadDir)) {
-        $errors[] = "Error: Upload directory is not accessible or not writable.";
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true); // Create the directory if it doesn't exist
     }
 
-    // Move the file to the uploads directory
     if (!move_uploaded_file($tempName, $profilePicPath)) {
-        $errors[] = "Error: Failed to upload file.";
+        $errors[] = "Error: Failed to upload profile picture.";
     }
     $profilePicPath = str_replace('../', '', $profilePicPath);
+}
+
+// Handle valid ID upload
+$validIDPath = null;
+if (isset($_FILES['validID']) && $_FILES['validID']['error'] === UPLOAD_ERR_OK) {
+    $validIDDir = '../uploads/user/validid/'; // Directory to store valid ID files
+    $validIDName = basename($_FILES['validID']['name']); // Get the file name
+    $validIDPath = $validIDDir . $userId . '_validid_' . $validIDName;
+    $tempName = $_FILES['validID']['tmp_name']; // Temporary path
+
+    if (!is_dir($validIDDir)) {
+        mkdir($validIDDir, 0777, true); // Create the directory if it doesn't exist
+    }
+
+    if (!move_uploaded_file($tempName, $validIDPath)) {
+        $errors[] = "Error: Failed to upload valid ID.";
+    }
+    $validIDPath = str_replace('../', '', $validIDPath);
 }
 
 // Handle errors
@@ -99,59 +92,72 @@ if (!empty($errors)) {
     exit(); // Stop further execution if there are errors
 }
 
-// Handle file if there are no errors.
-// HASH PASSWORD FOR SECURITY
+// Hash password for security
 $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
 
-// GENERATE 4-DIGIT VERIFICATION CODE
-$verificationCode = rand(1000, 9999);
+// Generate a verification code
+$verificationCode = random_int(100000, 999999); // 6-digit verification code
 
-// STORE USER DETAILS AND VERIFICATION CODE IN SESSION
-$_SESSION['registration'] = [
-    'userId' => $userId,
-    'lastName' => $lname,
-    'firstName' => $fname,
-    'middleName' => $middleName,
-    'homeAddress' => $homeAddress,
-    'email' => $email,
-    'mobileNumber' => $mobileNumber,
-    'status' => $status,
-    'hashedPass' => $hashedPass,
-    'verificationCode' => $verificationCode,
-    'profilePicPath' => $profilePicPath,
-];
-
-require '../vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// SEND VERIFICATION CODE TO USER EMAIL USING PHPMailer
-$mail = new PHPMailer(true);
+// Insert user data into the database
 try {
-    //Server settings
-    $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
-    $mail->SMTPAuth = true;
-    $mail->Username = 'rence.b.m@gmail.com'; // SMTP username
-    $mail->Password = 'vlnl qsfo iwjo zlgl'; // SMTP password (use App Password if 2FA is enabled)
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+    $stmt = $pdo->prepare("INSERT INTO tbl_user_info 
+        (User_ID, Last_Name, First_Name, Middle_Name, Home_Address, Email_Address, Mobile_Number, Status, Password, PicPath, Valid_ID_Path, reset_code) 
+        VALUES 
+        (:userId, :lastName, :firstName, :middleName, :homeAddress, :email, :mobileNumber, :status, :password, :profilePicPath, :validIDPath, :verificationCode)");
 
-    //Recipients
-    $mail->setFrom('your-email@gmail.com', 'Your App Name');
-    $mail->addAddress($email);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->bindParam(':lastName', $lname);
+    $stmt->bindParam(':firstName', $fname);
+    $stmt->bindParam(':middleName', $middleName);
+    $stmt->bindParam(':homeAddress', $homeAddress);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':mobileNumber', $mobileNumber);
+    $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':password', $hashedPass);
+    $stmt->bindParam(':profilePicPath', $profilePicPath);
+    $stmt->bindParam(':validIDPath', $validIDPath);
+    $stmt->bindParam(':verificationCode', $verificationCode);
 
-    // Content
-    $mail->isHTML(true);
-    $mail->Subject = 'Your Verification Code';
-    $mail->Body = "Your verification code is: <b>$verificationCode</b>"; //make it bold
+    if ($stmt->execute()) {
+        
 
-    $mail->send();
-    // REDIRECT TO VERIFICATION PAGE
-    header("Location: verify.php");
-    exit();
-} catch (Exception $e) {
-    echo "Error: Failed to send verification email. Mailer Error: {$mail->ErrorInfo}";
+        require '../vendor/autoload.php'; // Ensure PHPMailer is installed via Composer
+
+        $mail = new PHPMailer(true);
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
+            $mail->SMTPAuth = true;
+            $mail->Username = 'rence.b.m@gmail.com'; // SMTP username
+            $mail->Password = 'vlnl qsfo iwjo zlgl'; // SMTP password (use App Password if 2FA is enabled)
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            // Recipients
+            $mail->setFrom('rence.b.m@gmail.com', 'RM Betis Furniture');
+            $mail->addAddress($email); // Add recipient
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Email Verification';
+            $mail->Body = "Dear $fname,<br><br>Thank you for signing up. Please use the following verification code to verify your email:<br><br>";
+            $mail->Body .= "<strong>Verification Code: $verificationCode</strong><br><br>";
+            $mail->Body .= "If you did not sign up, please ignore this email.<br><br>Best regards,<br>RM Betis Furniture";
+
+            // Send email
+            $mail->send();
+
+            // Redirect to verify.php
+            header("Location: verify.php?email=" . urlencode($email));
+            exit();
+        } catch (Exception $e) {
+            die("Error: Failed to send verification email. Mailer Error: {$mail->ErrorInfo}");
+        }
+    } else {
+        echo "Error: Failed to create account.";
+    }
+} catch (PDOException $e) {
+    echo "Database error: " . $e->getMessage();
 }
 ?>

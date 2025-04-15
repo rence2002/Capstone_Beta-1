@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $password = $_SESSION['registration']['hashedPass'];
             $status = $_SESSION['registration']['status'];
             $profilePicPath = $_SESSION['registration']['profilePicPath'];
+            $validIDPath = $_SESSION['registration']['validIDPath']; // Add valid ID path
 
             // Insert user into database
             try {
@@ -36,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     Mobile_Number, 
                     Password, 
                     Status,
-                    PicPath
+                    PicPath,
+                    Valid_ID_Path
                 ) VALUES (
                     :userId, 
                     :lastName, 
@@ -47,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     :mobileNumber, 
                     :password, 
                     :status,
-                    :profilePicPath
+                    :profilePicPath,
+                    :validIDPath
                 )");
                 
                 $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
@@ -60,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->bindParam(':password', $password, PDO::PARAM_STR);
                 $stmt->bindParam(':status', $status, PDO::PARAM_STR);
                 $stmt->bindParam(':profilePicPath', $profilePicPath, PDO::PARAM_STR);
+                $stmt->bindParam(':validIDPath', $validIDPath, PDO::PARAM_STR); // Bind valid ID path
                 $stmt->execute();
 
                 // Set a session flag for successful registration

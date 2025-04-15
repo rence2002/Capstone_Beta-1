@@ -3,7 +3,7 @@
 
 <head>
     <title>Sign Up Page</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/css/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <link rel="stylesheet" href="../static/css-files/Register.css">
@@ -39,6 +39,14 @@
         }
 
         #profilePicPreview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #validIDPreview {
             max-width: 200px;
             max-height: 200px;
             margin-top: 10px;
@@ -90,10 +98,7 @@
         <div class="left">
             <h1>Create Your Account</h1>
             <form method="POST" action="signup-rec.php" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="userId">User ID (Optional)</label>
-                    <input type="text" id="userId" name="userId" placeholder="Enter a unique user ID">
-                </div>
+                <input type="hidden" name="signupTermsAccepted" id="signupTermsAccepted" value="0">
                 <div class="form-group">
                     <label for="firstName">First Name</label>
                     <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
@@ -134,6 +139,14 @@
                         <img id="profilePicPreview" src="#" alt="Profile Picture Preview" style="display: none;">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="validID">Upload Valid ID</label>
+                    <div class="upload-btn-wrapper">
+                        <button class="btn">Upload a file</button>
+                        <input type="file" name="validID" id="validID" accept="image/*" onchange="previewValidID(event)" required>
+                        <img id="validIDPreview" src="#" alt="Valid ID Preview" style="display: none; max-width: 200px; max-height: 200px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                </div>
                 <div class="form-options">
                     <label>
                         <input type="checkbox" name="signupTerms" id="signupTermsCheckbox" disabled>
@@ -142,7 +155,7 @@
                 </div>
                 <div class="buttons">
                     <button type="submit" class="signup" id="signupSubmitButton" disabled>Sign up</button>
-                    <a href="login.php"><button type="button" class="login">Login</button></a>
+                    <a href="login.php" class="login">Login</a> <!-- Use a standalone link for Login -->
                 </div>
             </form>
             <div id="signupTermsModal" class="modal" style="display: none;">
@@ -162,10 +175,6 @@
                     </label>
                 </div>
             </div>
-            <!-- <div class="terms">
-                By signing up, you agree to the Terms and Conditions & Privacy Policy.
-            </div>
-        </div> -->
     </div>
     <a class="theme-toggle">
         <span class="entypo--switch1"></span>
@@ -187,6 +196,7 @@
             }
         });
 
+        // Preview for Profile Picture
         function previewProfilePic(event) {
             var reader = new FileReader();
             reader.onload = function () {
@@ -197,6 +207,18 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        // Preview for Valid ID
+        function previewValidID(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('validIDPreview');
+                output.src = reader.result;
+                output.style.display = 'block'; // Show the image
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // Terms and Conditions Modal Logic
         const signupTermsButton = document.getElementById('signupTermsButton');
         const signupTermsModal = document.getElementById('signupTermsModal');
         const signupModalClose = document.getElementById('signupModalClose');
@@ -221,20 +243,22 @@
             }
         });
 
-        // Enable the form checkbox and "Sign up" button when the modal checkbox is checked
+        // Update the modal checkbox logic
         signupModalAgreeCheckbox.addEventListener('change', () => {
             if (signupModalAgreeCheckbox.checked) {
-                signupTermsCheckbox.checked = true;
+                signupTermsCheckbox.disabled = false; // Enable the checkbox
+                signupTermsCheckbox.checked = true;  // Check the checkbox
                 signupSubmitButton.disabled = false; // Enable the "Sign up" button
             } else {
-                signupTermsCheckbox.checked = false;
-                signupSubmitButton.disabled = true; // Disable the "Sign up" button
+                signupTermsCheckbox.disabled = true; // Disable the checkbox
+                signupTermsCheckbox.checked = false; // Uncheck the checkbox
+                signupSubmitButton.disabled = true;  // Disable the "Sign up" button
             }
         });
 
-        // Enable/disable the "Sign up" button based on the form checkbox state
-        signupTermsCheckbox.addEventListener('change', () => {
-            signupSubmitButton.disabled = !signupTermsCheckbox.checked; // Enable/disable based on checkbox state
+        // Ensure the checkbox is enabled before submission
+        signupSubmitButton.addEventListener('click', () => {
+            signupTermsCheckbox.disabled = false;
         });
     </script>
 </body>

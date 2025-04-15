@@ -1,3 +1,33 @@
+<?php
+session_start();
+include '../config/database.php'; // Include your database connection
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Query to check if the user exists
+    $stmt = $pdo->prepare("SELECT * FROM tbl_user_info WHERE Email_Address = :email");
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user['Password'])) {
+        // Set session variables
+        $_SESSION['user_id'] = $user['User_ID'];
+        $_SESSION['user_name'] = $user['First_Name'];
+
+        // Redirect to dashboard
+        header("Location: ../dashboard/home.php");
+        exit();
+    } else {
+        // Redirect back to login with an error
+        $_SESSION['error_message'] = "Invalid email or password.";
+        header("Location: login.php");
+        exit();
+    }
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
