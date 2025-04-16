@@ -228,3 +228,46 @@ document.addEventListener('DOMContentLoaded', function () {
         printModal.style.display = 'none';
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const submitButton = document.getElementById("submit-button");
+    const submitButtonWrapper = document.getElementById("submit-button-wrapper"); // Wrapper for the button
+    const modal = document.getElementById("idVerificationModal");
+    const closeModal = document.getElementById("closeModal");
+    const closeModalButton = document.getElementById("closeModalButton");
+    const modalContent = modal.querySelector(".modal-content p");
+
+    console.log("ID Verification Status:", idVerificationStatus);
+
+    // Enable the submit button only if the ID verification status is "Valid"
+    if (idVerificationStatus === "Valid") {
+        submitButton.disabled = false;
+    } else {
+        // Update the modal message dynamically
+        modalContent.innerHTML = `
+            Your ID verification status is either <strong>${idVerificationStatus}</strong>. 
+            Please verify your ID to proceed with customization. 
+            Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.
+        `;
+    }
+
+    console.log("Submit Button Disabled:", submitButton.disabled);
+
+    // Listen for the click event on the wrapper instead of the button
+    submitButtonWrapper.addEventListener("click", function (e) {
+        if (submitButton.disabled) {
+            e.preventDefault(); // Prevent any default action
+            console.log("Showing Modal...");
+            modal.style.display = "flex"; // Show the modal
+        }
+    });
+
+    // Close the modal when the close button is clicked
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none"; // Hide the modal
+    });
+
+    closeModalButton.addEventListener("click", function () {
+        modal.style.display = "none"; // Hide the modal
+    });
+});

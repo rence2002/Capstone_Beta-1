@@ -686,48 +686,13 @@ try {
     <script src="../static/Javascript-files/gallery.js"></script>
     <script src="../static/Javascript-files/jQuery.js"></script>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const submitButton = document.getElementById("submit-button");
-    const modal = document.getElementById("idVerificationModal");
-    const closeModal = document.getElementById("closeModal");
-    const closeModalButton = document.getElementById("closeModalButton");
-
-    // Fetch the user's ID verification status from the server
-    let idVerificationStatus = "<?php
-        $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
-        $stmt->bindParam(':user_id', $_SESSION['user_id']);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo $user['ID_Verification_Status'];
-    ?>";
-
-    console.log("ID Verification Status:", idVerificationStatus);
-
-    // Enable the submit button only if the ID verification status is "Valid"
-    if (idVerificationStatus === "Valid") {
-        submitButton.disabled = false;
-    }
-
-    console.log("Submit Button Disabled:", submitButton.disabled);
-
-    // Show modal if the button is clicked while disabled
-    submitButton.addEventListener("click", function (e) {
-        if (submitButton.disabled) {
-            e.preventDefault();
-            console.log("Showing Modal...");
-            modal.style.display = "flex"; // Show the modal
-        }
-    });
-
-    // Close the modal when the close button is clicked
-    closeModal.addEventListener("click", function () {
-        modal.style.display = "none"; // Hide the modal
-    });
-
-    closeModalButton.addEventListener("click", function () {
-        modal.style.display = "none"; // Hide the modal
-    });
-});
-</script>
+        const idVerificationStatus = "<?php
+            $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
+            $stmt->bindParam(':user_id', $_SESSION['user_id']);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            echo $user['ID_Verification_Status'];
+        ?>";
+    </script>
 </body>
 </html>
