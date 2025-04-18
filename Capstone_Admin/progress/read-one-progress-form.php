@@ -53,7 +53,8 @@ $query = "
         p.Progress_Pic_80,
         p.Progress_Pic_90,
         p.Progress_Pic_100,
-        p.Stop_Reason
+        p.Stop_Reason,
+        p.Tracking_Number
     FROM tbl_progress p
     JOIN tbl_user_info u ON p.User_ID = u.User_ID
     JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
@@ -70,22 +71,35 @@ if (!$row) {
     exit();
 }
 
-// Map Order Status and Product Status to labels
+// Map Order Status to descriptive text
 $orderStatusLabels = [
-    0 => 'Order Received',
-    10 => 'Order Confirmed',
-    20 => 'In Production',
-    30 => '30% Complete',
-    40 => '40% Complete',
-    50 => '50% Complete',
-    60 => '60% Complete',
-    70 => '70% Complete',
-    80 => '80% Complete',
-    90 => '90% Complete',
-    100 => 'Completed'
+    0   => 'Order Received',       // 0% - Order placed by the customer
+    10  => 'Order Confirmed',      // 10% - Down payment received
+    20  => 'Design Finalization',  // 20% - Final design confirmed
+    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
+    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
+    50  => 'Mid-Production',       // 50% - Major structural work completed
+    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
+    70  => 'Quality Check',        // 70% - Inspection for defects
+    80  => 'Final Assembly',       // 80% - Last touches, packaging
+    90  => 'Ready for Delivery',   // 90% - Scheduled for transport
+    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
 ];
 
-$productStatusLabels = $orderStatusLabels; // Assuming same mapping
+// Map Product Status to descriptive text
+$productStatusLabels = [
+    0   => 'Concept Stage',         // 0% - Idea or design submitted
+    10  => 'Design Approved',       // 10% - Finalized by customer
+    20  => 'Material Sourcing',     // 20% - Gathering necessary materials
+    30  => 'Cutting & Shaping',     // 30% - Preparing materials
+    40  => 'Structural Assembly',   // 40% - Base framework built
+    50  => 'Detailing & Refinements', // 50% - Carvings, upholstery, elements added
+    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening, preparing for final coat
+    70  => 'Varnishing/Painting',   // 70% - Applying the final finish
+    80  => 'Drying & Curing',       // 80% - Final coating sets in
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    100 => 'Completed'              // 100% - Ready for pickup/delivery
+];
 ?>
 
 <!DOCTYPE html>
@@ -94,19 +108,13 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
     <meta charset="UTF-8" />
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-
-    
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="../static/js/dashboard.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
 </head>
 
 <body>
@@ -174,6 +182,9 @@ $productStatusLabels = $orderStatusLabels; // Assuming same mapping
     <table class="table table-bordered">
         <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
         <tr><th>Order Status</th><td><?= $orderStatusLabels[$row['Order_Status']] ?></td></tr>
+        <?php if (!empty($row['Tracking_Number'])): ?>
+            <tr><th>Tracking Number</th><td><?= htmlspecialchars($row['Tracking_Number']) ?></td></tr>
+        <?php endif; ?>
         <tr><th>Product Status</th><td><?= $productStatusLabels[$row['Product_Status']] ?></td></tr>
         <tr><th>Total Price</th><td><?= htmlspecialchars($row['Total_Price']) ?></td></tr>
         <tr><th>Request Date</th><td><?= htmlspecialchars($row['Request_Date']) ?></td></tr>

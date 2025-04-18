@@ -143,19 +143,34 @@ if (!$row) {
     exit();
 }
 
-// Map status labels
-$statusLabels = [
-    0 => 'Order Received',
-    10 => 'Order Confirmed',
-    20 => 'In Production',
-    30 => '30% Complete',
-    40 => '40% Complete',
-    50 => '50% Complete',
-    60 => '60% Complete',
-    70 => '70% Complete',
-    80 => '80% Complete',
-    90 => '90% Complete',
-    100 => 'Completed'
+// Map order status to descriptive text
+$orderStatusMap = [
+    0   => 'Order Received',       // 0% - Order placed by the customer
+    10  => 'Order Confirmed',      // 10% - Down payment received
+    20  => 'Design Finalization',  // 20% - Final design confirmed
+    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
+    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
+    50  => 'Mid-Production',       // 50% - Major structural work completed
+    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
+    70  => 'Quality Check',        // 70% - Inspection for defects
+    80  => 'Final Assembly',       // 80% - Last touches, packaging
+    90  => 'Ready for Delivery',   // 90% - Scheduled for transport
+    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
+];
+
+// Map product status to descriptive text
+$productStatusLabels = [
+    0   => 'Concept Stage',         // 0% - Idea or design submitted
+    10  => 'Design Approved',       // 10% - Finalized by customer
+    20  => 'Material Sourcing',     // 20% - Gathering necessary materials
+    30  => 'Cutting & Shaping',     // 30% - Preparing materials
+    40  => 'Structural Assembly',   // 40% - Base framework built
+    50  => 'Detailing & Refinements', // 50% - Carvings, upholstery, elements added
+    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening, preparing for final coat
+    70  => 'Varnishing/Painting',   // 70% - Applying the final finish
+    80  => 'Drying & Curing',       // 80% - Final coating sets in
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    100 => 'Completed'              // 100% - Ready for pickup/delivery
 ];
 ?>
 <!DOCTYPE html>
@@ -245,7 +260,7 @@ $statusLabels = [
                 <th>Order Status</th>
                 <td>
                     <select name="Order_Status" class="form-control" required>
-                        <?php foreach ($statusLabels as $key => $value): ?>
+                        <?php foreach ($orderStatusMap as $key => $value): ?>
                             <option value="<?= $key ?>" <?= $row['Order_Status'] == $key ? 'selected' : '' ?>>
                                 <?= "$key% - $value" ?>
                             </option>
@@ -253,11 +268,17 @@ $statusLabels = [
                     </select>
                 </td>
             </tr>
+            <tr id="tracking-number-row" style="display: none;">
+    <th>Tracking Number</th>
+    <td colspan="2">
+        <input type="text" name="Tracking_Number" id="tracking-number" class="form-control" placeholder="Enter Tracking Number">
+    </td>
+</tr>
             <tr>
                 <th>Product Status</th>
                 <td>
                     <select name="Product_Status" class="form-control" required>
-                        <?php foreach ($statusLabels as $key => $value): ?>
+                        <?php foreach ($productStatusLabels as $key => $value): ?>
                             <option value="<?= $key ?>" <?= $row['Product_Status'] == $key ? 'selected' : '' ?>>
                                 <?= "$key% - $value" ?>
                             </option>
@@ -307,6 +328,8 @@ $statusLabels = [
                     </tr>
                 <?php endforeach; ?>
             </tbody>
+
+            
         </table>
         
         <div class="button-container">
@@ -356,5 +379,29 @@ $statusLabels = [
             });
         });
     </script>
+
+<script>
+    // Function to toggle the tracking number input field
+    function toggleTrackingNumber() {
+        const orderStatusSelect = document.querySelector('select[name="Order_Status"]');
+        const trackingNumberRow = document.getElementById('tracking-number-row');
+        const trackingNumberInput = document.getElementById('tracking-number');
+
+        // Show the tracking number input if the selected status is "Ready for Delivery" (90%)
+        if (orderStatusSelect.value == 90) {
+            trackingNumberRow.style.display = 'table-row';
+            trackingNumberInput.required = true; // Make it required
+        } else {
+            trackingNumberRow.style.display = 'none';
+            trackingNumberInput.required = false; // Remove the required attribute
+        }
+    }
+
+    // Attach the function to the Order Status dropdown
+    document.querySelector('select[name="Order_Status"]').addEventListener('change', toggleTrackingNumber);
+
+    // Call the function on page load to handle pre-selected values
+    toggleTrackingNumber();
+</script>
 </body>
 </html>

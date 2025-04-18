@@ -21,6 +21,7 @@ $Order_Status = $_POST['Order_Status'];
 $Product_Status = $_POST['Product_Status'];
 $Stop_Reason = $_POST['Stop_Reason'];
 $Product_ID = $_POST['Product_ID'];
+$Tracking_Number = isset($_POST['Tracking_Number']) ? $_POST['Tracking_Number'] : null; // Retrieve tracking number if provided
 
 // Validate Progress_ID and Order_Type
 if (empty($Progress_ID) || empty($Order_Type)) {
@@ -192,6 +193,11 @@ try {
             Stop_Reason = :Stop_Reason
     ";
 
+    // Add Tracking_Number to the query if provided
+    if (!empty($Tracking_Number)) {
+        $query .= ", Tracking_Number = :Tracking_Number";
+    }
+
     // Add progress picture fields to the query if they exist
     if (!empty($progressPics)) {
         $query .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
@@ -206,6 +212,10 @@ try {
     $stmt->bindParam(':Order_Status', $Order_Status, PDO::PARAM_INT);
     $stmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
     $stmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
+
+    if (!empty($Tracking_Number)) {
+        $stmt->bindParam(':Tracking_Number', $Tracking_Number, PDO::PARAM_STR);
+    }
 
     if ($Order_Type === 'pre_order') {
         $stmt->bindParam(':ID', $Preorder_ID, PDO::PARAM_INT); // Use the correct Preorder_ID
@@ -245,6 +255,11 @@ try {
             Stop_Reason = :Stop_Reason
     ";
 
+    // Add Tracking_Number to the query if provided
+    if (!empty($Tracking_Number)) {
+        $progressQuery .= ", Tracking_Number = :Tracking_Number";
+    }
+
     // Add progress picture fields to the query if they exist
     if (!empty($progressPics)) {
         $progressQuery .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
@@ -260,6 +275,10 @@ try {
     $progressStmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
     $progressStmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
     $progressStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
+
+    if (!empty($Tracking_Number)) {
+        $progressStmt->bindParam(':Tracking_Number', $Tracking_Number, PDO::PARAM_STR);
+    }
 
     // Bind progress picture parameters if they exist
     foreach ($progressPics as $key => $value) {

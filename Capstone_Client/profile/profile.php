@@ -105,7 +105,7 @@ try {
                p.Progress_Pic_10, p.Progress_Pic_20, p.Progress_Pic_30,
                p.Progress_Pic_40, p.Progress_Pic_50, p.Progress_Pic_60,
                p.Progress_Pic_70, p.Progress_Pic_80, p.Progress_Pic_90,
-               p.Progress_Pic_100, p.Stop_Reason
+               p.Progress_Pic_100, p.Stop_Reason, p.Tracking_Number
         FROM tbl_progress p 
         JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID 
         WHERE p.User_ID = :userId
@@ -248,7 +248,7 @@ echo "</script>
 
     <!-- Basic User Information Section -->
     <div class="basic-info-container">
-        <h2>Basic Information</h2>
+        <h2>Account Information</h2>
         <table class="basic-info-table">
             <tr>
                 <td><strong>Full Name:</strong></td>
@@ -297,23 +297,41 @@ echo "</script>
                         <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
                         <p><strong>Total Price:</strong> <?= htmlspecialchars($order['Total_Price']) ?></p>
                         <p><strong>Request Date:</strong> <?= htmlspecialchars($order['Request_Date']) ?></p>
+                        <p><strong>Payment Status:</strong> 
+                            <?php
+                            // Map the Payment_Status to readable text
+                            switch ($order['Payment_Status']) {
+                                case 'downpayment_paid':
+                                    echo 'Downpayment Paid';
+                                    break;
+                                case 'fully_paid':
+                                    echo 'Fully Paid';
+                                    break;
+                                case 'Pending':
+                                    echo 'Pending';
+                                    break;
+                                default:
+                                    echo 'Unknown';
+                                    break;
+                            }
+                            ?>
+                        </p>
                         
                         <!-- Display Order Status -->
                         <?php if ($order['Processed'] == 1): ?>
                             <?php if ($order['Order_Status'] == 1): ?>
                                 <p class="order-status approved"><strong>Status: </strong> Approved</p>
                             <?php elseif ($order['Order_Status'] == -1): ?>
-                                <p class="order-status rejected"><strong>Status: </strong>Rejected</p>
+                                <p class="order-status rejected"><strong>Status: </strong> Rejected</p>
                             <?php endif; ?>
                             
                             <!-- Okay Button -->
                             <form method="POST" action="delete_order_request.php">
                                 <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
-                                <br>
                                 <button type="submit" class="okay-btn">Okay</button>
                             </form>
                         <?php else: ?>
-                            <p class="order-status pending"> <strong>Status: </strong>Pending</p>
+                            <p class="order-status pending"><strong>Status: </strong> Pending</p>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -324,7 +342,7 @@ echo "</script>
     <!-- Order Status Section -->
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('order-status')">
-            <h2>Order Status (Furniture Update)</h2>
+            <h2>Order Status</h2>
             <span class="toggle-icon">&#9660;</span>
         </div>
         <div id="order-status" class="section-content">
@@ -533,6 +551,7 @@ $(document).ready(function() {
         var progressPicUrl = stepData.progressPicUrl; // Get the step-specific picture URL
         var stopReason = progress.Stop_Reason || null; // Get the Stop Reason
         var stepStatus = stepData.stepStatus; // Get the step status
+        var trackingNumber = progress.Tracking_Number || null; // Get the Tracking Number
 
         modalBody.html(''); // Clear the modal body
 
@@ -550,10 +569,14 @@ $(document).ready(function() {
             pictureHtml = `<p class="no-picture">No Picture Available</p>`;
         }
 
-
         var stopReasonHtml = '';
         if (stopReason && stopReason.trim() !== "") {
             stopReasonHtml = `<p class="stopreason"><strong>Stop Reason:</strong> ${stopReason}</p>`;
+        }
+
+        var trackingNumberHtml = '';
+        if (trackingNumber && trackingNumber.trim() !== "") {
+            trackingNumberHtml = `<p class="tracking-number"><strong>Tracking Number:</strong> ${trackingNumber}</p>`;
         }
 
         if (context === 'order') {
@@ -564,6 +587,7 @@ $(document).ready(function() {
                 <p class="product-status"><strong>Quantity:</strong> ${progress.Quantity || 'N/A'}</p>
                 <p class="product-status"><strong>Total Price:</strong> ${progress.Total_Price || 'N/A'}</p>
                 <p class="product-status"><strong>Order Date:</strong> ${progress.Date_Added || 'N/A'}</p>
+                ${trackingNumberHtml}
                 ${stopReasonHtml}
             `;
             modalBody.html(orderDetails);

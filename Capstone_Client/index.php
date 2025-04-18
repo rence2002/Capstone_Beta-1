@@ -13,6 +13,20 @@ $stmt = $pdo->prepare($query);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+// Fetch reviews from the database
+$reviewQuery = "
+    SELECT r.Review_Text, r.Rating, r.Review_Date, u.First_Name, u.Last_Name, p.Product_Name
+    FROM tbl_reviews r
+    JOIN tbl_user_info u ON r.User_ID = u.User_ID
+    LEFT JOIN tbl_prod_info p ON r.Product_ID = p.Product_ID
+    WHERE r.Rating IN (4, 5) -- Only include reviews with a rating of 4 or 5
+    ORDER BY r.Review_Date DESC
+    LIMIT 5"; // Limit to 5 reviews
+$reviewStmt = $pdo->prepare($reviewQuery);
+$reviewStmt->execute();
+$reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Define the base path for 3D files
 $base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d/";
 ?>
@@ -118,6 +132,25 @@ $base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d
           </div>
         </a>
       <?php endforeach; ?>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <h2>Customer Reviews</h2>
+    <div class="reviews-container">
+      <?php if (!empty($reviews)): ?>
+        <?php foreach ($reviews as $review): ?>
+          <div class="review-item">
+            <h3><?= htmlspecialchars($review['First_Name'] . ' ' . $review['Last_Name']) ?></h3>
+            <p><strong>Product:</strong> <?= htmlspecialchars($review['Product_Name'] ?? 'General Review') ?></p>
+            <p><strong>Rating:</strong> <?= str_repeat('⭐', $review['Rating']) ?></p>
+            <p><?= htmlspecialchars($review['Review_Text']) ?></p>
+            <p class="review-date"><?= date('F j, Y', strtotime($review['Review_Date'])) ?></p>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <p>No reviews available at the moment.</p>
+      <?php endif; ?>
     </div>
   </section>
 

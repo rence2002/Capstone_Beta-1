@@ -59,7 +59,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
     <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <link href="../static/css-files/modal.css" rel="stylesheet">
+    <script src="../static/js/modal.js"></script>
 </head>
 
 <body>
@@ -129,7 +130,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>USER NAME</th>
                     <th>ORDER TYPE</th>
                     <th>STATUS</th>
-                    <th colspan="5" style="text-align: center;">ACTIONS</th>
+                    <th>PAYMENT STATUS</th> <!-- Dropdown column -->
+                    <th colspan="3" style="text-align: center;">ACTIONS</th>
                 </tr>
                 <?php
                 foreach ($rows as $row) {
@@ -147,13 +149,25 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                     echo '
                     <tr>
-                        <td>'.$orderID.'</td>
-                        <td>'.$userName.'</td>
-                        <td>'.$orderType.'</td>
-                        <td>'.$status.'</td>
-                        <td style="text-align: center;"><a class="buttonView" href="'.$viewURL.'" target="_parent">View</a></td>
-                        <td style="text-align: center;"><a class="buttonAccept" href="accept-request-rec.php?id='.$orderID.'" target="_parent">Accept</a></td>
-                        <td style="text-align: center;"><a class="buttonDecline" href="decline-request-rec.php?id='.$orderID.'" target="_parent">Decline</a></td>
+                        <td>' . $orderID . '</td>
+                        <td>' . $userName . '</td>
+                        <td>' . $orderType . '</td>
+                        <td>' . $status . '</td>
+                        <td style="text-align: center;">
+                            <form method="GET" action="accept-request-rec.php" id="form_' . $orderID . '">
+                                <input type="hidden" name="id" value="' . $orderID . '">
+                                <select name="payment_status" id="payment_status_' . $orderID . '" required>
+                                    <option value="" disabled selected>Select Payment Status</option> <!-- Default option -->
+                                    <option value="downpayment_paid">Downpayment Paid</option>
+                                    <option value="fully_paid">Fully Paid</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td style="text-align: center;"><a class="buttonView" href="' . $viewURL . '" target="_parent">View</a></td>
+                        <td style="text-align: center;">
+                            <button type="submit" form="form_' . $orderID . '" class="buttonAccept">Confirm</button>
+                        </td>
+                        <td style="text-align: center;"><a class="buttonDecline" href="decline-request-rec.php?id=' . $orderID . '" target="_parent">Decline</a></td>
                     </tr>';
                 }
                 ?>
@@ -194,7 +208,29 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
+    // Modal functionality
+    const modal = document.getElementById("paymentStatusModal");
+    const closeModal = document.querySelector(".modal .close");
+    const openModalButtons = document.querySelectorAll(".openModal");
+    const orderIdInput = document.getElementById("orderIdInput");
 
+    openModalButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            const orderId = this.getAttribute("data-order-id");
+            orderIdInput.value = orderId;
+            modal.style.display = "block";
+        });
+    });
+
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
     </script>
 </body>
 </html>
