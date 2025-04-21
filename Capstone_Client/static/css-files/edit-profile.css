@@ -1,6 +1,6 @@
 /* Main container styles */
 .edit-form {
-    max-width: 600px;
+    max-width: 70%;
     margin: 20px auto;
     padding: 20px;
     background: #fff;
@@ -60,18 +60,6 @@
 }
 
 /* Button styles */
-.submit-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
 
 .submit-btn:hover {
     background-color: #45a049;
@@ -114,18 +102,22 @@
     display: flex;
     gap: 15px;
     margin-top: 20px;
+    align-items: center;        /* vertical centering */
+  
 }
 
+
 .submit-btn, .cancel-btn {
-    flex: 1;
-    padding: 12px 24px;
+    width:100px;
+    padding: 12px 0; /* Adjust horizontal padding to avoid overflow */
+    font-size: 14px; /* Reduce font size to fit small width */
+    text-align: center;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    text-align: center;
-    text-decoration: none;
+    border: none;
+    color: white;
     transition: background-color 0.3s ease;
-    margin: 0;
+    height: 40px;
 }
 
 .submit-btn {

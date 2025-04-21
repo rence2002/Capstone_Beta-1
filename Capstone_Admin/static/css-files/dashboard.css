@@ -806,4 +806,3 @@ a.dropdown-toggle::after {
 .sidebar .dropdown.active .dropdown-toggle i {
   transform: rotate(180deg); /* Rotate chevron */
 }
-

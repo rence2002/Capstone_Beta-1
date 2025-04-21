@@ -190,7 +190,9 @@ if (isset($_GET['id'])) {
                     </tr>
                     <tr>
                         <td>Current Profile Picture:</td>
-                        <td><img src="<?php echo $picPath; ?>" alt="User Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;"></td>
+                        <td>
+                            <img src="../<?php echo $picPath; ?>" alt="User Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
+                        </td>
                     </tr>
                     <tr>
                         <td>Upload New Profile Picture:</td>

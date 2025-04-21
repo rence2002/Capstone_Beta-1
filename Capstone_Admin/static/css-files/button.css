@@ -13,7 +13,9 @@
 .buttonUpdate,
 .buttonEdit,
 .buttonDelete,
-.buttonCheckout{
+.buttonCheckout,
+.buttonAccept,
+.buttonDecline{
     text-decoration: none;
     color: white;
     padding: 5px 10px;
@@ -47,13 +49,27 @@
     background-color: #ff3333;
 }
 
+.buttonAccept {
+    background-color: #fd7e14;
+    color: #ffffff;
+}
+
+.buttonDecline {
+    background-color: #003366; /* Dark blue */
+    color: #ffffff;
+}
+
+
+
 /* Hover effects */
 .buttonView:hover,
 .buttonBack:hover,
 .buttonUpdate:hover,
 .buttonEdit:hover,
 .buttonDelete:hover,
-.buttonCheckout:hover {
+.buttonCheckout:hover,
+.buttonAccept:hover,
+.buttonDecline:hover {
     opacity: 0.8;
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);

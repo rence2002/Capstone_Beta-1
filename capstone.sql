@@ -62,8 +62,6 @@ CREATE TABLE `tbl_cart` (
 
 /*Data for the table `tbl_cart` */
 
-insert  into `tbl_cart`(`Cart_ID`,`User_ID`,`Product_ID`,`Quantity`,`Price`,`Total_Price`,`Order_Type`,`Date_Added`) values (2,'user_67fdb6ef7e16b',2,1,'2000.00','2000.00','ready_made','2025-04-15 12:37:48');
-
 /*Table structure for table `tbl_customizations` */
 
 DROP TABLE IF EXISTS `tbl_customizations`;
@@ -169,8 +167,6 @@ CREATE TABLE `tbl_customizations_temp` (
 
 /*Data for the table `tbl_customizations_temp` */
 
-insert  into `tbl_customizations_temp`(`Temp_Customization_ID`,`User_ID`,`Furniture_Type`,`Furniture_Type_Additional_Info`,`Standard_Size`,`Desired_Size`,`Color`,`Color_Image_URL`,`Color_Additional_Info`,`Texture`,`Texture_Image_URL`,`Texture_Additional_Info`,`Wood_Type`,`Wood_Image_URL`,`Wood_Additional_Info`,`Foam_Type`,`Foam_Image_URL`,`Foam_Additional_Info`,`Cover_Type`,`Cover_Image_URL`,`Cover_Additional_Info`,`Design`,`Design_Image_URL`,`Design_Additional_Info`,`Tile_Type`,`Tile_Image_URL`,`Tile_Additional_Info`,`Metal_Type`,`Metal_Image_URL`,`Metal_Additional_Info`,`Order_Status`,`Request_Date`,`Last_Update`) values (3,'user_67fdb6ef7e16b','table','','Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.','','Black',NULL,'','Smooth',NULL,'','Plywood 1/8',NULL,'','Uratex',NULL,'','Italian Leather',NULL,'','Asian Inspired',NULL,'','Marble',NULL,'','Tubular',NULL,'',0,'2025-04-16 08:38:51','2025-04-16 08:38:51'),(4,'user_67fdb6ef7e16b','table','','Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.','','custom','/Capstone_Beta/Capstone_Client/uploads/custom/67fefc3109255_Color.png','dsadasd','Smooth',NULL,'','Plywood 1/8',NULL,'','Uratex',NULL,'','Italian Leather',NULL,'','Asian Inspired',NULL,'','Marble',NULL,'','Tubular',NULL,'',0,'2025-04-16 08:39:13','2025-04-16 08:39:13');
-
 /*Table structure for table `tbl_order_request` */
 
 DROP TABLE IF EXISTS `tbl_order_request`;
@@ -194,11 +190,9 @@ CREATE TABLE `tbl_order_request` (
   CONSTRAINT `tbl_order_request_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_order_request_ibfk_3` FOREIGN KEY (`Customization_ID`) REFERENCES `tbl_customizations_temp` (`Temp_Customization_ID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_order_request` */
-
-insert  into `tbl_order_request`(`Request_ID`,`User_ID`,`Product_ID`,`Customization_ID`,`Quantity`,`Order_Type`,`Order_Status`,`Total_Price`,`Payment_Status`,`Request_Date`,`Processed`) values (10,'user_67fdb6ef7e16b',1,NULL,1,'ready_made',1,'2000.00','downpayment_paid','2025-04-17 09:54:29',1);
 
 /*Table structure for table `tbl_preorder` */
 
@@ -260,7 +254,7 @@ CREATE TABLE `tbl_prod_info` (
 
 /*Data for the table `tbl_prod_info` */
 
-insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','','Bed Frame - Full XL 54x80 in.','Blue','250','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-11 09:30:52','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade'),(9,'Custom Table Order','Custom order from request #3',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-16 08:38:51','2025-04-16 08:38:51',NULL,'custom'),(10,'Custom Table Order','Custom order from request #4',NULL,NULL,NULL,NULL,NULL,NULL,'0.00',NULL,'2025-04-16 08:39:13','2025-04-16 08:39:13',NULL,'custom');
+insert  into `tbl_prod_info`(`Product_ID`,`Product_Name`,`Description`,`Category`,`Sizes`,`Color`,`Stock`,`Assembly_Required`,`ImageURL`,`Price`,`Sold`,`DateAdded`,`LastUpdate`,`GLB_File_URL`,`product_type`) values (1,'Sofa','A comfortable and stylish seating option for your living room, perfect for relaxation and entertaining guests.','sofa','Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft','Brown','200','Yes','../uploads/product/sofa3.jpg,../uploads/product/sofa2.jpg,../uploads/product/sofa.jpg','2000','','2025-04-02 09:27:11','2025-04-02 09:27:11','../uploads/product/3d/Sofa(Commission).glb','readymade'),(2,'Bed','A cozy and supportive sleeping space designed for restful nights, available in various sizes and styles.','','Bed Frame - Full XL 54x80 in.','Blue','250','Yes','../uploads/product/bed 3.jpg,../uploads/product/bed 1.jpg,../uploads/product/bed 2.jpg','2000','','2025-04-02 09:27:50','2025-04-11 09:30:52','../uploads/product/3d/Bed(Commission).glb','readymade'),(3,'Dining Set','A functional and elegant table with matching chairs, ideal for family meals and gatherings.','salaset','Sala Set 9x9 ft.','Blue','0','Yes','../uploads/product/dining 1.jpg,../uploads/product/dining 2.jpg,../uploads/product/dining 3.jpg','2000','','2025-04-02 09:28:57','2025-04-02 09:28:57','../uploads/product/3d/Dining(Commission).glb','readymade');
 
 /*Table structure for table `tbl_progress` */
 
@@ -295,7 +289,7 @@ CREATE TABLE `tbl_progress` (
   KEY `Product_ID` (`Product_ID`),
   CONSTRAINT `tbl_progress_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`) ON DELETE CASCADE,
   CONSTRAINT `tbl_progress_ibfk_2` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_progress` */
 
@@ -354,11 +348,9 @@ CREATE TABLE `tbl_ready_made_orders` (
   KEY `User_ID` (`User_ID`),
   CONSTRAINT `tbl_ready_made_orders_ibfk_1` FOREIGN KEY (`Product_ID`) REFERENCES `tbl_prod_info` (`Product_ID`),
   CONSTRAINT `tbl_ready_made_orders_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `tbl_user_info` (`User_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 /*Data for the table `tbl_ready_made_orders` */
-
-insert  into `tbl_ready_made_orders`(`ReadyMadeOrder_ID`,`Product_ID`,`User_ID`,`Quantity`,`Total_Price`,`Order_Status`,`Order_Date`,`Product_Status`,`Progress_Pic_10`,`Progress_Pic_20`,`Progress_Pic_30`,`Progress_Pic_40`,`Progress_Pic_50`,`Progress_Pic_60`,`Progress_Pic_70`,`Progress_Pic_80`,`Progress_Pic_90`,`Progress_Pic_100`,`Stop_Reason`,`Payment_Status`,`Tracking_Number`) values (6,1,'user_67fdb6ef7e16b',1,'2000.00',10,'2025-04-17 10:00:52',90,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'downpayment_paid',NULL);
 
 /*Table structure for table `tbl_reviews` */
 

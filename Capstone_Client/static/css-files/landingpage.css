@@ -106,6 +106,9 @@ model-viewer {
   justify-content: space-between;
   flex-wrap: wrap;
   box-sizing: border-box;
+  position: relative; /* Contain child elements */
+  overflow: hidden; /* Prevent overflow */
+  padding-bottom: 40px; /* Add spacing below the container */
 }
 
 .tutorial-text {
@@ -204,15 +207,23 @@ model-viewer {
 
 
 .phones-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px; /* Add spacing between videos */
+  margin-bottom: 40px; /* Add space below the phones-wrapper */
   position: relative;
   width: 320px;
   height: 620px; /* Set height so the container doesn't collapse */
   flex-shrink: 0;
   margin: 0 auto;
+  margin-top: 20px; /* Add spacing above the videos */
 }
 
 .cellphone,
 .cellphone2 {
+  flex: 1 1 300px; /* Ensure videos resize properly on smaller screens */
+  max-width: 300px; /* Set a maximum width for videos */
   width: 220px;
   height: 500px;
   border: 16px solid #888;
@@ -255,8 +266,25 @@ model-viewer {
 .cellphone video,
 .cellphone2 video {
   width: 100%;
-  height: 100%;
+  height: auto;
   border-radius: 20px;
+}
+
+video {
+  width: 100%; /* Make videos responsive */
+  height: auto;
+}
+
+/* Add media query for smaller screens */
+@media (max-width: 768px) {
+  .phones-wrapper {
+    flex-direction: column; /* Stack videos vertically on smaller screens */
+    align-items: center;
+  }
+
+  .cellphone, .cellphone2 {
+    max-width: 100%; /* Allow videos to take full width */
+  }
 }
 
 footer {
@@ -378,4 +406,8 @@ nav .login-btn:hover, nav .signup-btn:hover {
 .review-item .review-date {
   font-size: 12px;
   color: #999;
+}
+
+#products {
+  margin-top: 60px; /* Ensure enough space between tutorial and products */
 }

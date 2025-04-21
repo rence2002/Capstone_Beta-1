@@ -134,6 +134,17 @@ try {
     die("Database error: " . $e->getMessage());
 }
 
+// Check if there are any pending orders that are unpaid and unprocessed
+$hasPending = false;
+if (!empty($pendingOrdersData)) {
+    foreach ($pendingOrdersData as $order) {
+        if ($order['Payment_Status'] === 'Pending' && $order['Processed'] != 1) {
+            $hasPending = true;
+            break;
+        }
+    }
+}
+
 echo "<script>
 ";
 echo "const orderStatusMap = " . json_encode($orderStatusMap) . ";
@@ -158,51 +169,10 @@ echo "</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-.basic-info-container {
-    margin: 20px 0;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
 
-.basic-info-container h2 {
-    margin-bottom: 15px;
-    font-size: 1.5em;
-    color: #333;
-}
-
-.basic-info-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.basic-info-table td {
-    padding: 8px 10px;
-    vertical-align: top;
-}
-
-.basic-info-table td:first-child {
-    font-weight: bold;
-    color: #555;
-    width: 30%;
-}
-
-.status-valid {
-    color: green;
-    font-weight: bold;
-}
-
-.status-invalid {
-    color: red;
-    font-weight: bold;
-}
-
-.status-unverified {
-    color: orange;
-    font-weight: bold;
-}
 </style>
 </head>
 <body>
@@ -246,47 +216,43 @@ echo "</script>
         </div>
     </div>
 
-    <!-- Basic User Information Section -->
-    <div class="basic-info-container">
-        <h2>Account Information</h2>
-        <table class="basic-info-table">
-            <tr>
-                <td><strong>Full Name:</strong></td>
-                <td><?= htmlspecialchars($user['First_Name'] . " " . $user['Last_Name']) ?></td>
-            </tr>
-            <tr>
-                <td><strong>Email Address:</strong></td>
-                <td><?= htmlspecialchars($user['Email_Address']) ?></td>
-            </tr>
-            <tr>
-                <td><strong>Mobile Number:</strong></td>
-                <td><?= htmlspecialchars($user['Mobile_Number']) ?></td>
-            </tr>
-            <tr>
-                <td><strong>Valid ID Status:</strong></td>
-                <td>
-                    <?php
-                    $idStatus = htmlspecialchars($user['ID_Verification_Status']);
-                    if ($idStatus === 'Valid') {
-                        echo "<span class='status-valid'>Valid</span>";
-                    } elseif ($idStatus === 'Invalid') {
-                        echo "<span class='status-invalid'>Invalid</span>";
-                    } else {
-                        echo "<span class='status-unverified'>Unverified</span>";
-                    }
-                    ?>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <?php 
+// Check if there are any pending orders that are unpaid and unprocessed
+$hasPending = false;
+if (!empty($pendingOrdersData)) {
+    foreach ($pendingOrdersData as $order) {
+        if ($order['Payment_Status'] === 'Pending' && $order['Processed'] != 1) {
+            $hasPending = true;
+            break;
+        }
+    }
+}
+?>
 
+<!-- Payment Note (Shown only if there are unpaid & unprocessed pending orders) -->
+<?php if ($hasPending): ?>
+<div class="pending-order-item-note">
+    <p>
+        <strong>Please pay your downpayment.</strong> This is based on the store policy that you agreed to. Below are the available modes of payment:
+    </p>
+    <ul>
+        <li><strong>GCash:</strong> 0975 687 28572</li>
+        <li><strong>PayMaya:</strong> 0975 687 28572</li>
+    </ul>
+    <p>
+        <a class="linkqr" href="#" data-toggle="modal" data-target="#qrCodeModal">
+            <strong>Click here to view QR code</strong>
+        </a>
+    </p>
+</div>
+<?php endif; ?>
     <!-- Pending Orders Section -->
     <div class="section-container">
         <div class="section-header" onclick="toggleSection('pending-orders')">
             <h2>Pending Orders</h2>
             <span class="toggle-icon">&#9660;</span>
         </div>
-        <div id="pending-orders" class="section-content">
+        
             <?php if (empty($pendingOrdersData)): ?>
                 <p>No pending orders</p>
             <?php else: ?>
@@ -520,6 +486,23 @@ echo "</script>
     </div>
 </div>
 
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content text-center">
+      <div class="modal-header">
+        <h5 class="modal-title" id="qrCodeModalLabel">Scan to Pay</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img src="../static/images/qrcode.jpeg" alt="QR Code" class="img-fluid">
+        <p class="mt-3"><strong>Use your mobile app to scan this QR code.</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

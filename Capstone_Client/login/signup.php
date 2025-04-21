@@ -87,6 +87,91 @@
             color: black;
             text-decoration: none;
         }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+
+            .left, .right {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .left h1 {
+                text-align: center;
+                font-size: 1.5rem;
+            }
+
+            form {
+                width: 100%;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .form-group label {
+                font-size: 0.9rem;
+            }
+
+            .form-group input, .form-group button {
+                width: 100%;
+                font-size: 1rem;
+            }
+
+            .upload-btn-wrapper .btn {
+                width: 100%;
+                padding: 10px;
+            }
+
+            #profilePicPreview, #validIDPreview {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .form-options {
+                text-align: center;
+            }
+
+            .buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .buttons button, .buttons a {
+                width: 100%;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .left h1 {
+                font-size: 1.2rem;
+            }
+
+            .form-group label {
+                font-size: 0.8rem;
+            }
+
+            .form-group input, .form-group button {
+                font-size: 0.9rem;
+            }
+
+            .buttons button, .buttons a {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 

@@ -36,39 +36,26 @@
   align-items: center;
 }
 
-/* Hide the logo when the sidebar is not active */
+/* Make the logo always visible */
 .sidebar .logo-details .logo_name {
-  opacity: 0; /* Make the logo invisible */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
+  opacity: 1; /* Always visible */
+  transition: none; /* No transition needed */
 }
 
-.sidebar.active .logo-details .logo_name {
-  opacity: 1; /* Make the logo visible when the sidebar is active */
-}
-
-/* Hide the navigation list when the sidebar is not active */
+/* Make the navigation list always visible */
 .sidebar .nav-links {
-  opacity: 0; /* Make the navigation list invisible */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
+  opacity: 1; /* Always visible */
+  transition: none; /* No transition needed */
 }
 
-.sidebar.active .nav-links {
-  opacity: 1; /* Make the navigation list visible when the sidebar is active */
-}
-
-/* Hide the navigation list items and links when the sidebar is not active */
+/* Make the navigation list items and links always visible */
 .sidebar .nav-links li,
 .sidebar .nav-links li a {
-  opacity: 0; /* Make the list items and links invisible */
-  pointer-events: none; /* Prevent interaction */
-  transition: opacity 0.5s ease; /* Smooth transition for visibility */
+  opacity: 1; /* Always visible */
+  pointer-events: auto; /* Allow interaction */
+  transition: none; /* No transition needed */
 }
 
-.sidebar.active .nav-links li,
-.sidebar.active .nav-links li a {
-  opacity: 1; /* Make the list items and links visible */
-  pointer-events: auto; /* Allow interaction */
-}
 
 .sidebar .logo-details i{
   font-size: 28px;
@@ -659,6 +646,5 @@ input:valid + span:after {
 .iti__flag-container {
   display: none;
 }
-
 
 

@@ -22,6 +22,29 @@ try {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Handle file upload for a new valid ID if provided
+        if (isset($_FILES['valid_id']) && $_FILES['valid_id']['error'] === 0) {
+            $uploadDir = '../uploads/user/validid/';
+            $fileExtension = pathinfo($_FILES['valid_id']['name'], PATHINFO_EXTENSION);
+            $fileName = $userId . '_validid.' . $fileExtension;
+            $uploadFile = $uploadDir . $fileName;
+
+            if (move_uploaded_file($_FILES['valid_id']['tmp_name'], $uploadFile)) {
+                $validIdPath = 'uploads/user/validid/' . $fileName;
+
+                // Update the ID verification status and path in the database
+                $stmt = $pdo->prepare("
+                    UPDATE tbl_user_info 
+                    SET Valid_ID_Path = :validIdPath, ID_Verification_Status = 'Unverified'
+                    WHERE User_ID = :userId
+                ");
+                $stmt->execute([
+                    'validIdPath' => $validIdPath,
+                    'userId' => $userId
+                ]);
+            }
+        }
+
         // Handle file upload if a new profile picture is selected
         if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === 0) {
             $uploadDir = '../uploads/user/';
@@ -145,10 +168,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </ul>
       </li>
       <li><a href="../reviews/review.php">Reviews</a></li>
-      <li><a href="../gallery/gallery.php" class="active">Gallery</a></li>
+      <li><a href="../gallery/gallery.php" class="">Gallery</a></li>
       <li><a href="../cart/cart.php" class="cart" id="cart">Cart</a></li>
       <li class="dropdown">
-        <a href="../profile/profile.php" class="profile" id="sign_in">Profile</a>
+        <a href="../profile/profile.php" class="profile activecon" id="sign_in">Profile</a>
         <ul class="dropdown-menus">
           <li><a href="../profile/profile.php">Profile</a></li>
           <li><a href="logout.php">Logout</a></li>
@@ -160,6 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </nav>
 </header>
     <main>
+
+    
     <div class="container-profile">
             <div class="profile-icon-con">
                 <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/profile-icon.png'; ?>" alt="Profile Icon">
@@ -172,6 +197,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </a>
         </div>
 
+
+
         <div class="edit-form">
             <h2>Edit Profile</h2>
             <?php if (isset($error)): ?>
@@ -180,10 +207,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
             <form method="POST" enctype="multipart/form-data">
+
+          
+
+                <div class="form-group">
+                    <label><strong>Valid ID Status:</strong></label>
+                    <?php
+                    $idStatus = htmlspecialchars($user['ID_Verification_Status']);
+                    if ($idStatus === 'Valid') {
+                        echo "<span class='status-valid'>Valid</span>";
+                    } elseif ($idStatus === 'Invalid') {
+                        echo "<span class='status-invalid'>Invalid</span>";
+                        // Show the option to upload a new valid ID if the status is "Invalid"
+                        echo '<div class="form-group">
+                                <label for="valid_id">Upload New Valid ID</label>
+                                <input type="file" id="valid_id" name="valid_id" accept="image/*">
+                              </div>';
+                    } else {
+                        echo "<span class='status-unverified'>Unverified</span>";
+                    }
+                    ?>
+                </div>
+
+
                 <div class="form-group">
                     <label for="profile_picture">Profile Picture</label>
                     <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
                 </div>
+
                 <div class="form-group">
                     <label for="firstName">First Name</label>
                     <input type="text" id="firstName" name="firstName" value="<?= htmlspecialchars($user['First_Name']) ?>" required>
@@ -232,10 +283,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Same footer as profile.php -->
     <footer class="footer">
-        <!-- Footer content -->
+    <div class="footer-row">
+        <div class="footer-col">
+            <h4>Info</h4>
+            <ul class="links">
+                <li><a href="home.php">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="Gallery.php">Gallery</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Explore</h4>
+            <ul class="links">
+                <li><a href="#">Free Designs</a></li>
+                <li><a href="#">Latest Designs</a></li>
+                <li><a href="#">Themes</a></li>
+                <li><a href="#">Popular Designs</a></li>
+                <li><a href="#">Art Skills</a></li>
+                <li><a href="#">New Uploads</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <ul class="links">
+                <li><a href="#">Customer Agreement</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">GDPR</a></li>
+                <li><a href="#">Security</a></li>
+                <li><a href="#">Testimonials</a></li>
+                <li><a href="#">Media Kit</a></li>
+            </ul>
+        </div>
+        <div class="icons">
+            <i class="fa-brands fa-facebook-f"></i>
+            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-linkedin"></i>
+            <i class="fa-brands fa-github"></i>
+        </div>
+    </div>
     </footer>
 
    
 </body>
-<script src=".../static/Javascript-files/script.js"></script>
+<script src="../static/Javascript-files/script.js"></script>
 </html>
