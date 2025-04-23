@@ -71,48 +71,74 @@ $base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d
   </section>
 
   <section id="tutorial">
-    <div class="tutorial-container">
-      <div class="tutorial-text speech-bubble">
-        <div class="ARTitle">
-          <h2>How to Use Augmented Reality?</h2>
-        </div>
-        <h2>3D Models AR</h2>
-        <ol>
-          <li>Open this site on your phone or tablet.</li>
-          <li>Go to the Products section below.</li>
-          <li>Click the AR icon on any product's 3D viewer.</li>
-          <li>Follow the on-screen instructions to place the furniture in your room.</li>
-        </ol>
-        <br>
-        <h1>How to Use the Measurement Tool</h1>
-        <p>Follow these steps after pressing the <b>START AR</b> button:</p>
-        <ol>
-          <li>Move your phone around until a marker appears on your screen.</li>
-          <li>Position the marker at the first measurement point.</li>
-          <li>Tap the screen to begin the measurement.</li>
-          <li>Move the marker to the second measurement point.</li>
-          <li>Tap the screen again to complete the measurement.</li>
-          <li>The measured distance will be displayed at the center of the line connecting the two points.</li>
-          <li>Repeat steps 2 to 5 for additional measurements.</li>
-        </ol>
+  <div class="tutorial-container">
+    <div class="tutorial-text speech-bubble">
+      <div class="ARTitle">
+        <h2>How to Use Augmented Reality?</h2>
       </div>
-      
-      <div class="phones-wrapper">
-        <div class="cellphone2">
-          <video autoplay muted loop>
-            <source src="static/images/Furniture Augmented Reality (1).mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="cellphone">
-          <video autoplay muted loop>
-            <source src="static/images/Furniture Augmented Reality (1).mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        </div>
+      <h2>3D Models AR</h2>
+      <ol>
+        <li>Open this site on your phone or tablet.</li>
+        <li>Go to the Products section below.</li>
+        <li>Click the AR icon on any product's 3D viewer.</li>
+        <li>Follow the on-screen instructions to place the furniture in your room.</li>
+      </ol>
+      <br>
+      <h1>How to Use the Measurement Tool</h1>
+      <p>Follow these steps after pressing the <b>START AR</b> button:</p>
+      <ol>
+        <li>Move your phone around until a marker appears on your screen.</li>
+        <li>Position the marker at the first measurement point.</li>
+        <li>Tap the screen to begin the measurement.</li>
+        <li>Move the marker to the second measurement point.</li>
+        <li>Tap the screen again to complete the measurement.</li>
+        <li>The measured distance will be displayed at the center of the line connecting the two points.</li>
+        <li>Repeat steps 2 to 5 for additional measurements.</li>
+      </ol>
+    </div>
+
+    <div class="phones-wrapper">
+      <div class="cellphone2">
+      <video autoplay muted loop>
+    <source src="static/images/Furniture Augmented Reality (1).mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+<div class="cellphone">
+  <video autoplay muted loop>
+    <source src="static/images/Furniture Augmented Reality (1).mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
       </div>
     </div>
-  </section>
+  </div>
+
+  <div class="tutorial-text2 speech-bubble2">
+    <div class="ARTitle2">
+      <h2>How to Use Augmented Reality?</h2>
+    </div>
+    <h2>3D Models AR</h2>
+    <ol>
+      <li>Open this site on your phone or tablet.</li>
+      <li>Go to the Products section below.</li>
+      <li>Click the AR icon on any product's 3D viewer.</li>
+      <li>Follow the on-screen instructions to place the furniture in your room.</li>
+    </ol>
+    <br>
+    <h1>How to Use the Measurement Tool</h1>
+    <p>Follow these steps after pressing the <b>START AR</b> button:</p>
+    <ol>
+      <li>Move your phone around until a marker appears on your screen.</li>
+      <li>Position the marker at the first measurement point.</li>
+      <li>Tap the screen to begin the measurement.</li>
+      <li>Move the marker to the second measurement point.</li>
+      <li>Tap the screen again to complete the measurement.</li>
+      <li>The measured distance will be displayed at the center of the line connecting the two points.</li>
+      <li>Repeat steps 2 to 5 for additional measurements.</li>
+    </ol>
+  </div>
+</section>
+
 
   <section id="products">
     <h2 class="sampleAr">Our Sample Products</h2>
