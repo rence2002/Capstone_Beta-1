@@ -592,6 +592,10 @@ $(document).ready(function() {
 <script>
 function toggleSection(sectionId) {
     const section = document.getElementById(sectionId);
+    if (!section) {
+        console.error(`Section with id "${sectionId}" not found.`);
+        return;
+    }
     if (section.classList.contains('active')) {
         section.classList.remove('active');
     } else {
