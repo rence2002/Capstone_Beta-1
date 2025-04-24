@@ -87,14 +87,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <h1>Terms and Conditions</h1>
-                    <p>Welcome to RM Betis Furniture. By using our system and placing an order, you agree to the following terms and conditions:</p>
-                    <h2>1. Downpayment Policy</h2>
-                    <p>Before we process or accept your order, you are required to pay a 60% downpayment. The remaining balance must be settled upon completion of the order.</p>
-                    <h2>2. No Cancellation Policy</h2>
-                    <p>Once an order is placed, cancellations are not allowed. Please ensure that all details of your order are correct before confirming.</p>
-                    <h2>3. Privacy Policy</h2>
-                    <p>All personal information you provide in this system will be kept private and secure. We are committed to protecting your data and will not share it with third parties without your consent.</p>
-                    <p>If you have any questions or concerns regarding these terms, please contact us for clarification.</p>
+                <p>Welcome to RM Betis Furniture. By using our system and placing an order, you agree to the following terms and conditions:</p>
+            
+                <h2>1. Downpayment Policy</h2>
+                <p>Before we process or accept your order, you are required to pay a 60% downpayment. The remaining balance must be settled upon completion of the order.</p>
+  
+                <h2>2. No Cancellation, Return, and Refund Policy</h2>
+                <p>Once an order is placed, it is considered final. Cancellations, returns, and refunds are strictly not allowed under any circumstances. Please ensure all details are accurate and final before confirming your order.</p>
+            
+                <h2>3. Privacy Policy</h2>
+                <p>All personal information you provide in this system will be kept private and secure. We are committed to protecting your data and will not share it with third parties without your consent.</p>
+            
+                <h2>4. Pickup Service Policy</h2>
+                <p>Our standard pickup service does not include any freebies. However, for bulk orders, we occasionally offer complimentary small pieces of furniture as a gesture of appreciation. This policy helps us build positive relationships with our customers and reward larger orders with added value.</p>
+            
+                <p>If you have any questions or concerns regarding these terms, please contact us for clarification.</p>
                 </div>
             </div>
             <!-- Add modal styles -->
@@ -151,9 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </script>
         </div>
     </div>
-    <a class="theme-toggle">
+    <!-- <a class="theme-toggle">
         <span class="entypo--switch1"></span>
-    </a>
+    </a> -->
 
     <script>
         const toggleButton = document.getElementsByClassName('theme-toggle')[0]; // Access the first element

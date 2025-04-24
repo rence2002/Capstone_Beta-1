@@ -95,8 +95,36 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
         </div>
     </main>
     <footer class="footer">
-         <!-- Your footer code here -->
-    </footer>
+  <div class="footer-row">
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul class="links">
+        <li><a href="home.php">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul class="links">
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
+
+    </div>
+  </div>
+</footer>
 
     <script src="../static/Javascript-files/script.js"></script>
 </body>

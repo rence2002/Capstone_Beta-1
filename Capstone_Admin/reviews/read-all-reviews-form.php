@@ -111,7 +111,7 @@ if (isset($_GET['search'])) {
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
+    <a href="../reviews/read-all-reviews-form.php" class="active">
         <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
         <span class="links_name">All Reviews</span>
     </a>
@@ -129,7 +129,7 @@ if (isset($_GET['search'])) {
             <div class="search-box">
                 <form method="GET" action="">
                     <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
-                    <button type="submit"><i class="bx bx-search"></i></button>
+                  
                 </form>
             </div>
 
@@ -156,7 +156,7 @@ if (isset($_GET['search'])) {
 
         <div class="container_boxes">
         
-            <h4>Reviews List <a href="../reviews/create-review-form.php" class="buttonUpdate">Create Review</a></h4>
+            <!-- <h4>Reviews List <a href="../reviews/create-review-form.php" class="buttonUpdate">Create Review</a></h4> -->
             <!-- Add Back to Dashboard button -->
             <div class="button-container">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
@@ -182,8 +182,13 @@ if (isset($_GET['search'])) {
                                     <td><?php echo htmlspecialchars($row['Review_Text']); ?></td>
                                     <td><?php echo htmlspecialchars($row['Review_Date']); ?></td>
                                     <td style="text-align: center;">
-                                        <a class="buttonView" href="read-one-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']); ?>" target="_parent">View</a>
-                                    </td>
+                                    <!-- View Button -->
+                                    <a class="buttonView" href="read-one-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']); ?>" target="_parent">View</a>
+
+                                    <!-- Delete Button with direct link -->
+                                    <a class="buttonDelete" href="delete-review-form.php?id=<?php echo htmlspecialchars($row['Review_ID']); ?>" target="_parent">Delete</a>
+                                </td>
+
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

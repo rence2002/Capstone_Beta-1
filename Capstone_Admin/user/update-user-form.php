@@ -199,22 +199,25 @@ if (isset($_GET['id'])) {
                         <td><input type="file" name="PicPath" accept="image/*"></td>
                     </tr>
                     <tr>
-                        <td>Valid ID:</td>
-                        <td>
-                            <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" style="width: 400px; height: 250px; object-fit: cover; border: 1px solid #ccc;">
-                            <br>
-                            <label>
-                                <input type="radio" name="idVerificationStatus" value="Valid" <?php echo ($user['ID_Verification_Status'] === 'Valid') ? 'checked' : ''; ?>> Mark as Valid
-                            </label>
-                            <br>
-                            <label>
-                                <input type="radio" name="idVerificationStatus" value="Invalid" <?php echo ($user['ID_Verification_Status'] === 'Invalid') ? 'checked' : ''; ?>> Mark as Invalid
-                            </label>
-                            <br>
-                            <label>
-                                <input type="radio" name="idVerificationStatus" value="Unverified" <?php echo ($user['ID_Verification_Status'] === 'Unverified') ? 'checked' : ''; ?>> Mark as Unverified
-                            </label>
-                        </td>
+                    <tr>
+                    <td>Valid ID:</td>
+                    <td>
+                        <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" class="img-fluid border" style="width: 400px; height: 250px; object-fit: cover;">
+                        <br>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="idVerificationStatus" value="Valid" <?php echo ($user['ID_Verification_Status'] === 'Valid') ? 'checked' : ''; ?>>
+                            <label class="form-check-label">Mark as Valid</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="idVerificationStatus" value="Invalid" <?php echo ($user['ID_Verification_Status'] === 'Invalid') ? 'checked' : ''; ?>>
+                            <label class="form-check-label">Mark as Invalid</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="idVerificationStatus" value="Unverified" <?php echo ($user['ID_Verification_Status'] === 'Unverified') ? 'checked' : ''; ?>>
+                            <label class="form-check-label">Mark as Unverified</label>
+                        </div>
+                    </td>
+
                     </tr>
                 </table>
                 <!-- Separated buttons -->

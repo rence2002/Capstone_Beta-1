@@ -1,62 +1,60 @@
 <?php
 session_start();
 
-// Define status mappings
 $orderStatusMap = [
-    0   => 'Order Approved',
-    10  => 'Order Confirmed',
-    20  => 'Design Finalization',
-    30  => 'Material Preparation',
-    40  => 'Production Started',
-    50  => 'Mid-Production',
-    60  => 'Finishing Process',
-    70  => 'Quality Check',
-    80  => 'Final Assembly',
-    90  => 'Ready for Delivery',
-    100 => 'Delivered / Completed'
+    0   => 'Order Received',                // First step when an order is made
+    10  => 'Payment Pending',               // Awaiting payment (could be downpayment)
+    20  => 'Order Confirmed',               // Payment confirmed, order accepted
+    30  => 'Design Stage',                  // The order is in design (conceptualizing)
+    40  => 'Production Stage',              // Material sourcing and production start
+    50  => 'Mid-Production',                // Halfway through production
+    60  => 'Finishing Process',             // Final detailing, refinements
+    70  => 'Quality Check',                 // Ensuring the product is up to standard
+    80  => 'Final Assembly',                // The final stages of putting it all together
+    90  => 'Ready for Delivery',            // Finished and ready to be sent to the customer
+    100 => 'Delivered / Completed'          // Order successfully delivered or completed
 ];
+
 
 $orderIcons = [
     0   => "<i class='fas fa-receipt'></i>",              // Order Received
-    10  => "<i class='fas fa-check-circle'></i>",         // Order Confirmed
-    20  => "<i class='fas fa-palette'></i>",              // Design Finalization
-    30  => "<i class='fas fa-boxes'></i>",               // Material Preparation
-    40  => "<i class='fas fa-industry'></i>",            // Production Started
-    50  => "<i class='fas fa-cogs'></i>",                // Mid-Production
-    60  => "<i class='fas fa-brush'></i>",               // Finishing Process
-    70  => "<i class='fas fa-search'></i>",              // Quality Check
-    80  => "<i class='fas fa-tools'></i>",              // Final Assembly
-    90  => "<i class='fas fa-truck'></i>",               // Ready for Delivery
-    100 => "<i class='fas fa-flag-checkered'></i>"       // Delivered / Completed
+    10  => "<i class='fas fa-hourglass-half'></i>",       // Payment Pending
+    20  => "<i class='fas fa-check-circle'></i>",         // Order Confirmed
+    30  => "<i class='fas fa-pencil-ruler'></i>",         // Design Stage
+    40  => "<i class='fas fa-boxes'></i>",                // Production Stage
+    50  => "<i class='fas fa-cogs'></i>",                 // Mid-Production
+    60  => "<i class='fas fa-brush'></i>",                // Finishing Process
+    70  => "<i class='fas fa-search'></i>",               // Quality Check
+    80  => "<i class='fas fa-tools'></i>",                // Final Assembly
+    90  => "<i class='fas fa-truck'></i>",                // Ready for Delivery
+    100 => "<i class='fas fa-flag-checkered'></i>"        // Delivered / Completed
 ];
 
 $productStatusLabels = [
-    0   => 'Concept Stage',
-    10  => 'Design Approved',
-    20  => 'Material Sourcing',
-    30  => 'Cutting & Shaping',
-    40  => 'Structural Assembly',
-    50  => 'Detailing & Refinements',
-    60  => 'Sanding & Pre-Finishing',
-    70  => 'Varnishing/Painting',
-    80  => 'Drying & Curing',
-    90  => 'Final Inspection & Packaging',
-    100 => 'Completed'
+    0   => 'Concept Stage',           // Initial design or idea stage
+    10  => 'Design Approved',         // Design is approved, ready for next phase
+    20  => 'Material Sourcing',       // Materials are being sourced
+    30  => 'Production Started',      // Production has begun
+    50  => 'Mid-Production',          // Halfway through production
+    60  => 'Finishing Process',       // Final refinements
+    70  => 'Quality Check',           // Quality assurance before delivery
+    80  => 'Final Assembly',          // Assembly of all parts
+    100 => 'Completed'                // Finished product, ready for delivery
 ];
 
+
 $productIcons = [
-    0   => "<i class='fas fa-lightbulb'></i>",           // Concept Stage
-    10  => "<i class='fas fa-pencil-ruler'></i>",        // Design Approved
-    20  => "<i class='fas fa-cube'></i>",               // Material Sourcing
-    30  => "<i class='fas fa-cut'></i>",                // Cutting & Shaping
-    40  => "<i class='fas fa-tools'></i>",              // Structural Assembly
-    50  => "<i class='fas fa-paint-brush'></i>",        // Detailing & Refinements
-    60  => "<i class='fas fa-spray-can'></i>",          // Sanding & Pre-Finishing
-    70  => "<i class='fas fa-paint-roller'></i>",       // Varnishing/Painting
-    80  => "<i class='fas fa-clock'></i>",              // Drying & Curing
-    90  => "<i class='fas fa-box'></i>",                // Final Inspection & Packaging
-    100 => "<i class='fas fa-check'></i>"               // Completed
+    0   => "<i class='fas fa-lightbulb'></i>",            // Concept Stage
+    10  => "<i class='fas fa-pencil-alt'></i>",           // Design Approved
+    20  => "<i class='fas fa-box-open'></i>",             // Material Sourcing
+    30  => "<i class='fas fa-industry'></i>",             // Production Started
+    50  => "<i class='fas fa-cogs'></i>",                 // Mid-Production
+    60  => "<i class='fas fa-brush'></i>",                // Finishing Process
+    70  => "<i class='fas fa-search'></i>",               // Quality Check
+    80  => "<i class='fas fa-tools'></i>",                // Final Assembly
+    100 => "<i class='fas fa-check'></i>"                 // Completed
 ];
+
 
 // Check if the user is logged in
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
@@ -229,243 +227,228 @@ if (!empty($pendingOrdersData)) {
 }
 ?>
 
-<!-- Payment Note (Shown only if there are unpaid & unprocessed pending orders) -->
-<?php if ($hasPending): ?>
-<div class="pending-order-item-note">
-    <p>
-        <strong>Please pay your downpayment.</strong> This is based on the store policy that you agreed to. Below are the available modes of payment:
-    </p>
-    <ul>
-        <li><strong>GCash:</strong> 0975 687 28572</li>
-        <li><strong>PayMaya:</strong> 0975 687 28572</li>
-    </ul>
-    <p>
-        <a class="linkqr" href="#" data-toggle="modal" data-target="#qrCodeModal">
-            <strong>Click here to view QR code</strong>
-        </a>
-    </p>
+<!-- Pending Orders Section -->
+<!-- Tabs Navigation -->
+<div class="tabs">
+    <button class="tab-button active" onclick="openTab('pending-orders-tab')">Pending Orders</button>
+    <button class="tab-button" onclick="openTab('order-status-tab')">Order Status</button>
+    <button class="tab-button" onclick="openTab('product-status-tab')">Product Status</button>
+    <button class="tab-button" onclick="openTab('purchase-history-tab')">Purchase History</button>
 </div>
-<?php endif; ?>
-    <!-- Pending Orders Section -->
-    <div class="section-container">
-        <div class="section-header" onclick="toggleSection('pending-orders')">
-            <h2>Pending Orders</h2>
-            <span class="toggle-icon">&#9660;</span>
-        </div>
-        
-            <?php if (empty($pendingOrdersData)): ?>
-                <p>No pending orders</p>
-            <?php else: ?>
-                <?php foreach ($pendingOrdersData as $order): ?>
-                    <div class="pending-order-item">
-                        <h3><?= htmlspecialchars($order['Product_Name']) ?? 'Custom Order' ?></h3>
-                        <p><strong>Order Type:</strong> <?= htmlspecialchars($order['Order_Type']) ?></p>
-                        <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
-                        <p><strong>Total Price:</strong> <?= htmlspecialchars($order['Total_Price']) ?></p>
-                        <p><strong>Request Date:</strong> <?= htmlspecialchars($order['Request_Date']) ?></p>
-                        <p><strong>Payment Status:</strong> 
-                            <?php
-                            // Map the Payment_Status to readable text
-                            switch ($order['Payment_Status']) {
-                                case 'downpayment_paid':
-                                    echo 'Downpayment Paid';
-                                    break;
-                                case 'fully_paid':
-                                    echo 'Fully Paid';
-                                    break;
-                                case 'Pending':
-                                    echo 'Pending';
-                                    break;
-                                default:
-                                    echo 'Unknown';
-                                    break;
+
+<!-- Tabs Content -->
+
+<!-- Pending Orders -->
+<div id="pending-orders-tab" class="tab-content active">
+    <!-- Payment Note (Shown only if there are unpaid & unprocessed pending orders) -->
+    <?php if ($hasPending): ?>
+    <div class="pending-order-item-note">
+        <p>
+            <strong>Please pay your downpayment.</strong> This is based on the store policy that you agreed to. Below are the available modes of payment:
+        </p>
+        <ul>
+            <li><strong>GCash:</strong> 0975 687 28572</li>
+            <li><strong>PayMaya:</strong> 0975 687 28572</li>
+        </ul>
+        <p>
+            <a class="linkqr" href="#" data-toggle="modal" data-target="#qrCodeModal">
+                <strong>Click here to view QR code</strong>
+            </a>
+        </p>
+    </div>
+    <?php endif; ?>
+
+    <?php if (empty($pendingOrdersData)): ?>
+        <p>No pending orders</p>
+    <?php else: ?>
+        <?php foreach ($pendingOrdersData as $order): ?>
+            <div class="pending-order-item">
+                <h3><?= htmlspecialchars($order['Product_Name']) ?? 'Custom Order' ?></h3>
+                <p><strong>Order Type:</strong> <?= htmlspecialchars($order['Order_Type']) ?></p>
+                <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
+                <p><strong>Total Price:</strong> <?= htmlspecialchars($order['Total_Price']) ?></p>
+                <p><strong>Request Date:</strong> <?= htmlspecialchars($order['Request_Date']) ?></p>
+                <p><strong>Payment Status:</strong> 
+                    <?php
+                    switch ($order['Payment_Status']) {
+                        case 'downpayment_paid':
+                            echo '<span style="color: #FFDB58;">Downpayment Paid</span>';
+                            break;
+                        case 'fully_paid':
+                            echo '<span style="color: green;">Fully Paid</span>';
+                            break;
+                        case 'Pending':
+                            echo '<span style="color: blue;">Pending</span>';
+                            break;
+                        default:
+                            echo '<span style="color: red;">Unknown</span>';
+                            break;
+                    }
+                    ?>
+                </p>
+                <?php if ($order['Processed'] == 1): ?>
+                    <?php if ($order['Order_Status'] == 1): ?>
+                        <p class="order-status"><strong>Status: </strong><span style="color: green;">Approved</span></p>
+                    <?php elseif ($order['Order_Status'] == -1): ?>
+                        <p class="order-status"><strong>Status: </strong><span style="color: red;">Rejected</span></p>
+                    <?php endif; ?>
+                    <form method="POST" action="delete_order_request.php">
+                        <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
+                        <button type="submit" class="okay-btn">Okay</button>
+                    </form>
+                <?php else: ?>
+                    <p class="order-status"><strong>Status: </strong><span style="color: blue;">Pending</span></p>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
+<!-- Order Status -->
+<div id="order-status-tab" class="tab-content">
+    <?php if (empty($progressData)): ?>
+        <p>No available data</p>
+    <?php else: ?>
+        <?php foreach ($progressData as $progress): ?>
+            <div class="progress-item">
+                <h3><?= htmlspecialchars($progress['Product_Name']) ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
+                <div class="stepper-container">
+                    <ol class="stepper">
+                        <?php 
+                        $isActive = true;
+                        foreach ($orderStatusMap as $status => $label): 
+                            $stepClass = (($progress['Order_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
+                            if (($progress['Order_Status'] ?? 0) == $status) {
+                                $isActive = false;
                             }
-                            ?>
-                        </p>
-                        
-                        <!-- Display Order Status -->
-                        <?php if ($order['Processed'] == 1): ?>
-                            <?php if ($order['Order_Status'] == 1): ?>
-                                <p class="order-status approved"><strong>Status: </strong> Approved</p>
-                            <?php elseif ($order['Order_Status'] == -1): ?>
-                                <p class="order-status rejected"><strong>Status: </strong> Rejected</p>
-                            <?php endif; ?>
-                            
-                            <!-- Okay Button -->
-                            <form method="POST" action="delete_order_request.php">
-                                <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
-                                <button type="submit" class="okay-btn">Okay</button>
-                            </form>
-                        <?php else: ?>
-                            <p class="order-status pending"><strong>Status: </strong> Pending</p>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
+                        ?>
+                            <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode(['context' => 'order', 'data' => $progress]), ENT_QUOTES, 'UTF-8') ?>">
+                                <span class="step-icon"><?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
+                                <span class="step-label"><?= htmlspecialchars($label) ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
-    <!-- Order Status Section -->
-    <div class="section-container">
-        <div class="section-header" onclick="toggleSection('order-status')">
-            <h2>Order Status</h2>
-            <span class="toggle-icon">&#9660;</span>
-        </div>
-        <div id="order-status" class="section-content">
-            <?php if (empty($progressData)): ?>
-                <p>No available data</p>
-            <?php else: ?>
-                <?php foreach ($progressData as $progress): ?>
-                    <div class="progress-item">
-                        <h3><?= htmlspecialchars($progress['Product_Name']) ?> - <?= $orderStatusMap[$progress['Order_Status']] ?? 'Status Unknown' ?></h3>
-                        <div class="stepper-container">
-                            <ol class="stepper">
-                                <?php 
-                                $isActive = true; // Track passed steps
-                                foreach ($orderStatusMap as $status => $label): 
-                                    $stepClass = (($progress['Order_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
-                                    if (($progress['Order_Status'] ?? 0) == $status) {
-                                        $isActive = false; // Stop marking future steps active
-                                    }
-                                ?>
-                                    <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode(['context' => 'order', 'data' => $progress]), ENT_QUOTES, 'UTF-8') ?>">
-                                        <span class="step-icon"><?= $orderIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
-                                        <span class="step-label"><?= htmlspecialchars($label) ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
+<!-- Product Status -->
+<div id="product-status-tab" class="tab-content">
+    <?php if (empty($progressData)): ?>
+        <p>No available data</p>
+    <?php else: ?>
+        <?php foreach ($progressData as $progress): ?>
+            <div class="progress-item">
+                <h3><?= $progress['Product_Name'] ?></h3>
+                <div class="stepper-container">
+                    <ol class="stepper">
+                        <?php 
+                        $isActive = true;
+                        foreach ($productStatusLabels as $status => $label): 
+                            $stepClass = (($progress['Product_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
+                            if (($progress['Product_Status'] ?? 0) == $status) {
+                                $isActive = false;
+                            }
+                            $statusKey = "Progress_Pic_" . $status;
+                            $progressPicUrl = $progress[$statusKey] ?? null;
+                            $stepData = [
+                                'context' => 'product',
+                                'data' => $progress,
+                                'progressPicUrl' => $progressPicUrl,
+                                'stepStatus' => $status
+                            ];
+                        ?>
+                            <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
+                                <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
+                                <span class="step-label"><?= $label ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
-    <!-- Product Status Section -->
-    <div class="section-container">
-        <div class="section-header" onclick="toggleSection('product-status')">
-            <h2>Product Status</h2>
-            <span class="toggle-icon">&#9660;</span>
-        </div>
-        <div id="product-status" class="section-content">
-            <?php if (empty($progressData)): ?>
-                <p>No available data</p>
-            <?php else: ?>
-                <?php foreach ($progressData as $progress): ?>
-                    <div class="progress-item">
-                        <h3><?= $progress['Product_Name'] ?></h3>
-                        <div class="stepper-container">
-                            <ol class="stepper">
-                                <?php 
-                                $isActive = true; // Track passed steps
-                                foreach ($productStatusLabels as $status => $label): 
-                                    $stepClass = (($progress['Product_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
-                                    if (($progress['Product_Status'] ?? 0) == $status) {
-                                        $isActive = false; // Stop marking future steps active
-                                    }
-                                    // Get the picture URL for this step
-                                    $statusKey = "Progress_Pic_" . $status;
-                                    $progressPicUrl = $progress[$statusKey] ?? null;
-                                    $stepData = [
-                                        'context' => 'product',
-                                        'data' => $progress,
-                                        'progressPicUrl' => $progressPicUrl,
-                                        'stepStatus' => $status
-                                    ];
-                                ?>
-                                    <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
-                                        <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
-                                        <span class="step-label"><?= $label ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
+<!-- Purchase History -->
+<div id="purchase-history-tab" class="tab-content">
+    <?php if (empty($purchaseHistoryData)): ?>
+        <p>No available data</p>
+    <?php else: ?>
+        <?php foreach ($purchaseHistoryData as $purchase): ?>
+            <div class="purchase-item">
+                <h3><?= $purchase['Product_Name'] ?> - <?= $purchase['Purchase_Date'] ?></h3>
+                <div class="purchase-image-div">
+                    <?php
+                    $imageUrls = explode(',', $purchase['ImageURL']);
+                    foreach ($imageUrls as $imageUrl):
+                        $imageUrl = trim($imageUrl);
+                        if (!empty($imageUrl)):
+                    ?>
+                        <img class="purchase-image" src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
+                    <?php endif; endforeach; ?>
+                </div>
+                <p><strong>Quantity:</strong> <?= $purchase['Quantity'] ?></p>
+                <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
+                <div class="review-btn-container">
+                    <?php if (isset($purchase['Review_ID'])): ?>
+                        <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="EditButton">Edit Review</a>
+                    <?php else: ?>
+                        <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="WriteButton">Write Review</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
-    <!-- Purchase History Section -->
-    <div class="section-container">
-        <div class="section-header" onclick="toggleSection('purchase-history')">
-            <h2>Purchase History</h2>
-            <span class="toggle-icon">&#9660;</span>
-        </div>
-        <div id="purchase-history" class="section-content">
-            <?php if (empty($purchaseHistoryData)): ?>
-                <p>No available data</p>
-            <?php else: ?>
-                <?php foreach ($purchaseHistoryData as $purchase): ?>
-                    <div class="purchase-item">
-                        <h3><?= $purchase['Product_Name'] ?> - <?= $purchase['Purchase_Date'] ?></h3>
-                        <div class="purchase-image-div">
-                            <?php
-                            $imageUrls = explode(',', $purchase['ImageURL']);
-                            foreach ($imageUrls as $imageUrl):
-                                $imageUrl = trim($imageUrl); // Remove any leading/trailing spaces
-                                if (!empty($imageUrl)):
-                            ?>
-                                <img class="purchase-image" src="<?= htmlspecialchars($imageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
-                            <?php
-                                endif;
-                            endforeach;
-                            ?>
-                        </div>
-                        <p><strong>Quantity:</strong> <?= $purchase['Quantity'] ?></p>
-                        <p><strong>Total Price:</strong> <?= $purchase['Total_Price'] ?></p>
-                        <div class="review-btn-container">
-                            <?php if (isset($purchase['Review_ID'])): ?>
-                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="EditButton">Edit Review</a>
-                            <?php else: ?>
-                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="WriteButton">Write Review</a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
+
+<script>
+    function openTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        const buttons = document.querySelectorAll('.tab-button');
+
+        tabs.forEach(tab => tab.classList.remove('active'));
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`.tab-button[onclick*="${tabId}"]`).classList.add('active');
+    }
+</script>
+
 </main>
 <footer class="footer">
-    <div class="footer-row">
-        <div class="footer-col">
-            <h4>Info</h4>
-            <ul class="links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Explore</h4>
-            <ul class="links">
-                <li><a href="#">Free Designs</a></li>
-                <li><a href="#">Latest Designs</a></li>
-                <li><a href="#">Themes</a></li>
-                <li><a href="#">Popular Designs</a></li>
-                <li><a href="#">Art Skills</a></li>
-                <li><a href="#">New Uploads</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Legal</h4>
-            <ul class="links">
-                <li><a href="#">Customer Agreement</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">GDPR</a></li>
-                <li><a href="#">Security</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Media Kit</a></li>
-            </ul>
-        </div>
-        <div class="icons">
-            <i class="fa-brands fa-facebook-f"></i>
-            <i class="fa-brands fa-twitter"></i>
-            <i class="fa-brands fa-linkedin"></i>
-            <i class="fa-brands fa-github"></i>
-        </div>
+  <div class="footer-row">
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul class="links">
+        <li><a href="home.php">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
+      </ul>
     </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul class="links">
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
+
+    </div>
+  </div>
 </footer>
 
 <!-- Modal -->
@@ -553,9 +536,17 @@ $(document).ready(function() {
         }
 
         var stopReasonHtml = '';
-        if (stopReason && stopReason.trim() !== "") {
-            stopReasonHtml = `<p class="stopreason"><strong>Stop Reason:</strong> ${stopReason}</p>`;
-        }
+var reasonMessages = {
+    fire: "We sincerely apologize for the inconvenience caused by the fire.",
+    flood: "We deeply regret the disruption caused by the flood.",
+    typhoon: "We are truly sorry for the difficulties caused by the typhoon.",
+    earthquake: "We apologize for the disruption caused by the earthquake."
+};
+
+if (stopReason && stopReason.trim() !== "") {
+    var message = reasonMessages[stopReason] || stopReason;
+    stopReasonHtml = `<p class="stopreason"><strong>Stop Reason:</strong> ${message}</p>`;
+}
 
         var trackingNumberHtml = '';
         if (trackingNumber && trackingNumber.trim() !== "") {

@@ -160,24 +160,22 @@ try {
 </header>
 
 <main>
-    <div class="hero-section">
-        <div class="content">
-            <h1>What Furniture Are You Looking For?</h1>
-            <form action="" method="GET" class="search-form" id="search-form">
-                <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" required value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                <span class="clear-search" id="clear-search">&times;</span>
-                <button type="submit" class="material-symbols-outlined">search</button>
-            </form>
-        </div>
+<div class="hero-section">
+    <div class="content">
+        <h1>What Furniture Are You Looking For?</h1>
+        <form action="" method="GET" class="search-form" id="search-form">
+            <input type="text" name="search" id="search-input" placeholder="Search a type of furniture" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+            <span class="clear-search" id="clear-search">&times;</span>
+            <button type="submit" class="material-symbols-outlined">search</button>
+        </form>
+    </div>
+</div>
+
     </div>
 
     <div class="Show_Rooms">
         <a href="../showroom/showroom.php" class="showroom">Showroom</a>
         <a href="../../keme/index.html" class="showroom">Measure</a>
-
-
-
-
     </div>
 
     <!-- Ready Made Section -->
@@ -240,16 +238,20 @@ try {
     </div>
     <?php endif; ?>
 
-    <!-- Customization Section -->
-    <div class="container">
-        <h3 class="title">Customize Now!</h3>
-        <p class="explain-cus">
-            Create your personalized furniture! Select options or upload designs.
-            Our team will help bring your vision to life.
-        </p>
+   <!-- Customization Section -->
+<div class="containercus">
+    <h3 class="title">Customize Now!</h3>
+    <p class="explain-cus">
+    Create your personalized furniture! Select options or upload designs. Whether you're looking for a completely unique piece or something inspired by our catalog, we can help bring your vision to life. Choose from a variety of materials, colors, sizes, and finishes to ensure your furniture fits perfectly with your space and style. If you have a specific design in mind, you can upload reference images, sketches, or detailed descriptions to guide our team in crafting exactly what you're looking for. Our expert craftsmen will work closely with you throughout the process to make sure every detail is just as you imagined.
+    </p>
+
+    <!-- Toggle Button -->
+     <div class="toggle-con">
+    <button id="toggle-button" class="toggle-btn">Start Customizing</button>
     </div>
 
-    <div class="customized-container">
+<!-- Customized Container -->
+<div class="customized-container" id="customized-container">
         <!-- Furniture Type -->
         <div class="cus-boxed">
             <label for="furniture">Furniture Type:</label>
@@ -641,10 +643,12 @@ try {
         </script>
 
         <!-- Submit and Reset Buttons -->
-        <div class="cus-boxed">
+        <div>
         <button id="submit-button" class="btn" disabled>Submit</button>
-            <button id="reset-button">Reset</button>
+        <button id="reset-button">Reset</button>
         </div>
+      
+       
     </div>
 
     <!-- Print Modal -->
@@ -678,9 +682,39 @@ try {
             <button id="closeModalButton" class="btn">Close</button>
         </div>
     </div>
+    </div>
 </main>
 <footer class="footer">
-    </footer>
+  <div class="footer-row">
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul class="links">
+        <li><a href="home.php">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul class="links">
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
+
+    </div>
+  </div>
+</footer>
     <script src="../static/Javascript-files/script.js"></script>
     <script src="../static/Javascript-files/customization.js"></script>
     <script src="../static/Javascript-files/gallery.js"></script>
@@ -693,6 +727,26 @@ try {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             echo $user['ID_Verification_Status'];
         ?>";
+
+            // Select the button and the container
+            const toggleButton = document.getElementById("toggle-button");
+            const customizedContainer = document.querySelector(".customized-container");
+
+            // Add click event listener to toggle the container and button text
+            toggleButton.addEventListener("click", function () {
+                if (customizedContainer.style.display === "none" || customizedContainer.style.display === "") {
+                    // Show the container and change button text
+                    customizedContainer.style.display = "grid";
+                    toggleButton.textContent = "Stop Customizing";
+                } else {
+                    // Hide the container and change button text back
+                    customizedContainer.style.display = "none";
+                    toggleButton.textContent = "Start Customizing";
+                }
+            });
+
+
+
     </script>
 </body>
 </html>

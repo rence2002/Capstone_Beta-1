@@ -143,35 +143,32 @@ if (!$row) {
     exit();
 }
 
-// Map order status to descriptive text
 $orderStatusMap = [
-    0   => 'Order Received',       // 0% - Order placed by the customer
-    10  => 'Order Confirmed',      // 10% - Down payment received
-    20  => 'Design Finalization',  // 20% - Final design confirmed
-    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
-    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
-    50  => 'Mid-Production',       // 50% - Major structural work completed
-    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
-    70  => 'Quality Check',        // 70% - Inspection for defects
-    80  => 'Final Assembly',       // 80% - Last touches, packaging
-    90  => 'Ready for Delivery',   // 90% - Scheduled for transport
-    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
+    0   => 'Order Received',                // First step when an order is made
+    10  => 'Payment Pending',               // Awaiting payment (could be downpayment)
+    20  => 'Order Confirmed',               // Payment confirmed, order accepted
+    30  => 'Design Stage',                  // The order is in design (conceptualizing)
+    40  => 'Production Stage',              // Material sourcing and production start
+    50  => 'Mid-Production',                // Halfway through production
+    60  => 'Finishing Process',             // Final detailing, refinements
+    70  => 'Quality Check',                 // Ensuring the product is up to standard
+    80  => 'Final Assembly',                // The final stages of putting it all together
+    90  => 'Ready for Delivery',            // Finished and ready to be sent to the customer
+    100 => 'Delivered / Completed'          // Order successfully delivered or completed
 ];
 
-// Map product status to descriptive text
 $productStatusLabels = [
-    0   => 'Concept Stage',         // 0% - Idea or design submitted
-    10  => 'Design Approved',       // 10% - Finalized by customer
-    20  => 'Material Sourcing',     // 20% - Gathering necessary materials
-    30  => 'Cutting & Shaping',     // 30% - Preparing materials
-    40  => 'Structural Assembly',   // 40% - Base framework built
-    50  => 'Detailing & Refinements', // 50% - Carvings, upholstery, elements added
-    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening, preparing for final coat
-    70  => 'Varnishing/Painting',   // 70% - Applying the final finish
-    80  => 'Drying & Curing',       // 80% - Final coating sets in
-    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
-    100 => 'Completed'              // 100% - Ready for pickup/delivery
+    0   => 'Concept Stage',           // Initial design or idea stage
+    10  => 'Design Approved',         // Design is approved, ready for next phase
+    20  => 'Material Sourcing',       // Materials are being sourced
+    30  => 'Production Started',      // Production has begun
+    50  => 'Mid-Production',          // Halfway through production
+    60  => 'Finishing Process',       // Final refinements
+    70  => 'Quality Check',           // Quality assurance before delivery
+    80  => 'Final Assembly',          // Assembly of all parts
+    100 => 'Completed'                // Finished product, ready for delivery
 ];
+
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -289,13 +286,14 @@ $productStatusLabels = [
             <tr>
                 <th>Stop Reason</th>
                 <td>
-                    <select name="Stop_Reason" class="form-control">
-                        <option value="">None</option>
-                        <option value="fire" <?= $row['Stop_Reason'] === 'fire' ? 'selected' : '' ?>>Fire</option>
-                        <option value="flood" <?= $row['Stop_Reason'] === 'flood' ? 'selected' : '' ?>>Flood</option>
-                        <option value="typhoon" <?= $row['Stop_Reason'] === 'typhoon' ? 'selected' : '' ?>>Typhoon</option>
-                        <option value="earthquake" <?= $row['Stop_Reason'] === 'earthquake' ? 'selected' : '' ?>>Earthquake</option>
-                    </select>
+                <select name="Stop_Reason" class="form-control">
+                <option value="">None</option>
+                <option value="fire" <?= $row['Stop_Reason'] === 'fire' ? 'selected' : '' ?>>We sincerely apologize for the inconvenience caused by the fire.</option>
+                <option value="flood" <?= $row['Stop_Reason'] === 'flood' ? 'selected' : '' ?>>We deeply regret the disruption caused by thsse flood.</option>
+                <option value="typhoon" <?= $row['Stop_Reason'] === 'typhoon' ? 'selected' : '' ?>>We are truly sorry for the difficulties caused by the typhoon.</option>
+                <option value="earthquake" <?= $row['Stop_Reason'] === 'earthquake' ? 'selected' : '' ?>>We apologize for the disruption caused by the earthquake.</option>
+            </select>
+
                 </td>
             </tr>
         </table>

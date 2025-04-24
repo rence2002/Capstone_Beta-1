@@ -182,11 +182,13 @@ $glbFileURL = htmlspecialchars($product["GLB_File_URL"]);
                 </tr>
                 <tr>
                     <td>Stock:</td>
-                    <td><input type="number" name="txtStock" value="<?php echo $stock; ?>"></td>
+                    <td><input type="number" class="form-control" name="txtStock" value="<?php echo $stock; ?>"></td>
+
                 </tr>
                 <tr>
                     <td>Sold:</td>
-                    <td><input type="number" name="txtSold" value="<?php echo $sold; ?>"></td>
+                   <td><input type="number" class="form-control" name="txtSold" value="<?php echo $sold; ?>"></td>
+
                 </tr>
                 <tr>
                     <td>Assembly Required:</td>

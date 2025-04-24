@@ -189,7 +189,7 @@ if (isset($_GET['search'])) {
             </li>
          
             <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
+                <a href="../purchase-history/read-all-history-form.php" class="active">
                     <i class="bx bx-comment-detail"></i>
                     <span class="links_name">All Purchase History</span>
                 </a>
@@ -213,7 +213,7 @@ if (isset($_GET['search'])) {
             <div class="search-box">
                 <form method="GET" action="">
                     <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
-                    <button type="submit"><i class="bx bx-search"></i></button>
+                 
                 </form>
             </div>
 

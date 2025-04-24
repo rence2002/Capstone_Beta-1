@@ -213,8 +213,9 @@ $productStatusLabels = [
                 <!-- Furniture Type Additional Info -->
                 <tr>
                     <td>Furniture Type Additional Info:</td>
-                    <td><textarea name="txtFurnitureTypeAdditionalInfo"><?php echo $furnitureTypeAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtFurnitureTypeAdditionalInfo"><?php echo $furnitureTypeAdditionalInfo; ?></textarea></td>
                 </tr>
+
 
                 <!-- Standard Size -->
                 <tr>
@@ -231,7 +232,7 @@ $productStatusLabels = [
                 <!-- Color -->
                 <tr>
                     <td>Color:</td>
-                    <td><input type="text" name="txtColor" value="<?php echo $color; ?>"></td>
+                    <td><input  class="form-control" type="text" name="txtColor" value="<?php echo $color; ?>"></td>
                 </tr>
 
                 <!-- Color Image -->
@@ -246,10 +247,11 @@ $productStatusLabels = [
                 </tr>
 
                 <!-- Color Additional Info -->
-                <tr>
-                    <td>Color Additional Info:</td>
-                    <td><textarea name="txtColorAdditionalInfo"><?php echo $colorAdditionalInfo; ?></textarea></td>
-                </tr>
+            <tr>
+                <td>Color Additional Info:</td>
+                <td><textarea class="form-control" name="txtColorAdditionalInfo"><?php echo $colorAdditionalInfo; ?></textarea></td>
+            </tr>
+
 
                 <!-- Texture -->
                 <tr>
@@ -271,7 +273,7 @@ $productStatusLabels = [
                 <!-- Texture Additional Info -->
                 <tr>
                     <td>Texture Additional Info:</td>
-                    <td><textarea name="txtTextureAdditionalInfo"><?php echo $textureAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtTextureAdditionalInfo"><?php echo $textureAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Wood Type -->
@@ -294,7 +296,7 @@ $productStatusLabels = [
                 <!-- Wood Additional Info -->
                 <tr>
                     <td>Wood Additional Info:</td>
-                    <td><textarea name="txtWoodAdditionalInfo"><?php echo $woodAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtWoodAdditionalInfo"><?php echo $woodAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Foam Type -->
@@ -317,7 +319,7 @@ $productStatusLabels = [
                 <!-- Foam Additional Info -->
                 <tr>
                     <td>Foam Additional Info:</td>
-                    <td><textarea name="txtFoamAdditionalInfo"><?php echo $foamAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtFoamAdditionalInfo"><?php echo $foamAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Cover Type -->
@@ -340,7 +342,7 @@ $productStatusLabels = [
                 <!-- Cover Additional Info -->
                 <tr>
                     <td>Cover Additional Info:</td>
-                    <td><textarea name="txtCoverAdditionalInfo"><?php echo $coverAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtCoverAdditionalInfo"><?php echo $coverAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Design -->
@@ -363,7 +365,7 @@ $productStatusLabels = [
                 <!-- Design Additional Info -->
                 <tr>
                     <td>Design Additional Info:</td>
-                    <td><textarea name="txtDesignAdditionalInfo"><?php echo $designAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtDesignAdditionalInfo"><?php echo $designAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Tile Type -->
@@ -386,7 +388,7 @@ $productStatusLabels = [
                 <!-- Tile Additional Info -->
                 <tr>
                     <td>Tile Additional Info:</td>
-                    <td><textarea name="txtTileAdditionalInfo"><?php echo $tileAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtTileAdditionalInfo"><?php echo $tileAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Metal Type -->
@@ -409,7 +411,7 @@ $productStatusLabels = [
                 <!-- Metal Additional Info -->
                 <tr>
                     <td>Metal Additional Info:</td>
-                    <td><textarea name="txtMetalAdditionalInfo"><?php echo $metalAdditionalInfo; ?></textarea></td>
+                    <td><textarea class="form-control" name="txtMetalAdditionalInfo"><?php echo $metalAdditionalInfo; ?></textarea></td>
                 </tr>
 
                 <!-- Order Status -->

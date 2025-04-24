@@ -23,8 +23,14 @@ unset($_SESSION['registration_success']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <link rel="stylesheet" href="../static/css-files/LogIn.css">
+    <!-- <link rel="stylesheet" href="../static/css-files/LogIn.css"> -->
     <style>
+        body {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        background-color: rgb(43, 43, 43);
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
         /* Add any additional styles here */
         .success-container {
             text-align: center;

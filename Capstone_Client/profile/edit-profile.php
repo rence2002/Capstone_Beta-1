@@ -283,46 +283,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Same footer as profile.php -->
     <footer class="footer">
-    <div class="footer-row">
-        <div class="footer-col">
-            <h4>Info</h4>
-            <ul class="links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Explore</h4>
-            <ul class="links">
-                <li><a href="#">Free Designs</a></li>
-                <li><a href="#">Latest Designs</a></li>
-                <li><a href="#">Themes</a></li>
-                <li><a href="#">Popular Designs</a></li>
-                <li><a href="#">Art Skills</a></li>
-                <li><a href="#">New Uploads</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Legal</h4>
-            <ul class="links">
-                <li><a href="#">Customer Agreement</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">GDPR</a></li>
-                <li><a href="#">Security</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Media Kit</a></li>
-            </ul>
-        </div>
-        <div class="icons">
-            <i class="fa-brands fa-facebook-f"></i>
-            <i class="fa-brands fa-twitter"></i>
-            <i class="fa-brands fa-linkedin"></i>
-            <i class="fa-brands fa-github"></i>
-        </div>
+  <div class="footer-row">
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul class="links">
+        <li><a href="home.php">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
+      </ul>
     </div>
-    </footer>
 
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul class="links">
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
+
+    </div>
+  </div>
+</footer>
    
 </body>
 <script src="../static/Javascript-files/script.js"></script>

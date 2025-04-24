@@ -39,6 +39,65 @@ $base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d
   <title>RM Betis Furniture</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
+
+<style>
+  #products {
+  padding: 2rem;
+  background-color: #f8f8f8;
+  text-align: center;
+}
+
+.sampleAr {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product {
+  background: white;
+  border-radius: 15px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.product:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+model-viewer {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  background: #eee;
+}
+
+.product h3 {
+  font-size: 1.2rem;
+  margin-top: 0.75rem;
+  color: #222;
+}
+
+.product p {
+  font-size: 1rem;
+  color: #888;
+  margin-top: 0.5rem;
+}
+
+</style>
 <body>
   <header>
     <h1>Welcome to RM Betis Furniture</h1>

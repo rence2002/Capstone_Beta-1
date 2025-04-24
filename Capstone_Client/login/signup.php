@@ -1,308 +1,224 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Sign Up Page</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/css/font-awesome/5.15.3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up Page with 3D Model</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <link rel="stylesheet" href="../static/css-files/Register.css">
+ <!-- Include the model-viewer script from Google CDN -->
+ <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@2.0.0/dist/model-viewer.min.js"></script>
+ <link rel="stylesheet" href="../static/css-files/Register.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
-    <style>
-        /* Add any additional styles here */
-        .error {
-            color: red;
-        }
-
-        .upload-btn-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .btn {
-            border: 2px solid gray;
-            color: gray;
-            background-color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .upload-btn-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-        }
-
-        #profilePicPreview {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        #validIDPreview {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .modal {
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding: 10px;
-            }
-
-            .left, .right {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-
-            .left h1 {
-                text-align: center;
-                font-size: 1.5rem;
-            }
-
-            form {
-                width: 100%;
-            }
-
-            .form-group {
-                width: 100%;
-            }
-
-            .form-group label {
-                font-size: 0.9rem;
-            }
-
-            .form-group input, .form-group button {
-                width: 100%;
-                font-size: 1rem;
-            }
-
-            .upload-btn-wrapper .btn {
-                width: 100%;
-                padding: 10px;
-            }
-
-            #profilePicPreview, #validIDPreview {
-                max-width: 100%;
-                height: auto;
-            }
-
-            .form-options {
-                text-align: center;
-            }
-
-            .buttons {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .buttons button, .buttons a {
-                width: 100%;
-                margin-bottom: 10px;
-                text-align: center;
-            }
-
-            .modal-content {
-                width: 90%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .left h1 {
-                font-size: 1.2rem;
-            }
-
-            .form-group label {
-                font-size: 0.8rem;
-            }
-
-            .form-group input, .form-group button {
-                font-size: 0.9rem;
-            }
-
-            .buttons button, .buttons a {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="right">
-            <model-viewer src="../static/images/house.glb" shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
+            <div class="buttons1">
+                <!-- <button type="submit" class="signup" id="signupSubmitButton" disabled>Sign up</button> -->
+                <a href="/Capstone_Beta/Capstone_Client/login/login.php" class="login">
+                <button>Back To Login</button>
+                </a>
+
+                    </div>
+    <div class="form-container">
+        <!-- 3D Model Container -->
+        <div class="model-container" id="modelContainer">
+            <!-- Insert your 3D model path below in the src -->
+            <model-viewer
+            src="../static/images/school_furniture_pack.glb"
+            alt="3D Model"
+            auto-rotate
+            camera-controls
+            camera-orbit="0deg 60deg 2.5m"
+            field-of-view="50deg"
+            style="width: 100%; height: 100%;">
+            </model-viewer>
+
         </div>
-        <div class="left">
+
+        <!-- Form Container -->
+        <div class="form-wrapper">
             <h1>Create Your Account</h1>
-            <form method="POST" action="signup-rec.php" enctype="multipart/form-data">
-                <input type="hidden" name="signupTermsAccepted" id="signupTermsAccepted" value="0">
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
-                </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
-                </div>
-                <div class="form-group">
-                    <label for="middleName">Middle Name</label>
-                    <input type="text" id="middleName" name="middleName" placeholder="Enter your middle name">
-                </div>
-                <div class="form-group">
-                    <label for="homeAddress">Home Address</label>
-                    <input type="text" id="homeAddress" name="homeAddress" placeholder="Enter your home address">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="mobileNumber">Mobile Number</label>
-                    <input type="tel" id="mobileNumber" name="mobileNumber" placeholder="Enter your mobile number">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
-                </div>
-                <div class="form-group">
-                    <label for="profilePic">Profile Picture</label>
-                    <div class="upload-btn-wrapper">
-                        <button class="btn">Upload a file</button>
-                        <input type="file" name="profilePic" id="profilePic" accept="image/*" onchange="previewProfilePic(event)" />
-                        <img id="profilePicPreview" src="#" alt="Profile Picture Preview" style="display: none;">
+            <form id="signupForm" method="POST" action="signup-rec.php" enctype="multipart/form-data">
+                <!-- Step 1 -->
+                <div class="form-step" id="step1">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="middleName">Middle Name</label>
+                        <input type="text" id="middleName" name="middleName" placeholder="Enter your middle name">
+                    </div>
+                    <div class="form-group">
+                        <label for="homeAddress">Home Address</label>
+                        <input type="text" id="homeAddress" name="homeAddress" placeholder="Enter your home address">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="validID">Upload Valid ID</label>
-                    <div class="upload-btn-wrapper">
-                        <button class="btn">Upload a file</button>
-                        <input type="file" name="validID" id="validID" accept="image/*" onchange="previewValidID(event)" required>
-                        <img id="validIDPreview" src="#" alt="Valid ID Preview" style="display: none; max-width: 200px; max-height: 200px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
+
+                <!-- Step 2 -->
+                <div class="form-step hidden" id="step2">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mobileNumber">Mobile Number</label>
+                        <input type="tel" id="mobileNumber" name="mobileNumber" placeholder="Enter your mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
                     </div>
                 </div>
-                <div class="form-options">
-                    <label>
-                        <input type="checkbox" name="signupTerms" id="signupTermsCheckbox" disabled>
-                        I agree to the <button type="button" id="signupTermsButton" class="termsbutton">Terms and Conditions & Privacy Policy</button>
-                    </label>
+
+                <!-- Step 3 -->
+                <div class="form-step hidden" id="step3">
+                    <div class="form-group">
+                        <label for="profilePic">Profile Picture</label>
+                        <div class="upload-btn-wrapper">
+                            <button class="btn">Upload a file</button>
+                            <input type="file" name="profilePic" id="profilePic" accept="image/*" onchange="previewProfilePic(event)" />
+                            <img id="profilePicPreview" src="#" alt="Profile Picture Preview" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="validID">Upload Valid ID</label>
+                        <div class="upload-btn-wrapper">
+                            <button class="btn">Upload a file</button>
+                            <input type="file" name="validID" id="validID" accept="image/*" onchange="previewValidID(event)" required>
+                            <img id="validIDPreview" src="#" alt="Valid ID Preview" style="display: none; max-width: 200px; max-height: 200px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Step 4 -->
+                <div class="form-step hidden" id="step4">
+                    <div class="form-options">
+                        <label>
+                            <input type="checkbox" name="signupTerms" id="signupTermsCheckbox" disabled>
+                            I agree to the <button type="button" id="signupTermsButton" class="termsbutton">Terms and Conditions & Privacy Policy</button>
+                        </label>
+                    </div>
+                   
+                </div>
+
+                <!-- Navigation Buttons -->
                 <div class="buttons">
-                    <button type="submit" class="signup" id="signupSubmitButton" disabled>Sign up</button>
-                    <a href="login.php" class="login">Login</a> <!-- Use a standalone link for Login -->
+                    <button type="button" id="prevButton" class="hidden">Prev</button>
+                    <button type="button" id="nextButton">Next</button>
                 </div>
             </form>
+
             <div id="signupTermsModal" class="modal" style="display: none;">
                 <div class="modal-content">
                     <span class="close" id="signupModalClose">&times;</span>
                     <h1>Terms and Conditions</h1>
-                    <p>Welcome to RM Betis Furniture. By using our system and placing an order, you agree to the following terms and conditions:</p>
-                    <h2>1. Downpayment Policy</h2>
-                    <p>Before we process or accept your order, you are required to pay a 60% downpayment. The remaining balance must be settled upon completion of the order.</p>
-                    <h2>2. No Cancellation Policy</h2>
-                    <p>Once an order is placed, cancellations are not allowed. Please ensure that all details of your order are correct before confirming.</p>
-                    <h2>3. Privacy Policy</h2>
-                    <p>All personal information you provide in this system will be kept private and secure. We are committed to protecting your data and will not share it with third parties without your consent.</p>
-                    <p>If you have any questions or concerns regarding these terms, please contact us for clarification.</p>
+            <p>Welcome to RM Betis Furniture. By using our system and placing an order, you agree to the following terms and conditions:</p>
+        
+            <h2>1. Downpayment Policy</h2>
+            <p>Before we process or accept your order, you are required to pay a 60% downpayment. The remaining balance must be settled upon completion of the order.</p>
+  
+            <h2>2. No Cancellation, Return, and Refund Policy</h2>
+            <p>Once an order is placed, it is considered final. Cancellations, returns, and refunds are strictly not allowed under any circumstances. Please ensure all details are accurate and final before confirming your order.</p>
+        
+            <h2>3. Privacy Policy</h2>
+            <p>All personal information you provide in this system will be kept private and secure. We are committed to protecting your data and will not share it with third parties without your consent.</p>
+        
+            <h2>4. Pickup Service Policy</h2>
+            <p>Our standard pickup service does not include any freebies. However, for bulk orders, we occasionally offer complimentary small pieces of furniture as a gesture of appreciation. This policy helps us build positive relationships with our customers and reward larger orders with added value.</p>
+        
+            <p>If you have any questions or concerns regarding these terms, please contact us for clarification.</p>
                     <label>
                         <input type="checkbox" id="signupModalAgreeCheckbox"> I agree to the terms and conditions
                     </label>
                 </div>
             </div>
     </div>
-    <a class="theme-toggle">
-        <span class="entypo--switch1"></span>
-    </a>
 
-    <script>
-        const toggleButton = document.getElementsByClassName('theme-toggle')[0]; // Access the first element
-        const body = document.body;
+    
 
-        toggleButton.addEventListener('click', () => {
-            // Toggle the 'dark-mode' class on the body
-            body.classList.toggle('dark-mode');
+        </div>
+    </div>
 
-            // Change button icon based on the current theme
-            if (body.classList.contains('dark-mode')) {
-                toggleButton.innerHTML = '<span class="entypo--switch1"></span>'; // Switch to dark mode icon
-            } else {
-                toggleButton.innerHTML = '<span class="entypo--switch2"></span>'; // Switch to light mode icon
+    <script type="module">
+    // Form Navigation Logic
+    let currentStep = 1;
+    const totalSteps = 4;
+    const steps = document.querySelectorAll('.form-step');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+
+    // Function to show the correct step
+    function showStep(step) {
+        steps.forEach((stepElement, index) => {
+            stepElement.classList.add('hidden');
+            if (index === step - 1) {
+                stepElement.classList.remove('hidden');
             }
         });
 
-        // Preview for Profile Picture
-        function previewProfilePic(event) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                var output = document.getElementById('profilePicPreview');
-                output.src = reader.result;
-                output.style.display = 'block'; // Show the image
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
+        // Toggle visibility of the "Prev" button based on the current step
+        prevButton.classList.toggle('hidden', step === 1);
+        
+        // Change the "Next" button text to "Submit" if it's the last step
+        nextButton.textContent = step === totalSteps ? 'Submit' : 'Next';
+    }
 
-        // Preview for Valid ID
-        function previewValidID(event) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                var output = document.getElementById('validIDPreview');
-                output.src = reader.result;
-                output.style.display = 'block'; // Show the image
-            };
-            reader.readAsDataURL(event.target.files[0]);
+    // Event listener for the "Prev" button
+    prevButton.addEventListener('click', () => {
+        if (currentStep > 1) {
+            currentStep--;
+            showStep(currentStep);
         }
+    });
 
+    // Event listener for the "Next" button
+    nextButton.addEventListener('click', () => {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            document.getElementById('signupForm').submit();
+        }
+    });
+
+    // Initially show the first step
+    showStep(currentStep);
+
+    // Preview for Profile Picture
+    function previewProfilePic(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('profilePicPreview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    // Preview for Valid ID
+    function previewValidID(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('validIDPreview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
+<script>
         // Terms and Conditions Modal Logic
         const signupTermsButton = document.getElementById('signupTermsButton');
         const signupTermsModal = document.getElementById('signupTermsModal');
@@ -346,6 +262,7 @@
             signupTermsCheckbox.disabled = false;
         });
     </script>
+
 </body>
 
 </html>

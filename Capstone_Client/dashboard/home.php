@@ -62,8 +62,11 @@ $userId = $_SESSION["user_id"];
 </header>
 
 <main>
-      <img src="../static/images/rmbg.jpg" alt="rm betis head pic" id="rmpic">
-    </div>
+<div class="image-container">
+  <img src="../static/images/rmbg.jpg" alt="rm betis head pic" id="rmpic">
+  <div class="overlay-text">Welcome to RM BETIS FURNITURE</div>
+</div>
+
    
       <div class="offer" id="offers-section">
         <div class="laman swiper mySwiper">
@@ -101,7 +104,10 @@ $userId = $_SESSION["user_id"];
           <li>Ready-Made: Shop our in-stock items for quick delivery.</li>
         </ul>
       </p>
-        <button id="checkNow">Check Now!</button>
+      <a href="../gallery/gallery.php">
+  <button id="checkNow">Check Now!</button>
+</a>
+
     </div>
   </div>
 
@@ -172,52 +178,27 @@ $userId = $_SESSION["user_id"];
       <ul class="links">
         <li><a href="home.php">Home</a></li>
         <li><a href="#about-section">About Us</a></li>
-        <li><a href="Gallery.php">Gallery</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Explore</h4>
-      <ul class="links">
-        <li><a href="#">Free Designs</a></li>
-        <li><a href="#">Latest Designs</a></li>
-        <li><a href="#">Themes</a></li>
-        <li><a href="#">Popular Designs</a></li>
-        <li><a href="#">Art Skills</a></li>
-        <li><a href="#">New Uploads</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
       </ul>
     </div>
 
     <div class="footer-col">
       <h4>Legal</h4>
       <ul class="links">
-        <li><a href="#">Customer Agreement</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">GDPR</a></li>
-        <li><a href="#">Security</a></li>
-        <li><a href="#">Testimonials</a></li>
-        <li><a href="#">Media Kit</a></li>
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
       </ul>
     </div>
 
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
 
-    <!-- <div class="footer-col">
-      <h4>Newsletter</h4>
-      <p>
-        Subscribe to our newsletter for a weekly dose
-        of news, updates, helpful tips, and
-        exclusive offers.
-      </p>
-      <form action="#">
-        <input type="text" placeholder="Your email" required>
-        <button type="submit">SUBSCRIBE</button>
-      </form> -->
-      <div class="icons">
-        <i class="fa-brands fa-facebook-f"></i>
-        <i class="fa-brands fa-twitter"></i>
-        <i class="fa-brands fa-linkedin"></i>
-        <i class="fa-brands fa-github"></i>
-      </div>
     </div>
   </div>
 </footer>

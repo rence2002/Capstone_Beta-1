@@ -284,6 +284,7 @@ text-decoration: underline;
   .buttons button {
       padding: 18px; /* Reduce padding */
       font-size: 12px; /* Smaller font size */
+      gap: 10px;
   }
   
   .right model-viewer {
@@ -291,7 +292,7 @@ text-decoration: underline;
   }
   
   .buttons {
-      flex-direction: column; /* Stack buttons vertically */
+   
   
       align-items: center;
   }
@@ -301,10 +302,7 @@ text-decoration: underline;
       max-width: 200px; /* Limit button width */
   }
   
-  .buttons .signup,
-  .buttons .login {
-      width: 100%; /* Full width for buttons */
-  }
+
 }
 
 @media (max-width: 480px) {
@@ -347,9 +345,5 @@ text-decoration: underline;
   .entypo--switch2 {
     display: none;
    
-  }
-
-  .buttons .signup {
-   width: 200px; /* Full width for buttons */
   }
 }

@@ -1,344 +1,337 @@
+
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
+background-color: rgb(43, 43, 43);
+overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+/* Add any additional styles here */
+.error {
+    color: red;
+}
+
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.btn {
+    border: 2px solid gray;
+    color: gray;
+    background-color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+}
+
+#profilePicPreview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#validIDPreview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  background-color: rgb(43, 43, 43);
+  font-family: 'Roboto', sans-serif;
+  overflow-x: hidden;
 }
 
-body {
-  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
-}
-
-/* Light mode styles */
-body {
-  background-color: #f0f0f0; /* Light background */
-  color: #000; /* Dark text */
-}
-
-/* Dark mode styles */
-body.dark-mode {
-  background-color: #121212; /* Dark background */
-  color: #ffffff; /* Light text */
-}
-
-.theme-toggle {
-  position: fixed; /* Fixed position */
-  top: 20px; /* Distance from top */
-  right: 20px; /* Distance from right */
-  padding: 10px 20px; /* Padding for the button */
-  border: none; /* No border */
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer; /* Pointer cursor */
-  font-size: 16px; /* Font size */
-  background-color: none;
-}
-
-.theme-toggle button {
-  background-color: none;
-}
-
-
-.entypo--switch1 {
-  display: inline-block;
-  width: 3em;
-  height: 3em;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='white' d='M13 3H7a7 7 0 1 0 0 14h6a7 7 0 1 0 0-14m0 12a5 5 0 1 1 .001-10.001A5 5 0 0 1 13 15'/%3E%3C/svg%3E");
-  transform: scaleX(-1); /* Flips the icon vertically */
-}
-.entypo--switch2 {
-  display: inline-block;
-  width: 3em;
-  height: 3em;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='black' d='M13 3H7a7 7 0 1 0 0 14h6a7 7 0 1 0 0-14m0 12a5 5 0 1 1 .001-10.001A5 5 0 0 1 13 15'/%3E%3C/svg%3E");
-}
-
-
-.container {
+.form-container {
   display: flex;
-  flex-direction: row; /* Row layout for larger screens */
-  width: 900px;
-  height:580px;
-  box-shadow: -5px -7px 54px 17px rgba(87,87,87,0.41);
-  border-radius: 10px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center; /* ensures content inside is also centered */
+
+  gap: 20px;
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: 1200px; /* optional for layout control */
+}
+
+
+
+
+.model-container {
+  width: 100%;
+  max-width: 500px;
+  height: 300px;
   overflow: hidden;
 }
 
-.left, .right {
-  width: 50%; /* Each takes half the width */
+.form-wrapper {
+  background-color: #f8f8f8;
+  padding: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
   box-sizing: border-box;
 }
-.left {
-  background-color: #fff;
-  padding: 40px;
-  overflow-y: auto; /* Allow vertical scrolling */
+
+.form-wrapper h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
 }
 
-.left h1 {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #8b4513; /* SaddleBrown text color */
-}
-.left p {
-  font-size: 16px;
-  margin-bottom: 20px;
-  color: #8b4513; /* SaddleBrown text color */
-}
-.social-login {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-.social-login button {
-  width: 48%;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-}
-.social-login .facebook {
-  background-color: #3b5998;
-  color: #fff;
-}
-.social-login .xing {
-  background-color: #006567;
-  color: #fff;
-}
-.divider {
-  text-align: center;
-  margin: 20px 0;
-  font-size: 14px;
-  color: #aaa;
-}
 .form-group {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
+
 .form-group label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
-  color: #8b4513; /* SaddleBrown text color */
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
+
 .form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
 }
+
 .form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
-.form-options label {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #8b4513; /* SaddleBrown text color */
-}
-.form-options input {
-  margin-right: 5px;
-}
-.form-options a {
-  font-size: 14px;
-  color: #8b4513; /* SaddleBrown text color */
-  text-decoration: none;
-}
-.form-options a:hover {
-  text-decoration: underline;
-}
+
 .buttons {
-  display: flex;
-  justify-content: space-between;
-  gap:10px;
-  
-  
+    text-align: center;
 }
-.buttons a {
-  width: 48%;
-  text-align: center;
+
+.buttons button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #313131;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+/* .buttons a {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+} */
+
+.buttons button:hover,
+.buttons a:hover {
+    opacity: 0.8;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
   text-decoration: none;
 }
-.buttons button {
-  width: 100%;
+
+.termsbutton {
+  background-color: transparent;  /* Remove the background color */
+  border: none;                   /* Remove the border */
+  padding: 0;                     /* Remove padding */
+  color: inherit;                 /* Inherit color from parent or set a color */
+  text-decoration: none;          /* Remove underline */
+  font-size: inherit;             /* Inherit font size from parent */
+  cursor: pointer;               /* Optionally, make it appear clickable */
+}
+.termsbutton:hover{
+  text-decoration: underline;     /* Underline on hover */
+  color: #007BFF;                 /* Change color on hover */
+
+}
+.buttons1 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;  /* Align buttons to the left */
+  position: absolute;
+  top: 20px;  /* Adjust the top margin */
+  left: 20px; /* Adjust the left margin */
+  gap: 10px;  /* Space between buttons */
+  padding: 10px;
+}
+
+.buttons1 button {
+  width: 160px; /* Fixed width for the button */
   padding: 10px;
   border: none;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
+  background: linear-gradient(90deg, #d2b48c, #deb887); /* Tan to BurlyWood gradient */
+  color: #fff;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+  margin: 0; /* Remove any default margin */
+  
+  
 }
-.buttons .signup {
+
+.buttons1  button:hover {
+  background: linear-gradient(90deg, #d2b48c, white); /* Reverse gradient on hover */
+  color:  #d2b48c; /* Dark text on hover */
+  border: 1px solid  #d2b48c;
+ }
+.buttons1 .signup {
   background: linear-gradient(90deg, #d2b48c, #deb887); /* Tan to BurlyWood gradient */
   color: #fff;
   width: 160px;
   transition: background-color 0.3s, color 0.3s; /* Smooth transition */
 }
-.buttons .signup:hover {
+.buttons1 .signup:hover {
   background: linear-gradient(90deg, #d2b48c, white); /* Reverse gradient on hover */
   color:  #d2b48c; /* Dark text on hover */
   border: 1px solid  #d2b48c;
 }
 
-.buttons .login {
-  background-color: #fff;
+/* Login link */
+.buttons1 button .login {
   color: #d2b48c; /* Tan text color */
-  border: 1px solid #d2b48c; /* Tan border color */
-  width: 160px;
-  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
-}
-.buttons .login:hover {
-  background: linear-gradient(90deg, #a18a6b, #d2b48c);  /* Tan background on hover */
-  color: #fff; /* White text on hover */
-}
-.terms {
-  font-size: 12px;
-  color: #aaa;
-  text-align: center;
-  margin-top: 20px;
-}
-.terms a {
-  color: #8b4513; /* SaddleBrown text color */
   text-decoration: none;
-}
-.terms a:hover {
-  text-decoration: underline;
-}
-.right {
-  background: linear-gradient(135deg, #d2b48c, #deb887, #f5deb3, #ffe4c4); /* Tan to Bisque gradient */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-.right model-viewer {
-  width: 100%;
-  height: 100%;
-}
-.right .close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: rgba(255, 255, 255, 0.3);
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-.right .close i {
-  color: #fff;
   font-size: 16px;
-}
-#termsButton, #signupTermsButton{
-  background-color: white;
-  color:#8b4513;
-  border: none;
-  cursor: pointer;
-}
-#termsButton:hover,
-#signupTermsButton:hover{
-text-decoration: underline;
+  font-weight: bold;
+  transition: color 0.3s;
+  width: 160px;
+  
 }
 
+.buttons1 button .login:hover {
+  color: #fff; /* White text on hover */
+  background: #d2b48c;
+  padding: 8px 12px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
 
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
 
+.upload-btn-wrapper .btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.upload-btn-wrapper input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 5px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    display: none;  /* Hidden by default, will show when a file is selected */
+}
 
 
 @media (max-width: 768px) {
-  .container {
-      flex-direction: column; /* Stack sections vertically */
-      width: 100%; /* Full width */
-      height: auto; /* Adjust height */
-  }
-  
-  .left, .right {
-      width: 100%; /* Full width for both sections */
-      height: auto; /* Adjust height */
-  }
-  
-  .left {
-      padding: 20px; /* Reduce padding */
-  }
-  
-  .right {
-      padding: 20px; /* Add padding for better spacing */
+  .form-container {
+      flex-direction: column;
+      padding: 10px;
   }
 
-  .social-login button {
-    width: 100%; /* Full width for buttons */
-    margin-bottom: 10px; /* Add spacing */
+  .model-container {
+      width: 100%;
+      height: 300px;
+      margin: 0 auto 20px auto;
   }
 
-  .buttons a {
-    width: 100%; /* Full width for buttons */
-    margin-bottom: 10px; /* Add spacing */
+  .form-wrapper {
+      width: 100%;
+      max-width: 200px;
+      padding: 200px;
+  }
+
+  .buttons1 button,
+  .buttons button {
+      width: 90%; /* Better for smaller screens */
   }
 }
 
-@media (max-width: 480px) {
+/* FORM WRAPPER ADJUSTMENT */
+.form-wrapper {
+  background-color: #f8f8f8;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-  .container {
-    height: 100vh; /* Make height fit to screen */
-    width: auto; /* Adjust width for smaller screens */
-    display: flex;
-    flex-direction: column; /* Stack sections vertically */
-    justify-content: space-between; /* Evenly space left and right sections */
-  }
-
-  .left h1 {
-    font-size: 20px; /* Smaller font size */
-  }
-
-  .left p {
-    font-size: 14px; /* Smaller font size */
-  }
-
-  .form-group input {
-    padding: 8px; /* Reduce padding */
-    font-size: 12px; /* Smaller font size */
-  }
-
-  .buttons button {
-    padding: 8px; /* Reduce padding */
-    font-size: 12px; /* Smaller font size */
-  }
-
-  .entypo--switch1, .entypo--switch2 {
+.hidden {
     display: none;
-  }
-
-  .right model-viewer {
-    height:400px; /* Adjust height to fit the screen */
-  }
-  .buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* spacing between buttons */
-    align-items: center;
-  }
-
-  .buttons button {
-    width: 100%;
-    max-width: 200px;
-    font-size: 16px;
-    padding: 12px;
-  }
-
-  .buttons .signup,
-  .buttons .login {
-    width: 100%;
-  }
 }

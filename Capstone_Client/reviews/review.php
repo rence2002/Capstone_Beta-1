@@ -131,85 +131,80 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php endif; ?>
 
-        <!-- Reviews List -->
-        <div id="reviews">
-            <?php foreach ($reviews as $review): ?>
-                <div class="review-card">
-                    <div class="review-header">
-                        <!-- Profile Picture -->
-                        <img src="<?php echo !empty($review['Profile_Pic']) ? '../' . htmlspecialchars($review['Profile_Pic']) : '../static/images/default-profile.png'; ?>" 
-                             alt="Profile picture" width="50" height="50"/>
-                        <div class="info">
-                            <h3><?php echo htmlspecialchars($review['First_Name'] . ' ' . $review['Last_Name']); ?></h3>
-                            <p class="product">Product: <?php echo htmlspecialchars($review['Product_Name']); ?></p>
-                        </div>
-                        <div class="date">
-                            <?php echo date('d/m/Y', strtotime($review['Review_Date'])); ?>
-                        </div>
-                    </div>
-                    <div class="review-body">
-                        <div class="rating">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <i class="fas fa-star <?php echo $i <= $review['Rating'] ? 'active' : ''; ?>"></i>
-                            <?php endfor; ?>
-                        </div>
-                        <?php 
-                        if (!empty($review['PicPath'])) {
-                            $images = json_decode($review['PicPath'], true);
-                            if (is_array($images)) {
-                                foreach ($images as $image) {
-                                    echo '<img src="' . htmlspecialchars($image) . '" alt="Review Image" class="review-image">';
-                                }
-                            }
-                        }
-                        ?>
-                        <p><?php echo htmlspecialchars($review['Review_Text']); ?></p>
-                    </div>
-                    
+      <!-- Reviews List -->
+<div id="reviews">
+    <?php foreach ($reviews as $review): ?>
+        <div class="review-card">
+            <div class="review-header">
+                <!-- Profile Picture -->
+                <img src="<?php echo !empty($review['Profile_Pic']) ? '../' . htmlspecialchars($review['Profile_Pic']) : '../static/images/default-profile.png'; ?>" 
+                     alt="Profile picture" width="50" height="50"/>
+                <div class="info">
+                    <h3><?php echo htmlspecialchars($review['First_Name'] . ' ' . $review['Last_Name']); ?></h3>
+                    <p class="product">Product: <?php echo htmlspecialchars($review['Product_Name']); ?></p>
                 </div>
-            <?php endforeach; ?>
+                <div class="date">
+                    <?php echo date('d/m/Y', strtotime($review['Review_Date'])); ?>
+                </div>
+            </div>
+            <div class="review-body">
+                <div class="rating">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <i class="fas fa-star <?php echo $i <= $review['Rating'] ? 'active' : ''; ?>"></i>
+                    <?php endfor; ?>
+                </div>
+                <?php 
+                if (!empty($review['PicPath'])) {
+                    $images = json_decode($review['PicPath'], true);
+                    if (is_array($images)) {
+                        foreach ($images as $image) {
+                            echo '<img src="' . htmlspecialchars($image) . '" alt="Review Image" class="review-image" onclick="openModal(\'' . htmlspecialchars($image) . '\')">';
+                        }
+                    }
+                }
+                ?>
+                <p><?php echo htmlspecialchars($review['Review_Text']); ?></p>
+            </div>
         </div>
-    </div>
+    <?php endforeach; ?>
+</div>
+
+<!-- Modal for Zooming Image -->
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <img id="modalImage" class="modal-content">
+</div>
+
 </main>
 <footer class="footer">
-    <div class="footer-row">
-        <div class="footer-col">
-            <h4>Info</h4>
-            <ul class="links">
-                <li><a href="home.php">Home</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="Gallery.php">Gallery</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Explore</h4>
-            <ul class="links">
-                <li><a href="#">Free Designs</a></li>
-                <li><a href="#">Latest Designs</a></li>
-                <li><a href="#">Themes</a></li>
-                <li><a href="#">Popular Designs</a></li>
-                <li><a href="#">Art Skills</a></li>
-                <li><a href="#">New Uploads</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Legal</h4>
-            <ul class="links">
-                <li><a href="#">Customer Agreement</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">GDPR</a></li>
-                <li><a href="#">Security</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Media Kit</a></li>
-            </ul>
-        </div>
-        <div class="icons">
-            <i class="fa-brands fa-facebook-f"></i>
-            <i class="fa-brands fa-twitter"></i>
-            <i class="fa-brands fa-linkedin"></i>
-            <i class="fa-brands fa-github"></i>
-        </div>
+  <div class="footer-row">
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul class="links">
+        <li><a href="home.php">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="../gallery/gallery.php">Gallery</a></li>
+        <li><a href="../reviews/review.php">Reviews</a></li>
+      </ul>
     </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul class="links">
+      <li><a href="../agreement/agreement.html">Customer Agreement & Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+    <h4>Contact</h4>
+    <ul class="links">
+      <li><a href="https://mail.google.com/mail/u/0/?fs=1&to=Rmbetisfurniture@yahoo.com&su=Your+Subject+Here&body=Your+message+here.&tf=cm" target="_blank">Email</a></li>
+      <li><a href="https://www.facebook.com/BetisFurnitureExtension" target="_blank">Facebook</a></li>
+      <li><a href="viber://chat?number=%2B6396596602006">Phone & Viber</a></li>
+    </ul>
+</div>
+
+    </div>
+  </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="../static/Javascript-files/script.js"></script>
@@ -224,6 +219,26 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
         });
         reviewCards.forEach(card => reviews.appendChild(card));
     });
+
+
+            // Open the modal and display the clicked image
+        function openModal(imageSrc) {
+            const modal = document.getElementById("imageModal");
+            const modalImage = document.getElementById("modalImage");
+
+            // Set the image source of the modal to the clicked image's source
+            modalImage.src = imageSrc;
+
+            // Display the modal
+            modal.style.display = "flex";
+        }
+
+        // Close the modal when clicked outside of the image
+        function closeModal() {
+            const modal = document.getElementById("imageModal");
+            modal.style.display = "none";
+        }
+
 </script>
 </body>
 </html>

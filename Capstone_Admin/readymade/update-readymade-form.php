@@ -195,7 +195,7 @@ $productStatusMap = [
                     </tr>
                     <tr>
                         <td>Quantity:</td>
-                        <td><input type="number" id="quantity" name="txtQuantity" value="<?php echo htmlspecialchars($quantity); ?>" min="1" required></td>
+                        <td><input class="form-control" type="number" id="quantity" name="txtQuantity" value="<?php echo htmlspecialchars($quantity); ?>" min="1" required></td>
                     </tr>
                     <tr>
                         <td>Total Price:</td>

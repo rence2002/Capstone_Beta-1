@@ -172,7 +172,7 @@ $userMobile = htmlspecialchars($cart["Mobile_Number"]);
                     </tr>
                     <tr>
                         <td>Quantity:</td>
-                        <td><input type="number" name="txtQuantity" value="<?php echo $quantity; ?>" readonly></td>
+                        <td><input type="text" name="txtQuantity" value="<?php echo $quantity; ?>" readonly></td>
                     </tr>
                     <tr>
                         <td>Price:</td>
@@ -189,8 +189,9 @@ $userMobile = htmlspecialchars($cart["Mobile_Number"]);
                 </table>
 
                 <div class="button-container">
+                <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
                     <input type="submit" value="Delete" class="buttonDelete" style="background-color: red;">
-                    <a href="read-all-cart-form.php" target="_parent" class="buttonBack">Back to Cart List</a>
+                  
                 </div>
             </form>
         </div>

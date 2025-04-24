@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    
+    <!-- Navbar Tabs -->
+    <div class="dashboard-nav">
+      <button class="tab-btn active" onclick="showSection('pending-orders')">Pending Orders</button>
+      <button class="tab-btn" onclick="showSection('order-status')">Order Status</button>
+      <button class="tab-btn" onclick="showSection('product-status')">Product Status</button>
+      <button class="tab-btn" onclick="showSection('purchase-history')">Purchase History</button>
+    </div>
+
+    <!-- Section: Pending Orders -->
+    <div id="pending-orders" class="section-container">
+      <h2>Pending Orders</h2>
+      <p>All your pending orders will be listed here.</p>
+    </div>
+
+    <!-- Section: Order Status -->
+    <div id="order-status" class="section-container hidden">
+      <h2>Order Status</h2>
+      <p>Check the status of your current orders.</p>
+    </div>
+
+    <!-- Section: Product Status -->
+    <div id="product-status" class="section-container hidden">
+      <h2>Product Status</h2>
+      <p>Information about your products.</p>
+    </div>
+
+    <!-- Section: Purchase History -->
+    <div id="purchase-history" class="section-container hidden">
+      <h2>Purchase History</h2>
+      <p>Review your past purchases.</p>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

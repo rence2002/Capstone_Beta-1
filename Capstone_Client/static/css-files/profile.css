@@ -1,5 +1,5 @@
 .container-profile {
-    height: 20vh; /* Use viewport height */
+    height: 150px; /* Use viewport height */
     width: 100%; /* Full width */
     background-color: #B99470;
     display: flex;
@@ -239,7 +239,7 @@
 
 .pending-orders,
 .progress-report,
-.purchase-history {
+.purchase-history{
     background: #fff;
     border-radius: 8px;
     padding: 20px;
@@ -522,6 +522,7 @@ padding: 10px;
 }
 .progress-item{
     margin-bottom: 10%;
+    
 }
 
 /* .section-content {
@@ -920,6 +921,35 @@ span .close {
 .menu-links {
     display: flex;
     gap: 15px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin: 20px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+.tab-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #eee;
+    border: none;
+    border-radius: 5px;
+}
+.tab-button.active {
+    background-color: #ccc;
+    font-weight: bold;
+}
+.tab-content {
+    display: none;
+    max-height: 100%; /* adjust as needed */
+    overflow-y: auto;
+    padding-right: 10px; /* optional: avoid scrollbar overlap */
+}
+.tab-content.active {
+    display: block;
 }
 @media (max-width: 600px) {
     .stepper {

@@ -503,6 +503,7 @@ section.dark  .time .time-colon .text{
 .dashboard_childs:hover {
   transform: scale(1.1);
   background: #464442;
+  color:white;
 }
 
 .dashboard_childs i {
