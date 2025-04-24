@@ -60,6 +60,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
 
     // Return the table rows for AJAX requests
     // Updated AJAX Table: Removed Order Status column, adjusted colspan, updated Edit condition
+    // *** FIX: Removed PHP code accessing Order_Status within the comment ***
     echo '<table width="100%" border="1" cellspacing="5">
         <tr>
             <th>ORDER TYPE</th>
@@ -72,7 +73,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
         </tr>';
     if (count($rows) > 0) {
         foreach ($rows as $row) {
-            // $orderStatusPercentage = calculatePercentage($row['Order_Status']); // REMOVED
             $productStatusPercentage = calculatePercentage($row['Product_Status']);
             echo '
             <tr>
@@ -81,8 +81,8 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
                 <td>' . htmlspecialchars($row['Product_Name']) . '</td>
                 <!--<td>
                     <div class="status-bar">
-                        <div class="status-bar-fill order-status-bar" style="width: ' . $orderStatusPercentage . '%;">
-                            ' . $orderStatusPercentage . '%
+                        <div class="status-bar-fill order-status-bar" style="width: ... %;"> // PHP code removed
+                            ... % // PHP code removed
                         </div>
                     </div>
                 </td>--> <!-- REMOVED -->
@@ -147,7 +147,7 @@ if (!empty($search)) {
     $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
 }
 
-$stmt->execute(); // This was line 122 causing the error
+$stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // REMOVED Order Status Map - Not needed as column doesn't exist
@@ -286,6 +286,7 @@ function calculatePercentage($status) {
             </div>
             <div id="progress-list">
                 <!-- Updated Main Table: Removed Order Status column, adjusted colspan, updated Edit condition -->
+                <!-- *** FIX: Removed PHP code accessing Order_Status within the comment *** -->
                 <table class="table table-bordered table-striped"> <!-- Added bootstrap classes -->
                     <thead>
                         <tr>
@@ -320,8 +321,8 @@ function calculatePercentage($status) {
                                     <td><?= htmlspecialchars($row['Product_Name']) ?></td>
                                     <!--<td>
                                         <div class="status-bar">
-                                            <div class="status-bar-fill order-status-bar" style="width: <?= calculatePercentage($row['Order_Status']) ?>%;">
-                                                <?= calculatePercentage($row['Order_Status']) ?>%
+                                            <div class="status-bar-fill order-status-bar" style="width: ... %;"> // PHP code removed
+                                                ... % // PHP code removed
                                             </div>
                                         </div>
                                     </td>--> <!-- REMOVED -->

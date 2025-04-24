@@ -1,61 +1,66 @@
 <?php
 session_start();
-include '../config/database.php';
+include '../config/database.php'; // Database connection
 
-// Ensure the admin is logged in
+// --- Authentication ---
 if (!isset($_SESSION['admin_id'])) {
-    // Redirect to login page if not logged in
-    header("Location: ../login.php"); // Corrected redirect path
+    header("Location: ../login.php");
     exit();
 }
 
-// --- Validate Input (Using POST now) ---
+// --- Input Validation ---
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    die("Invalid request method.");
+    header("Location: read-all-request-form.php?error=invalid_method");
+    exit();
 }
 
-$requestID = isset($_POST['id']) ? (int)$_POST['id'] : null;
-$paymentStatus = isset($_POST['payment_status']) ? $_POST['payment_status'] : null; // From the dropdown
+$requestID = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+$paymentStatus = isset($_POST['payment_status']) ? trim($_POST['payment_status']) : null;
 
 if (!$requestID) {
-    die("Invalid or missing request ID.");
+    header("Location: read-all-request-form.php?error=missing_id");
+    exit();
 }
 
-if (!$paymentStatus) {
-    die("Invalid or missing payment status selection.");
+if (empty($paymentStatus)) {
+    header("Location: read-all-request-form.php?error=missing_payment&id=" . $requestID);
+    exit();
 }
 
-// Validate payment status value against allowed enum values in tbl_order_request
-$validPaymentStatuses = ['downpayment_paid', 'fully_paid']; // Only these are selectable in the form
+// Validate against expected payment statuses (ensure these match your DB constraints/enum)
+$validPaymentStatuses = ['downpayment_paid', 'fully_paid'];
 if (!in_array($paymentStatus, $validPaymentStatuses)) {
-    die("Invalid payment status value provided.");
+    header("Location: read-all-request-form.php?error=invalid_payment&id=" . $requestID);
+    exit();
 }
 
+// --- Database Operations (Transaction) ---
 try {
-    // Start Transaction
     $pdo->beginTransaction();
 
-    // --- 1. Fetch the Order Request ---
-    $stmt = $pdo->prepare("SELECT * FROM tbl_order_request WHERE Request_ID = :requestID AND Processed = 0"); // Ensure it's not already processed
+    // 1. Fetch and Lock the Unprocessed Order Request
+    $stmt = $pdo->prepare("SELECT * FROM tbl_order_request WHERE Request_ID = :requestID AND Processed = 0 FOR UPDATE");
     $stmt->bindParam(':requestID', $requestID, PDO::PARAM_INT);
     $stmt->execute();
     $orderRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$orderRequest) {
-        // Maybe already processed or doesn't exist
-        throw new Exception("Order request not found or already processed (ID: $requestID).");
+        $pdo->rollBack(); // Release lock
+        header("Location: read-all-request-form.php?warning=notfound_or_processed&id=" . $requestID);
+        exit();
     }
 
-    // --- 2. Prepare Data for tbl_progress ---
+    // 2. Prepare Common Data
     $userID = $orderRequest['User_ID'];
     $orderType = $orderRequest['Order_Type'];
     $quantity = $orderRequest['Quantity'];
     $totalPrice = $orderRequest['Total_Price'];
-    $productIDForProgress = null; // Will be set below
-    $productNameForProgress = null; // Will be set below
+    $productIDForProgress = null;
+    $productNameForProgress = null;
 
+    // 3. Process Based on Order Type
     if ($orderType == 'custom') {
-        // --- 2a. Handle Custom Order ---
+        // --- Handle Custom Order ---
         $tempCustomizationID = $orderRequest['Customization_ID'];
         if (!$tempCustomizationID) {
             throw new Exception("Custom order request (ID: $requestID) is missing the temporary customization link.");
@@ -71,26 +76,26 @@ try {
             throw new Exception("Temporary customization details not found (Temp ID: $tempCustomizationID).");
         }
 
-        // Create a placeholder product in tbl_prod_info for the custom item
+        // Create a placeholder product for the custom item
         $prodStmt = $pdo->prepare("
-            INSERT INTO tbl_prod_info
-            (Product_Name, Description, Category, product_type, Price, Stock)
-            VALUES (:name, :desc, 'Custom Furniture', 'custom', :price, 0)
+            INSERT INTO tbl_prod_info (Product_Name, Description, Category, product_type, Price, Stock)
+            VALUES (:name, :desc, :category, 'custom', :price, 0)
         ");
-        $customProductName = 'Custom - ' . ($customization['Furniture_Type'] ?: 'Item'); // Use Furniture_Type or fallback
+        $customCategory = $customization['Furniture_Type'] ?: 'Custom Furniture';
+        $customProductName = 'Custom - ' . $customCategory . ' (Req ID: ' . $requestID . ')';
         $customDescription = 'Custom order based on Request ID: ' . $requestID;
         $prodStmt->bindParam(':name', $customProductName, PDO::PARAM_STR);
         $prodStmt->bindParam(':desc', $customDescription, PDO::PARAM_STR);
-        $prodStmt->bindParam(':price', $totalPrice, PDO::PARAM_STR); // Use total price from request as placeholder price
+        $prodStmt->bindParam(':category', $customCategory, PDO::PARAM_STR);
+        $prodStmt->bindParam(':price', $totalPrice, PDO::PARAM_STR); // Use total price from request
 
         if (!$prodStmt->execute()) {
-            throw new Exception("Failed to create placeholder product for custom order. Error: " . implode(", ", $prodStmt->errorInfo()));
+            throw new Exception("Failed to create placeholder product. Error: " . implode(", ", $prodStmt->errorInfo()));
         }
+        $productIDForProgress = $pdo->lastInsertId();
+        $productNameForProgress = $customProductName;
 
-        $productIDForProgress = $pdo->lastInsertId(); // Get the ID of the newly created product
-        $productNameForProgress = $customProductName; // Use the name we just created
-
-        // Insert customization details into tbl_customizations
+        // Insert final customization details, linking to the new product
         $insertCustomStmt = $pdo->prepare("
             INSERT INTO tbl_customizations
             (User_ID, Furniture_Type, Furniture_Type_Additional_Info, Standard_Size, Desired_Size, Color, Color_Image_URL,
@@ -98,13 +103,14 @@ try {
              Wood_Additional_Info, Foam_Type, Foam_Image_URL, Foam_Additional_Info, Cover_Type, Cover_Image_URL,
              Cover_Additional_Info, Design, Design_Image_URL, Design_Additional_Info, Tile_Type, Tile_Image_URL,
              Tile_Additional_Info, Metal_Type, Metal_Image_URL, Metal_Additional_Info, Product_Status, Request_Date,
-             Last_Update, Product_ID)
+             Last_Update, Product_ID) /* Link to product */
             VALUES
             (:userID, :furnitureType, :furnitureTypeInfo, :standardSize, :desiredSize, :color, :colorImageURL,
              :colorInfo, :texture, :textureImageURL, :textureInfo, :woodType, :woodImageURL, :woodInfo, :foamType,
              :foamImageURL, :foamInfo, :coverType, :coverImageURL, :coverInfo, :design, :designImageURL, :designInfo,
-             :tileType, :tileImageURL, :tileInfo, :metalType, :metalImageURL, :metalInfo, 0, NOW(), NOW(), :productID)
+             :tileType, :tileImageURL, :tileInfo, :metalType, :metalImageURL, :metalInfo, 0, NOW(), NOW(), :productID) /* Bind product ID */
         ");
+        // Bind all customization parameters (ensure these match your table and the fetched $customization array)
         $insertCustomStmt->bindParam(':userID', $userID, PDO::PARAM_STR);
         $insertCustomStmt->bindParam(':furnitureType', $customization['Furniture_Type'], PDO::PARAM_STR);
         $insertCustomStmt->bindParam(':furnitureTypeInfo', $customization['Furniture_Type_Additional_Info'], PDO::PARAM_STR);
@@ -134,78 +140,112 @@ try {
         $insertCustomStmt->bindParam(':metalType', $customization['Metal_Type'], PDO::PARAM_STR);
         $insertCustomStmt->bindParam(':metalImageURL', $customization['Metal_Image_URL'], PDO::PARAM_STR);
         $insertCustomStmt->bindParam(':metalInfo', $customization['Metal_Additional_Info'], PDO::PARAM_STR);
-        $insertCustomStmt->bindParam(':productID', $productIDForProgress, PDO::PARAM_INT);
+        $insertCustomStmt->bindParam(':productID', $productIDForProgress, PDO::PARAM_INT); // Link to the new product
 
         if (!$insertCustomStmt->execute()) {
-            throw new Exception("Failed to insert customization details into tbl_customizations. Error: " . implode(", ", $insertCustomStmt->errorInfo()));
+            throw new Exception("Failed to insert customization details. Error: " . implode(", ", $insertCustomStmt->errorInfo()));
         }
 
-        // Delete the temporary customization record now that it's processed
+        // Delete the temporary customization record
         $delStmt = $pdo->prepare("DELETE FROM tbl_customizations_temp WHERE Temp_Customization_ID = :tempID");
         $delStmt->bindParam(':tempID', $tempCustomizationID, PDO::PARAM_INT);
         if (!$delStmt->execute()) {
+            // Log warning but don't stop the transaction
             error_log("Warning: Failed to delete temporary customization record (Temp ID: $tempCustomizationID). Error: " . implode(", ", $delStmt->errorInfo()));
         }
+
     } else {
-        // --- 2b. Handle Ready-Made or Pre-Order ---
+        // --- Handle Ready-Made or Pre-Order ---
         $productIDForProgress = $orderRequest['Product_ID'];
         if (!$productIDForProgress) {
-            throw new Exception("Order request (ID: $requestID) is missing the Product ID for a non-custom order.");
+            throw new Exception("Order request (ID: $requestID) is missing Product ID for non-custom order.");
         }
 
-        // Fetch the actual product name
+        // Fetch the product name
         $nameStmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = :prodID");
         $nameStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
         $nameStmt->execute();
         $productResult = $nameStmt->fetch(PDO::FETCH_ASSOC);
-        $productNameForProgress = $productResult['Product_Name'] ?? 'Unknown Product'; // Fallback name
+        if (!$productResult) {
+             throw new Exception("Product details not found for Product ID: $productIDForProgress (Request ID: $requestID).");
+        }
+        $productNameForProgress = $productResult['Product_Name'];
+
+        // Insert into the dedicated table for ready-made orders
+        // ** REMOVED Request_ID column as it does not exist in the table based on the error **
+        $readyMadeStmt = $pdo->prepare("
+            INSERT INTO tbl_ready_made_orders
+            (User_ID, Product_ID, Quantity, Total_Price, Payment_Status, Order_Date)
+            VALUES (:userID, :prodID, :quantity, :totalPrice, :paymentStatus, NOW())
+        ");
+        $readyMadeStmt->bindParam(':userID', $userID, PDO::PARAM_STR);
+        $readyMadeStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
+        $readyMadeStmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+        $readyMadeStmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
+        $readyMadeStmt->bindParam(':paymentStatus', $paymentStatus, PDO::PARAM_STR); // Status from form
+        // REMOVED: Binding for :requestID is no longer needed.
+        // $readyMadeStmt->bindParam(':requestID', $requestID, PDO::PARAM_INT);
+
+        if (!$readyMadeStmt->execute()) {
+            // The error message will now be more accurate if it fails for other reasons
+            throw new Exception("Failed to insert into tbl_ready_made_orders. Error: " . implode(", ", $readyMadeStmt->errorInfo()));
+        }
     }
 
-    // --- 3. Insert into tbl_progress ---
+    // 4. Insert into tbl_progress (Tracks all active orders being processed/prepared)
+    // Initial status '0' might mean 'Pending' or 'Processing Started' - adjust if needed
     $progressStmt = $pdo->prepare("
         INSERT INTO tbl_progress
         (User_ID, Product_ID, Product_Name, Order_Type, Product_Status, Quantity, Total_Price, Date_Added, LastUpdate)
         VALUES (:userID, :prodID, :prodName, :orderType, 0, :quantity, :totalPrice, NOW(), NOW())
     ");
     $progressStmt->bindParam(':userID', $userID, PDO::PARAM_STR);
-    $progressStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
-    $progressStmt->bindParam(':prodName', $productNameForProgress, PDO::PARAM_STR);
+    $progressStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT); // Set in both branches above
+    $progressStmt->bindParam(':prodName', $productNameForProgress, PDO::PARAM_STR); // Set in both branches above
     $progressStmt->bindParam(':orderType', $orderType, PDO::PARAM_STR);
     $progressStmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-    $progressStmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR); // Bind as string for decimal
+    $progressStmt->bindParam(':totalPrice', $totalPrice, PDO::PARAM_STR);
 
     if (!$progressStmt->execute()) {
-        throw new Exception("Failed to insert record into tbl_progress. Error: " . implode(", ", $progressStmt->errorInfo()));
+        throw new Exception("Failed to insert into tbl_progress. Error: " . implode(", ", $progressStmt->errorInfo()));
     }
 
-    // --- 4. Update tbl_order_request: Mark as Processed and set Payment Status ---
+    // 5. Update Original Order Request: Mark as Processed, Set Final Payment Status
     $updateStmt = $pdo->prepare("
         UPDATE tbl_order_request
         SET Payment_Status = :paymentStatus, Processed = 1
         WHERE Request_ID = :requestID
     ");
-    $updateStmt->bindParam(':paymentStatus', $paymentStatus, PDO::PARAM_STR); // The status selected in the form
+    $updateStmt->bindParam(':paymentStatus', $paymentStatus, PDO::PARAM_STR); // Status from form
     $updateStmt->bindParam(':requestID', $requestID, PDO::PARAM_INT);
 
     if (!$updateStmt->execute()) {
-        throw new Exception("Failed to update original order request status. Error: " . implode(", ", $updateStmt->errorInfo()));
+         throw new Exception("Failed to update original order request status. Error: " . implode(", ", $updateStmt->errorInfo()));
     }
+    // Optional: Check rowCount, but the FOR UPDATE lock should prevent issues here if the initial fetch succeeded.
+    // if ($updateStmt->rowCount() == 0) {
+    //      throw new Exception("Failed to update original order request status (ID: $requestID) - Row count was zero unexpectedly.");
+    // }
 
-    // --- 5. Commit Transaction ---
+    // 6. Commit Transaction
     $pdo->commit();
 
-    // --- 6. Redirect on Success ---
-    header("Location: read-all-request-form.php?success=accepted&id=" . $requestID); // Add success message
+    // --- Success Redirect ---
+    header("Location: read-all-request-form.php?success=accepted&id=" . $requestID);
     exit();
+
 } catch (PDOException $e) {
-    // Handle potential database errors during the transaction
+    // --- Database Error Handling ---
     $pdo->rollBack();
-    error_log("Database Error processing request ID $requestID: " . $e->getMessage()); // Log detailed error
-    die("Database Error: Failed to process the request. Please check logs or contact support."); // User-friendly message
+    error_log("Database Error processing request ID $requestID: " . $e->getMessage());
+    header("Location: read-all-request-form.php?error=db_error&id=" . $requestID);
+    exit();
 } catch (Exception $e) {
-    // Handle other exceptions (e.g., data not found)
+    // --- General Error Handling ---
     $pdo->rollBack();
-    error_log("Error processing request ID $requestID: " . $e->getMessage()); // Log detailed error
-    die("Error processing request: " . $e->getMessage()); // Show specific error
+    error_log("Error processing request ID $requestID: " . $e->getMessage());
+    $errorMessage = urlencode($e->getMessage()); // Encode for URL safety if needed
+    header("Location: read-all-request-form.php?error=processing_failed&msg=" . $errorMessage . "&id=" . $requestID);
+    exit();
 }
 ?>

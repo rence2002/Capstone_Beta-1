@@ -274,103 +274,6 @@ echo "</script>\n";
         .pending-order-item-note .linkqr:hover {
             color: #0056b3;
         }
-         /* Stepper styles adjustment */
-        .stepper {
-            display: flex;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
-            list-style: none;
-            padding: 0;
-            margin: 20px 0;
-            justify-content: space-between; /* Distribute items */
-        }
-        .stepper li {
-            flex: 1; /* Allow items to grow/shrink */
-            min-width: 100px; /* Minimum width for each step */
-            text-align: center;
-            position: relative;
-            margin-bottom: 20px; /* Space below items */
-            padding: 0 5px; /* Padding around items */
-            cursor: default; /* Default cursor */
-            opacity: 0.5; /* Dim inactive steps */
-            transition: opacity 0.3s ease;
-        }
-         .stepper li.active {
-            opacity: 1; /* Full opacity for active/completed steps */
-            cursor: pointer; /* Pointer cursor only for active steps */
-         }
-        .stepper li .step-icon {
-            display: block;
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            border-radius: 50%;
-            background-color: #ccc;
-            color: white;
-            margin: 0 auto 10px auto;
-            font-size: 1.2em;
-            transition: background-color 0.3s ease;
-        }
-        .stepper li.active .step-icon {
-            background-color: #007bff; /* Blue for active/completed */
-        }
-        .stepper li .step-label {
-            font-size: 0.9em;
-            color: #555;
-        }
-         .stepper li.active .step-label {
-             font-weight: bold;
-             color: #000;
-         }
-
-        /* Basic connector lines (optional) */
-        .stepper li:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 20px; /* Vertically center with icon */
-            left: 50%;
-            width: 100%;
-            height: 2px;
-            background-color: #ccc;
-            z-index: -1; /* Behind the icon */
-            transform: translateX(50%); /* Start after the current item */
-        }
-         .stepper li.active:not(:last-child)::after {
-             background-color: #007bff; /* Blue connector for completed steps */
-         }
-
-         /* Responsive adjustments */
-         @media (max-width: 768px) {
-            .stepper {
-                flex-direction: column; /* Stack vertically */
-                align-items: flex-start; /* Align items left */
-            }
-            .stepper li {
-                flex: none; /* Disable flex grow/shrink */
-                width: 100%; /* Full width */
-                text-align: left;
-                padding-left: 50px; /* Indent text */
-                margin-bottom: 15px;
-            }
-            .stepper li .step-icon {
-                position: absolute;
-                left: 0;
-                top: 0;
-                margin: 0;
-            }
-             .stepper li:not(:last-child)::after {
-                 content: '';
-                 position: absolute;
-                 top: 40px; /* Start below the icon */
-                 left: 20px; /* Center under the icon */
-                 width: 2px; /* Vertical line */
-                 height: calc(100% - 20px); /* Extend downwards */
-                 background-color: #ccc;
-                 transform: none; /* Reset transform */
-             }
-              .stepper li.active:not(:last-child)::after {
-                  background-color: #007bff;
-              }
-         }
 
     </style>
 </head>
@@ -452,7 +355,7 @@ echo "</script>\n";
                     <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
                     <p><strong>Total Price:</strong> ₱<?= htmlspecialchars(number_format($order['Total_Price'], 2)) ?></p> <!-- Added currency symbol -->
                     <p><strong>Request Date:</strong> <?= htmlspecialchars(date('M d, Y H:i', strtotime($order['Request_Date']))) ?></p> <!-- Nicer date format -->
-                    <p><strong>Payment Status:</strong>
+                    <p><strong>Payment Status:</strong>z
                         <?php
                         switch ($order['Payment_Status']) {
                             case 'downpayment_paid':
@@ -485,52 +388,42 @@ echo "</script>\n";
     </div>
 
     <!-- Product Status -->
-    <div id="product-status-tab" class="tab-content">
-        <?php if (empty($progressData)): ?>
-            <p>No products currently in progress.</p>
-        <?php else: ?>
-            <?php foreach ($progressData as $progress): ?>
-                <div class="progress-item">
-                    <h3><?= htmlspecialchars($progress['Product_Name']) ?> (<?= htmlspecialchars(ucfirst(str_replace('_', ' ', $progress['Order_Type']))) ?>)</h3>
-                    <div class="stepper-container">
-                        <ol class="stepper">
-                            <?php
-                            $currentStatus = $progress['Product_Status'] ?? 0;
-                            foreach ($productStatusLabels as $status => $label):
-                                $isCurrent = ($currentStatus == $status);
-                                // A step is completed if its status value is less than the current product status
-                                $isCompleted = ($status < $currentStatus);
-
-                                $stepClass = '';
-                                // Mark step as active if it's the current one OR if it's already completed
-                                if ($isCurrent || $isCompleted) {
-                                    $stepClass = 'active';
-                                }
-
-                                // Prepare data for the modal
-                                // IMPORTANT: This relies on the column name matching Progress_Pic_{status}
-                                // It will be NULL if the column doesn't exist in tbl_progress
-                                $statusKey = "Progress_Pic_" . $status;
-                                $progressPicUrl = $progress[$statusKey] ?? null; // Use null coalescing
-
-                                $stepData = [
-                                    'context' => 'product',
-                                    'data' => $progress, // Pass the whole progress item data
-                                    'progressPicUrl' => $progressPicUrl, // Pass the specific picture URL (or null)
-                                    'stepStatus' => $status // Pass the status code of this step
-                                ];
-                            ?>
-                                <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
-                                    <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-question-circle'></i>" ?></span> <!-- Default icon if missing -->
-                                    <span class="step-label"><?= htmlspecialchars($label) ?></span>
-                                </li>
-                            <?php endforeach; ?>
-                        </ol>
-                    </div>
+<div id="product-status-tab" class="tab-content">
+    <?php if (empty($progressData)): ?>
+        <p>No available data</p>
+    <?php else: ?>
+        <?php foreach ($progressData as $progress): ?>
+            <div class="progress-item">
+                <h3><?= $progress['Product_Name'] ?></h3>
+                <div class="stepper-container">
+                    <ol class="stepper">
+                        <?php 
+                        $isActive = true;
+                        foreach ($productStatusLabels as $status => $label): 
+                            $stepClass = (($progress['Product_Status'] ?? 0) == $status) ? 'active' : ($isActive ? 'active' : '');
+                            if (($progress['Product_Status'] ?? 0) == $status) {
+                                $isActive = false;
+                            }
+                            $statusKey = "Progress_Pic_" . $status;
+                            $progressPicUrl = $progress[$statusKey] ?? null;
+                            $stepData = [
+                                'context' => 'product',
+                                'data' => $progress,
+                                'progressPicUrl' => $progressPicUrl,
+                                'stepStatus' => $status
+                            ];
+                        ?>
+                            <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
+                                <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
+                                <span class="step-label"><?= $label ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
     <!-- Purchase History -->
     <div id="purchase-history-tab" class="tab-content">
