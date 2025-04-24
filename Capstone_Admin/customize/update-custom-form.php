@@ -386,11 +386,8 @@ function displayImagePreview($rawImagePath, $altText) {
                 <div class="button-container mt-3">
                     <a href="read-all-custom-form.php" class="buttonBack btn btn-secondary">Back to List</a>
                     <button type="submit" class="buttonUpdate btn btn-primary">Update Details</button>
-                    <?php if ($progressID): // Only show button if progress record exists ?>
-                        <a href="../progress/update-progress-form.php?id=<?= htmlspecialchars($progressID) ?>&order_type=custom" class="buttonEdit btn btn-info" style="margin-left: 10px;">Update Order Progress</a>
-                    <?php else: ?>
-                         <span class="text-muted" style="margin-left: 10px;">(No associated progress record found)</span>
-                    <?php endif; ?>
+                    
+                    
                 </div>
             </form>
         </div>
