@@ -1,12 +1,10 @@
 <?php
-session_start(); // Start the session
-
+session_start();
 // Include the database connection
 include '../config/database.php';
 
-// Assuming the admin's ID is stored in session after login
+// Check if the admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    // Redirect to login page if not logged in
     header("Location: ../login.php");
     exit();
 }
@@ -18,472 +16,419 @@ $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check if admin data is fetched
 if (!$admin) {
     echo "Admin not found.";
     exit();
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
 
-// Disable error reporting for production
-error_reporting(0);
 
-// Fetch the customization record
-$customizationID = $_GET['id']; // Get the Customization_ID from the URL
-$query = "SELECT * FROM tbl_customizations WHERE Customization_ID = ?";
-$stmt = $pdo->prepare($query);
-$stmt->bindValue(1, $customizationID);
-$stmt->execute();
-
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Check if record is found
-if (!$row) {
-    echo "Customization not found.";
+// Check if Customization_ID is provided
+if (!isset($_GET['id'])) {
+    echo "No customization ID provided.";
     exit();
 }
 
-// Store values to variables
-$userID = htmlspecialchars($row['User_ID']);
-$furnitureType = htmlspecialchars($row['Furniture_Type']);
-$furnitureTypeAdditionalInfo = htmlspecialchars($row['Furniture_Type_Additional_Info']);
-$standardSize = htmlspecialchars($row['Standard_Size']);
-$desiredSize = htmlspecialchars($row['Desired_Size']);
-$color = htmlspecialchars($row['Color']);
-$colorImageURL = htmlspecialchars($row['Color_Image_URL']);
-$colorAdditionalInfo = htmlspecialchars($row['Color_Additional_Info']);
-$texture = htmlspecialchars($row['Texture']);
-$textureImageURL = htmlspecialchars($row['Texture_Image_URL']);
-$textureAdditionalInfo = htmlspecialchars($row['Texture_Additional_Info']);
-$woodType = htmlspecialchars($row['Wood_Type']);
-$woodImageURL = htmlspecialchars($row['Wood_Image_URL']);
-$woodAdditionalInfo = htmlspecialchars($row['Wood_Additional_Info']);
-$foamType = htmlspecialchars($row['Foam_Type']);
-$foamImageURL = htmlspecialchars($row['Foam_Image_URL']);
-$foamAdditionalInfo = htmlspecialchars($row['Foam_Additional_Info']);
-$coverType = htmlspecialchars($row['Cover_Type']);
-$coverImageURL = htmlspecialchars($row['Cover_Image_URL']);
-$coverAdditionalInfo = htmlspecialchars($row['Cover_Additional_Info']);
-$design = htmlspecialchars($row['Design']);
-$designImageURL = htmlspecialchars($row['Design_Image_URL']);
-$designAdditionalInfo = htmlspecialchars($row['Design_Additional_Info']);
-$tileType = htmlspecialchars($row['Tile_Type']);
-$tileImageURL = htmlspecialchars($row['Tile_Image_URL']);
-$tileAdditionalInfo = htmlspecialchars($row['Tile_Additional_Info']);
-$metalType = htmlspecialchars($row['Metal_Type']);
-$metalImageURL = htmlspecialchars($row['Metal_Image_URL']);
-$metalAdditionalInfo = htmlspecialchars($row['Metal_Additional_Info']);
-$orderStatus = htmlspecialchars($row['Order_Status']); // Corrected: Fetch Order_Status
-$productStatus = htmlspecialchars($row['Product_Status']);
+$customizationID = $_GET['id'];
+$progressID = null; // Initialize progress ID
 
-// Order Status Map
-$orderStatusLabels = [
-    0   => 'Order Received',
-    10  => 'Order Confirmed',
-    20  => 'Design Finalization',
-    30  => 'Material Preparation',
-    40  => 'Production Started',
-    50  => 'Mid-Production',
-    60  => 'Finishing Process',
-    70  => 'Quality Check',
-    80  => 'Final Assembly',
-    90  => 'Ready for Delivery',
-    100 => 'Delivered / Completed'
-];
+try {
+    // Fetch customization details
+    $query = "
+        SELECT c.*, u.First_Name, u.Last_Name
+        FROM tbl_customizations c
+        JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        WHERE c.Customization_ID = :customizationID
+    ";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
+    $stmt->execute();
+    $customization = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Product Status Map
-$productStatusLabels = [
-    0   => 'Concept Stage',
-    10  => 'Design Approved',
-    20  => 'Material Sourcing',
-    30  => 'Cutting & Shaping',
-    40  => 'Structural Assembly',
-    50  => 'Detailing & Refinements',
-    60  => 'Sanding & Pre-Finishing',
-    70  => 'Final Coating',
-    80  => 'Assembly & Testing',
-    90  => 'Ready for Sale',
-    100 => 'Sold / Installed'
-];
+    if (!$customization) {
+        echo "Customization record not found.";
+        exit();
+    }
+
+    // Fetch corresponding Progress_ID if Product_ID exists
+    if (!empty($customization['Product_ID'])) {
+        $progressQuery = "SELECT Progress_ID FROM tbl_progress WHERE Product_ID = :productID AND Order_Type = 'custom' LIMIT 1";
+        $progressStmt = $pdo->prepare($progressQuery);
+        $progressStmt->bindParam(':productID', $customization['Product_ID'], PDO::PARAM_INT);
+        $progressStmt->execute();
+        $progressResult = $progressStmt->fetch(PDO::FETCH_ASSOC);
+        if ($progressResult) {
+            $progressID = $progressResult['Progress_ID'];
+        }
+    }
+
+
+    // Function to display data or "" if empty (for input values)
+    function displayInputData($data) {
+        return !empty($data) ? htmlspecialchars($data) : '';
+    }
+
+    // Extract data for form fields
+    $userName = displayInputData($customization['First_Name'] . ' ' . $customization['Last_Name']);
+    $furnitureType = displayInputData($customization['Furniture_Type']);
+    $furnitureTypeAdditionalInfo = displayInputData($customization['Furniture_Type_Additional_Info']);
+    $standardSize = displayInputData($customization['Standard_Size']);
+    $desiredSize = displayInputData($customization['Desired_Size']);
+    $color = displayInputData($customization['Color']);
+    $colorAdditionalInfo = displayInputData($customization['Color_Additional_Info']);
+    $texture = displayInputData($customization['Texture']);
+    $textureAdditionalInfo = displayInputData($customization['Texture_Additional_Info']);
+    $woodType = displayInputData($customization['Wood_Type']);
+    $woodAdditionalInfo = displayInputData($customization['Wood_Additional_Info']);
+    $foamType = displayInputData($customization['Foam_Type']);
+    $foamAdditionalInfo = displayInputData($customization['Foam_Additional_Info']);
+    $coverType = displayInputData($customization['Cover_Type']);
+    $coverAdditionalInfo = displayInputData($customization['Cover_Additional_Info']);
+    $design = displayInputData($customization['Design']);
+    $designAdditionalInfo = displayInputData($customization['Design_Additional_Info']);
+    $tileType = displayInputData($customization['Tile_Type']);
+    $tileAdditionalInfo = displayInputData($customization['Tile_Additional_Info']);
+    $metalType = displayInputData($customization['Metal_Type']);
+    $metalAdditionalInfo = displayInputData($customization['Metal_Additional_Info']);
+    $productStatus = htmlspecialchars($customization['Product_Status']); // Keep this for status display/logic if needed elsewhere
+    $requestDate = displayInputData($customization['Request_Date']);
+    $lastUpdate = displayInputData($customization['Last_Update']);
+    $productID = displayInputData($customization['Product_ID']);
+
+    // --- Get RAW image paths ---
+    $rawColorImageURL = $customization['Color_Image_URL'];
+    $rawTextureImageURL = $customization['Texture_Image_URL'];
+    $rawWoodImageURL = $customization['Wood_Image_URL'];
+    $rawFoamImageURL = $customization['Foam_Image_URL'];
+    $rawCoverImageURL = $customization['Cover_Image_URL'];
+    $rawDesignImageURL = $customization['Design_Image_URL'];
+    $rawTileImageURL = $customization['Tile_Image_URL'];
+    $rawMetalImageURL = $customization['Metal_Image_URL'];
+
+    // Product Status Labels (Not directly used in the form inputs, but kept for context)
+    $productStatusLabels = [
+        0   => 'Request Approved', 10  => 'Design Approved', 20  => 'Material Sourcing',
+        30  => 'Cutting & Shaping', 40  => 'Structural Assembly', 50  => 'Detailing & Refinements',
+        60  => 'Sanding & Pre-Finishing', 70  => 'Varnishing/Painting', 80  => 'Drying & Curing',
+        90  => 'Final Inspection & Packaging', 95  => 'Ready for Shipment', 98  => 'Order Delivered',
+        100 => 'Order Recieved',
+    ];
+    $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
+
+
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit();
+}
+
+// Helper function to display image preview
+function displayImagePreview($rawImagePath, $altText) {
+    // Construct the server file path relative to the current script's directory
+    $serverFilePath = __DIR__ . '/' . $rawImagePath;
+    // The web path is the raw path itself (relative to the script's parent dir)
+    $webPath = htmlspecialchars($rawImagePath);
+
+    if (!empty($rawImagePath) && file_exists($serverFilePath)) {
+        return "<img src='{$webPath}' alt='{$altText}' width='100' class='img-thumbnail mt-2'>";
+    } else if (!empty($rawImagePath)) {
+        return "<small class='text-danger mt-2 d-block'>Image not found at: {$webPath}</small>";
+    } else {
+        return "<small class='text-muted mt-2 d-block'>No image uploaded.</small>";
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Update Customization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        /* Adjust table layout for better form readability */
+        .container_boxes table td { padding: 8px; vertical-align: top; }
+        .container_boxes table td:first-child { width: 30%; font-weight: bold; }
+        .container_boxes input[type="text"],
+        .container_boxes textarea,
+        .container_boxes select {
+            width: 100%;
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        .container_boxes textarea { min-height: 80px; }
+        .container_boxes input[readonly] { background-color: #e9ecef; }
+        .img-thumbnail { border: 1px solid #dee2e6; padding: 0.25rem; background-color: #fff; }
+    </style>
 </head>
-
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image">
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li><a href="../dashboard/dashboard.php"><i class="bx bx-grid-alt"></i><span class="links_name">Dashboard</span></a></li>
+          <li><a href="../purchase-history/read-all-history-form.php"><i class="bx bx-history"></i><span class="links_name">Purchase History</span></a></li>
+          <li><a href="../reviews/read-all-reviews-form.php"><i class="bx bx-message-dots"></i><span class="links_name">All Reviews</span></a></li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Update Customization</span>
             </div>
-        
-
-            <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+            <div class="profile-details" id="profile-details-container">
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button"></i>
-
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i>
                 <div class="dropdown" id="profileDropdown">
-                    <!-- Modified link here -->
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
                 </div>
             </div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
- <br><br><br>   
-
+        </nav>
+        <br><br><br>
         <div class="container_boxes">
-        <form name="frmCustomizationRec" method="POST" action="update-custom-rec.php" enctype="multipart/form-data">
-            <h4>UPDATE CUSTOMIZATION RECORD</h4>
-            <table>
-                <!-- Customization ID (readonly) -->
-                <tr>
-                    <td>Customization ID:</td>
-                    <td><input type="text" name="txtCustomizationID" value="<?php echo $customizationID; ?>" readonly></td>
-                </tr>
+            <h4>Update Customization Details (ID: <?= htmlspecialchars($customizationID) ?>)</h4>
+            <!-- Ensure the action points to the correct processing script -->
+            <form action="update-custom-rec.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="txtCustomizationID" value="<?= htmlspecialchars($customizationID) ?>">
+                <table class="table table-bordered">
+                    <tr>
+                        <td>User Name:</td>
+                        <td><input type="text" class="form-control" value="<?= $userName ?>" readonly></td>
+                    </tr>
+                    <tr>
+                        <td>Furniture Type:</td>
+                        <td><input type="text" name="txtFurnitureType" class="form-control" value="<?= $furnitureType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Furniture Type Additional Info:</td>
+                        <td><textarea name="txtFurnitureTypeAdditionalInfo" class="form-control"><?= $furnitureTypeAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Standard Size:</td>
+                        <td><input type="text" name="txtStandardSize" class="form-control" value="<?= $standardSize ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Desired Size:</td>
+                        <td><input type="text" name="txtDesiredSize" class="form-control" value="<?= $desiredSize ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Color:</td>
+                        <td><input type="text" name="txtColor" class="form-control" value="<?= $color ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Color Image:</td>
+                        <td>
+                            <input type="file" name="colorImage" class="form-control">
+                            <?= displayImagePreview($rawColorImageURL, "Current Color Image") ?>
+                            <!-- Hidden field to track if image should be removed -->
+                            <input type="checkbox" name="remove_colorImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Color Additional Info:</td>
+                        <td><textarea name="txtColorAdditionalInfo" class="form-control"><?= $colorAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Texture:</td>
+                        <td><input type="text" name="txtTexture" class="form-control" value="<?= $texture ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Texture Image:</td>
+                        <td>
+                            <input type="file" name="textureImage" class="form-control">
+                            <?= displayImagePreview($rawTextureImageURL, "Current Texture Image") ?>
+                             <input type="checkbox" name="remove_textureImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Texture Additional Info:</td>
+                        <td><textarea name="txtTextureAdditionalInfo" class="form-control"><?= $textureAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Wood Type:</td>
+                        <td><input type="text" name="txtWoodType" class="form-control" value="<?= $woodType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Wood Image:</td>
+                        <td>
+                            <input type="file" name="woodImage" class="form-control">
+                            <?= displayImagePreview($rawWoodImageURL, "Current Wood Image") ?>
+                             <input type="checkbox" name="remove_woodImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Wood Additional Info:</td>
+                        <td><textarea name="txtWoodAdditionalInfo" class="form-control"><?= $woodAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Foam Type:</td>
+                        <td><input type="text" name="txtFoamType" class="form-control" value="<?= $foamType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Foam Image:</td>
+                        <td>
+                            <input type="file" name="foamImage" class="form-control">
+                            <?= displayImagePreview($rawFoamImageURL, "Current Foam Image") ?>
+                             <input type="checkbox" name="remove_foamImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Foam Additional Info:</td>
+                        <td><textarea name="txtFoamAdditionalInfo" class="form-control"><?= $foamAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Cover Type:</td>
+                        <td><input type="text" name="txtCoverType" class="form-control" value="<?= $coverType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Cover Image:</td>
+                        <td>
+                            <input type="file" name="coverImage" class="form-control">
+                            <?= displayImagePreview($rawCoverImageURL, "Current Cover Image") ?>
+                             <input type="checkbox" name="remove_coverImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Cover Additional Info:</td>
+                        <td><textarea name="txtCoverAdditionalInfo" class="form-control"><?= $coverAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Design:</td>
+                        <td><input type="text" name="txtDesign" class="form-control" value="<?= $design ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Design Image:</td>
+                        <td>
+                            <input type="file" name="designImage" class="form-control">
+                            <?= displayImagePreview($rawDesignImageURL, "Current Design Image") ?>
+                             <input type="checkbox" name="remove_designImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Design Additional Info:</td>
+                        <td><textarea name="txtDesignAdditionalInfo" class="form-control"><?= $designAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Tile Type:</td>
+                        <td><input type="text" name="txtTileType" class="form-control" value="<?= $tileType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Tile Image:</td>
+                        <td>
+                            <input type="file" name="tileImage" class="form-control">
+                            <?= displayImagePreview($rawTileImageURL, "Current Tile Image") ?>
+                             <input type="checkbox" name="remove_tileImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Tile Additional Info:</td>
+                        <td><textarea name="txtTileAdditionalInfo" class="form-control"><?= $tileAdditionalInfo ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Metal Type:</td>
+                        <td><input type="text" name="txtMetalType" class="form-control" value="<?= $metalType ?>"></td>
+                    </tr>
+                    <tr>
+                        <td>Metal Image:</td>
+                        <td>
+                            <input type="file" name="metalImage" class="form-control">
+                            <?= displayImagePreview($rawMetalImageURL, "Current Metal Image") ?>
+                             <input type="checkbox" name="remove_metalImage" value="1"> Remove Current Image
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Metal Additional Info:</td>
+                        <td><textarea name="txtMetalAdditionalInfo" class="form-control"><?= $metalAdditionalInfo ?></textarea></td>
+                    </tr>
+                     <!-- Product Status - Consider if this should be editable here or only via progress update -->
+                     <!-- If editable here, use a dropdown -->
+                    <tr>
+                        <td>Product Status:</td>
+                        <td>
+                            <select name="txtProductStatus" class="form-select">
+                                <?php foreach ($productStatusLabels as $value => $label): ?>
+                                    <option value="<?= $value ?>" <?= ($value == $customization['Product_Status']) ? 'selected' : '' ?>>
+                                        <?= $value ?>% - <?= htmlspecialchars($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td>Request Date:</td><td><input type="text" class="form-control" value="<?= $requestDate ?>" readonly></td></tr>
+                    <tr><td>Last Update:</td><td><input type="text" class="form-control" value="<?= $lastUpdate ?>" readonly></td></tr>
+                    <tr><td>Associated Product ID:</td><td><input type="text" class="form-control" value="<?= $productID ?>" readonly></td></tr>
+                    <tr><td>Associated Progress ID:</td><td><input type="text" class="form-control" value="<?= $progressID ? htmlspecialchars($progressID) : 'N/A' ?>" readonly></td></tr>
 
-                <!-- User ID (readonly) -->
-                <tr>
-                    <td>User ID:</td>
-                    <td><input type="text" name="txtUserID" value="<?php echo $userID; ?>" readonly></td>
-                </tr>
-
-                <!-- Furniture Type -->
-                <tr>
-                    <td>Furniture Type:</td>
-                    <td><input type="text" name="txtFurnitureType" value="<?php echo $furnitureType; ?>"></td>
-                </tr>
-
-                <!-- Furniture Type Additional Info -->
-                <tr>
-                    <td>Furniture Type Additional Info:</td>
-                    <td><textarea class="form-control" name="txtFurnitureTypeAdditionalInfo"><?php echo $furnitureTypeAdditionalInfo; ?></textarea></td>
-                </tr>
-
-
-                <!-- Standard Size -->
-                <tr>
-                    <td>Standard Size:</td>
-                    <td><input type="text" name="txtStandardSize" value="<?php echo $standardSize; ?>"></td>
-                </tr>
-
-                <!-- Desired Size -->
-                <tr>
-                    <td>Desired Size:</td>
-                    <td><input type="text" name="txtDesiredSize" value="<?php echo $desiredSize; ?>"></td>
-                </tr>
-
-                <!-- Color -->
-                <tr>
-                    <td>Color:</td>
-                    <td><input  class="form-control" type="text" name="txtColor" value="<?php echo $color; ?>"></td>
-                </tr>
-
-                <!-- Color Image -->
-                <tr>
-                    <td>Color Image:</td>
-                    <td>
-                        <input type="file" name="colorImage" accept="image/*">
-                        <?php if (!empty($colorImageURL)): ?>
-                            <img src="<?php echo $colorImageURL; ?>" alt="Color Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Color Additional Info -->
-            <tr>
-                <td>Color Additional Info:</td>
-                <td><textarea class="form-control" name="txtColorAdditionalInfo"><?php echo $colorAdditionalInfo; ?></textarea></td>
-            </tr>
-
-
-                <!-- Texture -->
-                <tr>
-                    <td>Texture:</td>
-                    <td><input type="text" name="txtTexture" value="<?php echo $texture; ?>"></td>
-                </tr>
-
-                <!-- Texture Image -->
-                <tr>
-                    <td>Texture Image:</td>
-                    <td>
-                        <input type="file" name="textureImage" accept="image/*">
-                        <?php if (!empty($textureImageURL)): ?>
-                            <img src="<?php echo $textureImageURL; ?>" alt="Texture Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Texture Additional Info -->
-                <tr>
-                    <td>Texture Additional Info:</td>
-                    <td><textarea class="form-control" name="txtTextureAdditionalInfo"><?php echo $textureAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Wood Type -->
-                <tr>
-                    <td>Wood Type:</td>
-                    <td><input type="text" name="txtWoodType" value="<?php echo $woodType; ?>"></td>
-                </tr>
-
-                <!-- Wood Image -->
-                <tr>
-                    <td>Wood Image:</td>
-                    <td>
-                        <input type="file" name="woodImage" accept="image/*">
-                        <?php if (!empty($woodImageURL)): ?>
-                            <img src="<?php echo $woodImageURL; ?>" alt="Wood Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Wood Additional Info -->
-                <tr>
-                    <td>Wood Additional Info:</td>
-                    <td><textarea class="form-control" name="txtWoodAdditionalInfo"><?php echo $woodAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Foam Type -->
-                <tr>
-                    <td>Foam Type:</td>
-                    <td><input type="text" name="txtFoamType" value="<?php echo $foamType; ?>"></td>
-                </tr>
-
-                <!-- Foam Image -->
-                <tr>
-                    <td>Foam Image:</td>
-                    <td>
-                        <input type="file" name="foamImage" accept="image/*">
-                        <?php if (!empty($foamImageURL)): ?>
-                            <img src="<?php echo $foamImageURL; ?>" alt="Foam Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Foam Additional Info -->
-                <tr>
-                    <td>Foam Additional Info:</td>
-                    <td><textarea class="form-control" name="txtFoamAdditionalInfo"><?php echo $foamAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Cover Type -->
-                <tr>
-                    <td>Cover Type:</td>
-                    <td><input type="text" name="txtCoverType" value="<?php echo $coverType; ?>"></td>
-                </tr>
-
-                <!-- Cover Image -->
-                <tr>
-                    <td>Cover Image:</td>
-                    <td>
-                        <input type="file" name="coverImage" accept="image/*">
-                        <?php if (!empty($coverImageURL)): ?>
-                            <img src="<?php echo $coverImageURL; ?>" alt="Cover Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Cover Additional Info -->
-                <tr>
-                    <td>Cover Additional Info:</td>
-                    <td><textarea class="form-control" name="txtCoverAdditionalInfo"><?php echo $coverAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Design -->
-                <tr>
-                    <td>Design:</td>
-                    <td><input type="text" name="txtDesign" value="<?php echo $design; ?>"></td>
-                </tr>
-
-                <!-- Design Image -->
-                <tr>
-                    <td>Design Image:</td>
-                    <td>
-                        <input type="file" name="designImage" accept="image/*">
-                        <?php if (!empty($designImageURL)): ?>
-                            <img src="<?php echo $designImageURL; ?>" alt="Design Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Design Additional Info -->
-                <tr>
-                    <td>Design Additional Info:</td>
-                    <td><textarea class="form-control" name="txtDesignAdditionalInfo"><?php echo $designAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Tile Type -->
-                <tr>
-                    <td>Tile Type:</td>
-                    <td><input type="text" name="txtTileType" value="<?php echo $tileType; ?>"></td>
-                </tr>
-
-                <!-- Tile Image -->
-                <tr>
-                    <td>Tile Image:</td>
-                    <td>
-                        <input type="file" name="tileImage" accept="image/*">
-                        <?php if (!empty($tileImageURL)): ?>
-                            <img src="<?php echo $tileImageURL; ?>" alt="Tile Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Tile Additional Info -->
-                <tr>
-                    <td>Tile Additional Info:</td>
-                    <td><textarea class="form-control" name="txtTileAdditionalInfo"><?php echo $tileAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Metal Type -->
-                <tr>
-                    <td>Metal Type:</td>
-                    <td><input type="text" name="txtMetalType" value="<?php echo $metalType; ?>"></td>
-                </tr>
-
-                <!-- Metal Image -->
-                <tr>
-                    <td>Metal Image:</td>
-                    <td>
-                        <input type="file" name="metalImage" accept="image/*">
-                        <?php if (!empty($metalImageURL)): ?>
-                            <img src="<?php echo $metalImageURL; ?>" alt="Metal Image" width="100">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <!-- Metal Additional Info -->
-                <tr>
-                    <td>Metal Additional Info:</td>
-                    <td><textarea class="form-control" name="txtMetalAdditionalInfo"><?php echo $metalAdditionalInfo; ?></textarea></td>
-                </tr>
-
-                <!-- Order Status -->
-                <tr>
-                    <td>Order Status:</td>
-                    <td>
-                        <select name="txtStatus">
-                            <?php
-                            foreach ($orderStatusLabels as $key => $label) {
-                                $selected = ($key == $orderStatus) ? 'selected' : '';
-                                echo "<option value=\"$key\" $selected>$label</option>";
-                            }
-                            ?>
-                        </select>
-                    </td>
-                </tr>
-
-                <!-- Product Status -->
-                <tr>
-                    <td>Product Status:</td>
-                    <td>
-                        <select name="txtProductStatus">
-                            <?php
-                            foreach ($productStatusLabels as $key => $label) {
-                                $selected = ($key == $productStatus) ? 'selected' : '';
-                                echo "<option value=\"$key\" $selected>$label</option>";
-                            }
-                            ?>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-
-            <div class="button-container">
-            <a href="read-all-custom-form.php" target="_parent" class="buttonBack">Back to List</a>
-                <input type="submit" value="Update" class="buttonUpdate">
-            </div>
-        </form>
-
-
+                </table>
+                <div class="button-container mt-3">
+                    <a href="read-all-custom-form.php" class="buttonBack btn btn-secondary">Back to List</a>
+                    <button type="submit" class="buttonUpdate btn btn-primary">Update Details</button>
+                    <?php if ($progressID): // Only show button if progress record exists ?>
+                        <a href="../progress/update-progress-form.php?id=<?= htmlspecialchars($progressID) ?>&order_type=custom" class="buttonEdit btn btn-info" style="margin-left: 10px;">Update Order Progress</a>
+                    <?php else: ?>
+                         <span class="text-muted" style="margin-left: 10px;">(No associated progress record found)</span>
+                    <?php endif; ?>
+                </div>
+            </form>
         </div>
     </section>
+
     <script>
+        // Sidebar Toggle
         let sidebar = document.querySelector(".sidebar");
         let sidebarBtn = document.querySelector(".sidebarBtn");
-        sidebarBtn.onclick = function () {
-            sidebar.classList.toggle("active");
-            if (sidebar.classList.contains("active")) {
-                sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-        };
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                sidebarBtn.classList.toggle("bx-menu-alt-right");
+            };
+        }
 
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+        // Profile Dropdown Toggle (Consistent version)
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if clicking inside it
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     // Toggle chevron icon based on display state
+                     dropdownIcon.classList.toggle('bx-chevron-up', profileDropdown.style.display === 'block');
+                }
+            });
+            // Close dropdown if clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up');
+                }
+            });
+        }
     </script>
 </body>
 </html>

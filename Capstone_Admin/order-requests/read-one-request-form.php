@@ -2,7 +2,7 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
 // Check if the admin's ID is stored in the session after login
 if (!isset($_SESSION['admin_id'])) {
@@ -24,26 +24,42 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
 
 // Check if Request_ID is passed in the URL
 if (isset($_GET['id'])) {
     $requestID = $_GET['id'];
-    
+
     try {
         // Fetch order request details
+        // Removed orq.Order_Status, added orq.Payment_Status, orq.Processed
         $query = "
-            SELECT 
-                orq.*, 
-                u.First_Name, 
-                u.Last_Name, 
-                p.Product_Name, 
-                p.Category AS Furniture_Type,
-                p.GLB_File_URL,
-                orq.Order_Status AS Request_Status
+            SELECT
+                orq.Request_ID,
+                orq.User_ID,
+                orq.Product_ID,
+                orq.Quantity,
+                orq.Order_Type,
+                orq.Total_Price,
+                orq.Payment_Status, -- Added
+                orq.Request_Date,
+                orq.Processed,      -- Added
+                u.First_Name,
+                u.Last_Name,
+                p.Product_Name,
+                p.Category AS Furniture_Type, -- Use Category as Furniture Type for consistency
+                p.GLB_File_URL
+                -- Removed orq.Order_Status AS Request_Status
             FROM tbl_order_request orq
             JOIN tbl_user_info u ON orq.User_ID = u.User_ID
-            LEFT JOIN tbl_prod_info p ON orq.Product_ID = p.Product_ID
+            LEFT JOIN tbl_prod_info p ON orq.Product_ID = p.Product_ID -- Use LEFT JOIN in case product was deleted
             WHERE orq.Request_ID = :requestID
         ";
         $stmt = $pdo->prepare($query);
@@ -52,21 +68,24 @@ if (isset($_GET['id'])) {
         $orderRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($orderRequest) {
+            // Assign fetched data to variables with htmlspecialchars
             $userName = htmlspecialchars($orderRequest['First_Name'] . ' ' . $orderRequest['Last_Name']);
-            $productName = htmlspecialchars($orderRequest['Product_Name']);
-            $furnitureType = htmlspecialchars($orderRequest['Furniture_Type']);
+            $productName = htmlspecialchars($orderRequest['Product_Name'] ?? 'N/A'); // Handle potential missing product
+            $furnitureType = htmlspecialchars($orderRequest['Furniture_Type'] ?? 'N/A');
             $quantity = htmlspecialchars($orderRequest['Quantity']);
             $orderType = htmlspecialchars($orderRequest['Order_Type']);
-            $status = htmlspecialchars($orderRequest['Request_Status']); // Use the alias
-            $totalPrice = htmlspecialchars($orderRequest['Total_Price']);
-            $requestDate = htmlspecialchars($orderRequest['Request_Date']);
-            $glbFileURL = htmlspecialchars($orderRequest['GLB_File_URL']);
+            $paymentStatus = htmlspecialchars($orderRequest['Payment_Status']); // Get actual payment status
+            $processedStatus = $orderRequest['Processed'] == 0 ? 'Pending Confirmation' : 'Processed'; // Determine processing status text
+            $totalPrice = number_format((float)($orderRequest['Total_Price'] ?? 0), 2); // Format price
+            $requestDate = htmlspecialchars(date('F j, Y, g:i a', strtotime($orderRequest['Request_Date']))); // Format date
+            $glbFileURL = !empty($orderRequest['GLB_File_URL']) ? htmlspecialchars($orderRequest['GLB_File_URL']) : null; // Check if URL exists
+
         } else {
             echo "Order request not found.";
             exit();
         }
     } catch (PDOException $e) {
-        echo "Error: " . $e->getMessage();
+        echo "Database Error: " . $e->getMessage();
         exit();
     }
 } else {
@@ -74,187 +93,154 @@ if (isset($_GET['id'])) {
     exit();
 }
 
-// Order Status mapping
-$statusLabels = [
-    0 => 'Pending',
-    10 => 'Order Placed',
-    20 => 'Payment Processing',
-    30 => 'Order Confirmed',
-    40 => 'Preparing for Shipment',
-    50 => 'Shipped',
-    60 => 'Out for Delivery',
-    70 => 'Delivered',
-    80 => 'Installed',
-    100 => 'Complete'
-];
+// REMOVED $statusLabels array - It was incorrect for this context.
+// The $productStatusLabels provided are for tbl_progress, not tbl_order_request.
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Request Details</title> <!-- Specific Title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
+    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Removed -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
+    <!-- <link href="../static/js/admin_home.js" rel=""> --> <!-- Incorrect link type -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        /* Minor adjustments for table readability */
+        .table th { width: 25%; background-color: #f8f9fa; }
+        .table td { width: 75%; }
+        model-viewer { width: 100%; max-width: 400px; height: 300px; border: 1px solid #ccc; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image"> <!-- Use class -->
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li>
+              <a href="../dashboard/dashboard.php">
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Dashboard</span>
+              </a>
+          </li>
+          <li>
+              <a href="../purchase-history/read-all-history-form.php">
+                  <i class="bx bx-history"></i> <!-- Changed icon -->
+                  <span class="links_name">Purchase History</span>
+              </a>
+          </li>
+          <li>
+              <a href="../reviews/read-all-reviews-form.php">
+                  <i class="bx bx-message-dots"></i>
+                  <span class="links_name">All Reviews</span>
+              </a>
+          </li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Order Request Details</span> <!-- Updated title -->
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+            <!-- Removed search box -->
+            <div class="profile-details" id="profile-details-container"> <!-- Added ID -->
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
             </div>
+        </nav>
+        <br><br><br>
 
+        <div class="container_boxes">
+            <h4>ORDER REQUEST DETAILS (ID: <?= htmlspecialchars($requestID) ?>)</h4>
+            <table class="table table-bordered table-striped"> <!-- Use Bootstrap classes -->
+                <tr><th>User Name</th><td><?= $userName ?></td></tr>
+                <tr><th>Product Name</th><td><?= $productName ?></td></tr>
+                <tr>
+                    <th>3D Model</th>
+                    <td>
+                        <?php if ($glbFileURL): ?>
+                            <model-viewer src="<?= $glbFileURL ?>" alt="3D model of <?= $productName ?>" auto-rotate camera-controls></model-viewer>
+                        <?php else: ?>
+                            No 3D model available.
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr><th>Furniture Type</th><td><?= $furnitureType ?></td></tr>
+                <tr><th>Quantity</th><td><?= $quantity ?></td></tr>
+                <tr><th>Order Type</th><td><?= ucwords(str_replace('_', ' ', $orderType)) ?></td></tr>
+                <!-- Updated Status Display -->
+                <tr><th>Processing Status</th><td><?= $processedStatus ?></td></tr>
+                <tr><th>Payment Status</th><td><?= ucwords(str_replace('_', ' ', $paymentStatus)) ?></td></tr>
+                <!-- Removed old incorrect status row -->
+                <!-- <tr><th>STATUS</th><td><?php // echo $statusLabels[$status] ?? 'Unknown'; ?></td></tr> -->
+                <tr><th>Total Price</th><td>₱ <?= $totalPrice ?></td></tr>
+                <tr><th>Request Date</th><td><?= $requestDate ?></td></tr>
+            </table>
+            <br>
+            <a href="read-all-request-form.php" class="buttonBack btn btn-secondary">Back to Order Requests</a>
+        </div>
+    </section>
 
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
-<br><br><br>
-
-<div class="container_boxes">
-    <h4>ORDER REQUEST DETAILS</h4>
-    <table width="100%" border="1" cellspacing="5">
-        <tr>
-            <th>USER NAME</th>
-            <td><?php echo $userName; ?></td>
-        </tr>
-        <tr>
-            <th>PRODUCT NAME</th>
-            <td><?php echo $productName; ?></td>
-        </tr>
-        <tr>
-            <th>3D MODEL</th>
-            <td>
-                <?php if ($glbFileURL): ?>
-                    <model-viewer src="<?php echo $glbFileURL; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
-                <?php else: ?>
-                    No 3D model available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>FURNITURE TYPE</th>
-            <td><?php echo $furnitureType; ?></td>
-        </tr>
-        <tr>
-            <th>QUANTITY</th>
-            <td><?php echo $quantity; ?></td>
-        </tr>
-        <tr>
-            <th>ORDER TYPE</th>
-            <td><?php echo $orderType; ?></td>
-        </tr>
-        <tr>
-            <th>STATUS</th>
-            <td><?php echo $statusLabels[$status] ?? 'Unknown'; ?></td>
-        </tr>
-        <tr>
-            <th>TOTAL PRICE</th>
-            <td><?php echo $totalPrice; ?></td>
-        </tr>
-        <tr>
-            <th>REQUEST DATE</th>
-            <td><?php echo $requestDate; ?></td>
-        </tr>
-        
-    </table>
-    <br>
-    <a href="read-all-request-form.php" class="btn btn-primary">Back to Order Requests</a>
-</div>
-</section>
-
-<script>
-    let sidebar = document.querySelector(".sidebar");
-    let sidebarBtn = document.querySelector(".sidebarBtn");
-    sidebarBtn.onclick = function () {
-        sidebar.classList.toggle("active");
-        if (sidebar.classList.contains("active")) {
-            sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-        } else {
-            sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+    <script>
+        // Sidebar Toggle
+        let sidebar = document.querySelector(".sidebar");
+        let sidebarBtn = document.querySelector(".sidebarBtn");
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+                } else {
+                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                }
+            };
         }
-    };
 
-    document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-    toggle.addEventListener('click', function () {
-        const parent = this.parentElement; // Get the parent <li> of the toggle
-        const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-        parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+        // Profile Dropdown Toggle (Consistent version)
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
-        // Toggle the chevron icon rotation
-        const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-        if (parent.classList.contains('active')) {
-            chevron.classList.remove('bx-chevron-down');
-            chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-        } else {
-            chevron.classList.remove('bx-chevron-up');
-            chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if click is inside dropdown
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     dropdownIcon.classList.toggle('bx-chevron-up'); // Toggle icon class
+                }
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up'); // Ensure icon is down
+                }
+            });
         }
-        
-        // Toggle the display of the dropdown menu
-        dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-    });
-});
-</script>
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+        // Removed old dropdown toggle JS
+
+    </script>
+    <!-- Ensure model-viewer script is loaded -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </body>
 </html>

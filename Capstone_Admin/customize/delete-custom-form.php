@@ -2,255 +2,238 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
-// Assuming the admin's ID is stored in session after login
+// Check if the admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    // Redirect to login page if not logged in
     header("Location: ../login.php");
     exit();
 }
 
-// Fetch admin data from the database
+// Fetch admin data for profile display
 $adminId = $_SESSION['admin_id'];
-$stmt = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admin_ID = :admin_id");
-$stmt->bindParam(':admin_id', $adminId);
-$stmt->execute();
-$admin = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmtAdmin = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admin_ID = :admin_id");
+$stmtAdmin->bindParam(':admin_id', $adminId);
+$stmtAdmin->execute();
+$admin = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
 
-// Check if admin data is fetched
 if (!$admin) {
     echo "Admin not found.";
     exit();
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
+// Check if Customization_ID is provided
+if (!isset($_GET['id'])) {
+    echo "No customization ID provided.";
+    // Optionally redirect back to the list
+    // header("Location: read-all-custom-form.php?error=" . urlencode("No ID provided"));
+    exit();
+}
+
+$customizationID = $_GET['id'];
+$customizationData = null; // Initialize variable
+
+// Product Status Labels (copied from update form for consistency)
+$productStatusLabels = [
+    0   => 'Request Approved', 10  => 'Design Approved', 20  => 'Material Sourcing',
+    30  => 'Cutting & Shaping', 40  => 'Structural Assembly', 50  => 'Detailing & Refinements',
+    60  => 'Sanding & Pre-Finishing', 70  => 'Varnishing/Painting', 80  => 'Drying & Curing',
+    90  => 'Final Inspection & Packaging', 95  => 'Ready for Shipment', 98  => 'Order Delivered',
+    100 => 'Order Recieved',
+];
+
+
+try {
+    // Fetch customization details along with user name
+    $query = "
+        SELECT
+            c.Customization_ID, c.User_ID, c.Furniture_Type, c.Product_Status,
+            c.Request_Date, c.Product_ID,
+            u.First_Name, u.Last_Name
+        FROM tbl_customizations c
+        JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        WHERE c.Customization_ID = :customizationID
+    ";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
+    $stmt->execute();
+    $customizationData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$customizationData) {
+        echo "Customization record not found for ID: " . htmlspecialchars($customizationID);
+        // Optionally redirect back
+        // header("Location: read-all-custom-form.php?error=" . urlencode("Record not found"));
+        exit();
+    }
+
+    // Prepare data for display
+    $displayUserName = htmlspecialchars($customizationData['First_Name'] . ' ' . $customizationData['Last_Name']);
+    $displayFurnitureType = htmlspecialchars($customizationData['Furniture_Type']);
+    $displayRequestDate = htmlspecialchars($customizationData['Request_Date']);
+    $displayProductID = htmlspecialchars($customizationData['Product_ID'] ?? 'N/A'); // Handle potential NULL
+    $displayProductStatus = htmlspecialchars(
+        $productStatusLabels[$customizationData['Product_Status']] ?? 'Unknown Status (' . $customizationData['Product_Status'] . ')'
+    );
+
+
+} catch (PDOException $e) {
+    echo "Database Error: " . $e->getMessage();
+    // Log error if needed: error_log("DB Error fetching customization for delete: " . $e->getMessage());
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Confirm Deletion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        .container_boxes table td { padding: 8px; vertical-align: top; }
+        .container_boxes table td:first-child { width: 30%; font-weight: bold; }
+        .alert-warning { margin-top: 15px; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image">
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li><a href="../dashboard/dashboard.php"><i class="bx bx-grid-alt"></i><span class="links_name">Dashboard</span></a></li>
+          <li><a href="../purchase-history/read-all-history-form.php"><i class="bx bx-history"></i><span class="links_name">Purchase History</span></a></li>
+          <li><a href="../reviews/read-all-reviews-form.php"><i class="bx bx-message-dots"></i><span class="links_name">All Reviews</span></a></li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Confirm Deletion</span>
             </div>
-         
-
-
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
- 
-        <br><br><br><br>
-
-        <?php
-        // DISABLE ERROR DETECTION
-        error_reporting(0);
-
-        // CREATE THE QUERY TO SELECT RECORD FROM tbl_customizations TABLE WHERE Customization_ID MATCHES
-        if (isset($_GET['id'])) {
-            $query = "SELECT * FROM tbl_customizations WHERE Customization_ID = ?";
-
-            // PREPARE QUERY AND STORE TO A STATEMENT VARIABLE
-            $stmt = $pdo->prepare($query);
-
-            // BIND VALUE TO DATABASE PARAMETER (Ensuring that 'id' is referenced correctly)
-            $stmt->bindValue(1, $_GET['id'], PDO::PARAM_INT);
-
-            // EXECUTE STATEMENT
-            $stmt->execute();
-
-            // GET RECORD PER ROW
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// CHECK IF RECORD EXISTS
-if ($row) {
-    // STORE DATA RECORDS TO VARIABLES
-    $customizationID = $row["Customization_ID"];
-    $userID = $row["User_ID"];
-    $furnitureType = $row["Furniture_Type"];
-    $furnitureTypeAdditionalInfo = $row["Furniture_Type_Additional_Info"];
-    $standardSize = $row["Standard_Size"];
-    $desiredSize = $row["Desired_Size"];
-    $color = $row["Color"];
-    $colorImageURL = $row["Color_Image_URL"];
-    $colorAdditionalInfo = $row["Color_Additional_Info"];
-    $texture = $row["Texture"];
-    $textureImageURL = $row["Texture_Image_URL"];
-    $textureAdditionalInfo = $row["Texture_Additional_Info"];
-    $woodType = $row["Wood_Type"];
-    $woodImageURL = $row["Wood_Image_URL"];
-    $woodAdditionalInfo = $row["Wood_Additional_Info"];
-    $foamType = $row["Foam_Type"];
-    $foamImageURL = $row["Foam_Image_URL"];
-    $foamAdditionalInfo = $row["Foam_Additional_Info"];
-    $coverType = $row["Cover_Type"];
-    $coverImageURL = $row["Cover_Image_URL"];
-    $coverAdditionalInfo = $row["Cover_Additional_Info"];
-    $design = $row["Design"];
-    $designImageURL = $row["Design_Image_URL"];
-    $designAdditionalInfo = $row["Design_Additional_Info"];
-    $tileType = $row["Tile_Type"];
-    $tileImageURL = $row["Tile_Image_URL"];
-    $tileAdditionalInfo = $row["Tile_Additional_Info"];
-    $metalType = $row["Metal_Type"];
-    $metalImageURL = $row["Metal_Image_URL"];
-    $metalAdditionalInfo = $row["Metal_Additional_Info"];
-} else {
-    // Redirect back if no record is found
-    header("Location: read-all-custom-form.php");
-    exit();
-}
-
-        } else {
-            // Redirect back if 'id' is not set
-            header("Location: read-all-custom-form.php");
-            exit();
-        }
-        ?>
+            <div class="profile-details" id="profile-details-container">
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
+        </nav>
+        <br><br><br>
 
         <div class="container_boxes">
-            <form name="frmCustomRec" method="POST" action="delete-custom-rec.php">
-                <h2>Delete Customization Record</h2>
-                <table>
-                    <?php
-                    echo '
+            <h4>Delete Customization Record</h4>
+
+            <?php if ($customizationData): ?>
+                <div class="alert alert-warning" role="alert">
+                    <strong>Warning!</strong> You are about to permanently delete the following customization record. This action cannot be undone.
+                     Associated images might also be deleted by the processing script.
+                </div>
+
+                <table class="table table-bordered">
                     <tr>
                         <td>Customization ID:</td>
-                        <td>' . htmlspecialchars($customizationID) . '</td>
+                        <td><?= htmlspecialchars($customizationID) ?></td>
                     </tr>
                     <tr>
-                        <td>User ID:</td>
-                        <td>' . htmlspecialchars($userID) . '</td>
+                        <td>User Name:</td>
+                        <td><?= $displayUserName ?> (ID: <?= htmlspecialchars($customizationData['User_ID']) ?>)</td>
                     </tr>
                     <tr>
                         <td>Furniture Type:</td>
-                        <td>' . htmlspecialchars($furnitureType) . '</td>
+                        <td><?= $displayFurnitureType ?></td>
                     </tr>
-                    <tr>
-                        <td>Additional Info:</td>
-                        <td>' . htmlspecialchars($furnitureTypeAdditionalInfo) . '</td>
+                     <tr>
+                        <td>Request Date:</td>
+                        <td><?= $displayRequestDate ?></td>
                     </tr>
-                    <tr>
-                        <td>Standard Size:</td>
-                        <td>' . htmlspecialchars($standardSize) . '</td>
+                     <tr>
+                        <td>Current Status:</td>
+                        <td><?= $displayProductStatus ?></td>
                     </tr>
-                    <tr>
-                        <td>Desired Size:</td>
-                        <td>' . htmlspecialchars($desiredSize) . '</td>
+                     <tr>
+                        <td>Associated Product ID:</td>
+                        <td><?= $displayProductID ?></td>
                     </tr>
-                    <tr>
-                        <td>Color:</td>
-                        <td>' . htmlspecialchars($color) . '</td>
-                    </tr>';
-                    ?>
+                    <!-- Add any other critical fields you want the admin to see before deleting -->
                 </table>
 
-                <!-- Separated buttons -->
-                <div class="button-container">
-                    <a href="read-all-custom-form.php" target="_parent" class="buttonBack">Back to List</a>
-                    <a href="delete-custom-rec.php?id=<?php echo htmlspecialchars($customizationID); ?>" target="_parent" class="buttonDelete">Delete Record</a>
+                <!-- Confirmation Buttons -->
+                <div class="button-container mt-3">
+                    <a href="read-all-custom-form.php" class="buttonBack btn btn-secondary">Cancel (Back to List)</a>
+                    <!-- The actual deletion happens in delete-custom-rec.php -->
+                    <a href="delete-custom-rec.php?id=<?php echo htmlspecialchars($customizationID); ?>" class="buttonDelete btn btn-danger">Confirm Deletion</a>
                 </div>
-            </form>
-        </div>
 
-        <script>
-            let sidebar = document.querySelector(".sidebar");
-            let sidebarBtn = document.querySelector(".sidebarBtn");
+            <?php else: ?>
+                <div class="alert alert-danger" role="alert">
+                    Could not retrieve customization details for deletion. Please go back to the list.
+                </div>
+                 <div class="button-container mt-3">
+                    <a href="read-all-custom-form.php" class="buttonBack btn btn-secondary">Back to List</a>
+                </div>
+            <?php endif; ?>
+
+        </div>
+    </section>
+
+    <script>
+        // Sidebar Toggle (Consistent version)
+        let sidebar = document.querySelector(".sidebar");
+        let sidebarBtn = document.querySelector(".sidebarBtn");
+        if (sidebar && sidebarBtn) {
             sidebarBtn.onclick = function () {
                 sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-                } else {
-                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-                }
+                sidebarBtn.classList.toggle("bx-menu-alt-right");
             };
+        }
 
-            document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+        // Profile Dropdown Toggle (Consistent version)
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
-        </script>
-    </section>
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if clicking inside it
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     // Toggle chevron icon based on display state
+                     dropdownIcon.classList.toggle('bx-chevron-up', profileDropdown.style.display === 'block');
+                }
+            });
+            // Close dropdown if clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

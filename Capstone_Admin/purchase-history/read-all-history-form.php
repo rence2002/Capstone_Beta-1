@@ -23,133 +23,152 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
 
 // Initialize the search variable
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
-// Order Status Map
-$orderStatusLabels = [
-    0 => 'Order Received',
-    10 => 'Order Confirmed',
-    20 => 'Design Finalization',
-    30 => 'Material Preparation',
-    40 => 'Production Started',
-    50 => 'Mid-Production',
-    60 => 'Finishing Process',
-    70 => 'Quality Check',
-    80 => 'Final Assembly',
-    90 => 'Ready for Delivery',
-    100 => 'Delivered / Completed',
+// Status Labels (Simplified - Using Product Status for both columns now)
+$statusLabels = [
+    0   => 'Request Approved / Concept', // Combined potential meanings
+    10  => 'Design Approved',
+    20  => 'Material Sourcing / Prep', // Combined
+    30  => 'Cutting & Shaping',
+    40  => 'Structural Assembly',
+    50  => 'Detailing & Refinements / Mid-Prod', // Combined
+    60  => 'Sanding & Pre-Finishing',
+    70  => 'Varnishing/Painting / Final Coat', // Combined
+    80  => 'Drying & Curing / Assembly & Test', // Combined
+    90  => 'Final Inspection / Ready', // Combined
+    95  => 'Ready for Shipment', // Specific to custom? Keep if needed.
+    98  => 'Order Delivered', // Specific to custom? Keep if needed.
+    100 => 'Completed / Received / Sold', // Combined final states
 ];
 
-// Product Status Map
-$productStatusLabels = [
-    0 => 'Concept Stage',
-    10 => 'Design Approved',
-    20 => 'Material Sourcing',
-    30 => 'Cutting & Shaping',
-    40 => 'Structural Assembly',
-    50 => 'Detailing & Refinements',
-    60 => 'Sanding & Pre-Finishing',
-    70 => 'Final Coating',
-    80 => 'Assembly & Testing',
-    90 => 'Ready for Sale',
-    100 => 'Sold / Installed',
-];
 
-// Fetch records based on search or fetch all records
-$query = "
-    SELECT 
+// Base query parts - MODIFIED
+$customQueryPart = "
+    SELECT
         'custom' AS Order_Type,
         c.Customization_ID AS ID,
         c.Furniture_Type AS Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        c.Order_Status,
-        c.Product_Status,
-        p.Price AS Price,
+        c.Product_Status AS Status_Value, -- Use Product_Status
+        c.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
+        p.Price AS Price, -- This might be 0.00 for custom, consider fetching calculated price if available elsewhere
         c.Last_Update AS Last_Update,
         c.User_ID
     FROM tbl_customizations c
     JOIN tbl_user_info u ON c.User_ID = u.User_ID
-    LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
-    WHERE c.Order_Status = 100 AND c.Product_Status = 100
-    UNION
-    SELECT 
+    LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID -- Product_ID might be null initially
+";
+
+$preorderQueryPart = "
+    SELECT
         'pre_order' AS Order_Type,
         po.Preorder_ID AS ID,
         pr.Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        po.Preorder_Status AS Order_Status,
-        po.Product_Status,
-        pr.Price AS Price,
-        po.Order_Date AS Last_Update,
+        po.Product_Status AS Status_Value, -- Use Product_Status
+        po.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
+        po.Total_Price AS Price, -- Use Total_Price from preorder table
+        po.Order_Date AS Last_Update, -- Use Order_Date as Last_Update
         u.User_ID
     FROM tbl_preorder po
     JOIN tbl_user_info u ON po.User_ID = u.User_ID
     JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-    WHERE po.Preorder_Status = 100 AND po.Product_Status = 100
-    UNION
-    SELECT 
+";
+
+$readyMadeQueryPart = "
+    SELECT
         'ready_made' AS Order_Type,
         rmo.ReadyMadeOrder_ID AS ID,
         pr.Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        rmo.Order_Status,
-        rmo.Product_Status,
-        pr.Price AS Price,
-        rmo.Order_Date AS Last_Update,
+        rmo.Product_Status AS Status_Value, -- Use Product_Status
+        rmo.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
+        rmo.Total_Price AS Price, -- Use Total_Price from ready_made table
+        rmo.Order_Date AS Last_Update, -- Use Order_Date as Last_Update
         u.User_ID
     FROM tbl_ready_made_orders rmo
     JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
     JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-    WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100
-    ORDER BY Last_Update DESC
 ";
 
+// Add WHERE clauses - MODIFIED (Use Product_Status = 100 for history)
+$customWhere = "WHERE c.Product_Status = 100";
+$preorderWhere = "WHERE po.Product_Status = 100";
+$readyMadeWhere = "WHERE rmo.Product_Status = 100";
+
+// Add search conditions if search term exists
 if (!empty($search)) {
-    $query = str_replace(
-        "WHERE c.Order_Status = 100 AND c.Product_Status = 100",
-        "WHERE c.Order_Status = 100 AND c.Product_Status = 100 AND (u.First_Name LIKE :search OR u.Last_Name LIKE :search OR c.Furniture_Type LIKE :search)",
-        $query
-    );
-    $query = str_replace(
-        "WHERE po.Preorder_Status = 100 AND po.Product_Status = 100",
-        "WHERE po.Preorder_Status = 100 AND po.Product_Status = 100 AND (u.First_Name LIKE :search OR u.Last_Name LIKE :search OR pr.Product_Name LIKE :search)",
-        $query
-    );
-    $query = str_replace(
-        "WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100",
-        "WHERE rmo.Order_Status = 100 AND rmo.Product_Status = 100 AND (u.First_Name LIKE :search OR u.Last_Name LIKE :search OR pr.Product_Name LIKE :search)",
-        $query
-    );
+    // Ensure search conditions target correct aliases and columns
+    $searchConditionCustom = " AND (u.First_Name LIKE :searchCustom OR u.Last_Name LIKE :searchCustom OR c.Furniture_Type LIKE :searchCustom OR c.Customization_ID LIKE :searchCustom)";
+    $searchConditionPreorder = " AND (u.First_Name LIKE :searchPreorder OR u.Last_Name LIKE :searchPreorder OR pr.Product_Name LIKE :searchPreorder OR po.Preorder_ID LIKE :searchPreorder)";
+    $searchConditionReadyMade = " AND (u.First_Name LIKE :searchReadyMade OR u.Last_Name LIKE :searchReadyMade OR pr.Product_Name LIKE :searchReadyMade OR rmo.ReadyMadeOrder_ID LIKE :searchReadyMade)";
+
+    $customWhere .= $searchConditionCustom;
+    $preorderWhere .= $searchConditionPreorder;
+    $readyMadeWhere .= $searchConditionReadyMade;
 }
 
+// Combine the queries
+$query = $customQueryPart . $customWhere . " UNION ALL " . // Use UNION ALL if duplicates are acceptable and potentially faster
+         $preorderQueryPart . $preorderWhere . " UNION ALL " .
+         $readyMadeQueryPart . $readyMadeWhere . " ORDER BY Last_Update DESC";
+
+
 $stmt = $pdo->prepare($query);
+
+// Bind search parameters separately for each part of the UNION
 if (!empty($search)) {
     $searchParam = '%' . $search . '%';
-    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    // Bind parameters with unique names
+    $stmt->bindParam(':searchCustom', $searchParam, PDO::PARAM_STR);
+    $stmt->bindParam(':searchPreorder', $searchParam, PDO::PARAM_STR);
+    $stmt->bindParam(':searchReadyMade', $searchParam, PDO::PARAM_STR);
 }
+
+// *** Line 138 where the error occurred ***
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle AJAX requests to return only table rows
-if (isset($_GET['search'])) {
-    foreach ($rows as $row) {
-        $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 0;
-        echo '
-        <tr>
-            <td>' . htmlspecialchars($row['Order_Type']) . '</td>
-            <td>' . htmlspecialchars($row['User_Name']) . '</td>
-            <td>' . htmlspecialchars($row['Product_Name']) . '</td>
-            <td>' . htmlspecialchars($orderStatusLabels[$row['Order_Status']] ?? "Unknown") . '</td>
-            <td>' . htmlspecialchars($productStatusLabels[$row['Product_Status']] ?? "Unknown") . '</td>
-            <td>' . $totalPrice . '</td>
-            <td style="text-align: center;">
-                <a class="buttonView" href="read-one-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a>
-            </td>
-        </tr>';
+if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
+    ob_start(); // Start output buffering
+    if (count($rows) > 0) {
+        foreach ($rows as $row) {
+            // Use Total_Price directly if available, format it
+             $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 'N/A';
+             $statusValue = $row['Status_Value'] ?? null; // Get the status value
+             $statusLabel = isset($statusValue) ? ($statusLabels[$statusValue] ?? "Unknown ($statusValue)") : "Unknown";
+
+            echo '
+            <tr>
+                <td>' . htmlspecialchars($row['Order_Type']) . '</td>
+                <td>' . htmlspecialchars($row['User_Name']) . '</td>
+                <td>' . htmlspecialchars($row['Product_Name']) . '</td>
+                <td>' . htmlspecialchars($statusLabel) . '</td> <!-- Display Status Label -->
+                <td>' . htmlspecialchars($statusLabel) . '</td> <!-- Display Status Label again (as Product Status) -->
+                <td>' . $totalPrice . '</td>
+                <td style="text-align: center;">
+                    <a class="buttonView" href="read-one-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a>
+                    <a class="buttonDelete" href="delete-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">Delete</a>
+                </td>
+            </tr>';
+        }
+    } else {
+        echo '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>';
     }
+    $tableContent = ob_get_clean(); // Get buffered content
+    echo $tableContent; // Send it back
     exit; // Stop further execution for AJAX requests
 }
 ?>
@@ -158,177 +177,280 @@ if (isset($_GET['search'])) {
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Purchase History</title> <!-- More specific title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <!-- Ensure bootstrap.bundle.min.js is loaded if dropdowns need Popper -->
+    <script src="../static/js/bootstrap.bundle.min.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <style>
+        /* Add specific style for delete button if not in button.css */
+        .buttonDelete {
+            background-color: #dc3545; /* Red */
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 5px; /* Add some space between buttons */
+        }
+        .buttonDelete:hover {
+            background-color: #c82333; /* Darker red */
+            color: white;
+            text-decoration: none;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        /* Style for profile dropdown */
+        .profile-details .dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            right: 0;
+            top: 100%; /* Position below the profile details */
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden; /* Ensures border-radius applies to children */
+            z-index: 1000; /* Ensure it's above other content */
+            min-width: 120px; /* Optional: set a minimum width */
+        }
+        .profile-details .dropdown a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .profile-details .dropdown a:hover {
+            background-color: #f2f2f2;
+        }
+        .profile-details {
+            position: relative; /* Needed for absolute positioning of dropdown */
+            cursor: pointer; /* Indicate it's clickable */
+        }
 
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_image"> <!-- Use logo_image class -->
         </span>
     </div>
         <ul class="nav-links">
-        
+
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
+
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="active">
-                    <i class="bx bx-comment-detail"></i>
+                    <i class="bx bx-history"></i> <!-- Changed icon -->
                     <span class="links_name">All Purchase History</span>
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-message-dots"></i>
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
+             <!-- Add other nav links as needed -->
         </ul>
-
     </div>
 
     <section class="home-section">
     <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Purchase History</span> <!-- Updated title -->
             </div>
             <div class="search-box">
-                <form method="GET" action="">
-                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
-                 
-                </form>
+                 <!-- Removed form tag, handled by JS -->
+                 <input type="text" id="searchInput" placeholder="Search by Name, Product, ID..." value="<?php echo htmlspecialchars($search); ?>" />
+                 <i class="bx bx-search"></i>
             </div>
 
-
-            <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+            <!-- Profile Details Container -->
+            <div class="profile-details" id="profile-details-container">
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button"></i>
-
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i>
+                <!-- Dropdown Menu -->
                 <div class="dropdown" id="profileDropdown">
-                    <!-- Modified link here -->
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
                 </div>
             </div>
-
-<!-- Link to External JS -->
-<script src="../static/js/dashboard.js"></script>
-
-
- </nav>
+    </nav>
         <br><br><br>
 
         <div class="container_boxes">
-            <h4>PURCHASE HISTORY LIST</h4>
+            <h4>COMPLETED PURCHASE HISTORY LIST</h4>
+
+             <!-- Display Success/Error Messages -->
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="alert alert-success"><?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?></div>
+            <?php endif; ?>
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-danger"><?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?></div>
+            <?php endif; ?>
+
+
             <!-- Add Back to Dashboard button -->
-            <div class="button-container">
+            <div class="button-container" style="margin-bottom: 15px;"> <!-- Added margin -->
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-                </div>
-                <div id="purchase-history-list">
-    <table width="100%" border="1" cellspacing="5">
-        <thead>
-            <tr>
-                <th>ORDER TYPE</th>
-                <th>USER NAME</th>
-                <th>PRODUCT NAME</th>
-                <th>ORDER STATUS</th>
-                <th>PRODUCT STATUS</th>
-                <th>TOTAL PRICE</th>
-                <th style="text-align: center;">ACTIONS</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($rows as $row): ?>
-                <tr>
-                    <td><?= htmlspecialchars($row['Order_Type']) ?></td>
-                    <td><?= htmlspecialchars($row['User_Name']) ?></td>
-                    <td><?= htmlspecialchars($row['Product_Name']) ?></td>
-                    <td><?= htmlspecialchars($orderStatusLabels[$row['Order_Status']] ?? "Unknown") ?></td>
-                    <td><?= htmlspecialchars($productStatusLabels[$row['Product_Status']] ?? "Unknown") ?></td>
-                    <td>
-                        <?php
-                            $totalPrice = 0;
-                            if (isset($row['Price'])) {
-                                $totalPrice = number_format((float) $row['Price'], 2, '.', '');
-                            }
-                        ?>
-                        <?= $totalPrice ?>
-                    </td>
-                    <td style="text-align: center;">
-                        <a class="buttonView" href="read-one-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+            </div>
+            <div id="purchase-history-list">
+                <table width="100%" border="1" cellspacing="0" cellpadding="5"> <!-- Adjusted table style -->
+                    <thead>
+                        <tr>
+                            <th>ORDER TYPE</th>
+                            <th>USER NAME</th>
+                            <th>PRODUCT NAME</th>
+                            <th>STATUS</th> <!-- Simplified Status Column -->
+                            <th>PRODUCT STATUS</th> <!-- Kept for consistency, shows same as Status -->
+                            <th>TOTAL PRICE</th>
+                            <th style="text-align: center;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($rows) > 0): ?>
+                            <?php foreach ($rows as $row): ?>
+                                <?php
+                                    // Use Total_Price directly if available, format it
+                                    $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 'N/A';
+                                    $statusValue = $row['Status_Value'] ?? null; // Get the status value
+                                    $statusLabel = isset($statusValue) ? ($statusLabels[$statusValue] ?? "Unknown ($statusValue)") : "Unknown";
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['Order_Type']) ?></td>
+                                    <td><?= htmlspecialchars($row['User_Name']) ?></td>
+                                    <td><?= htmlspecialchars($row['Product_Name']) ?></td>
+                                    <td><?= htmlspecialchars($statusLabel) ?></td> <!-- Display Status Label -->
+                                    <td><?= htmlspecialchars($statusLabel) ?></td> <!-- Display Status Label again -->
+                                    <td><?= $totalPrice ?></td>
+                                    <td style="text-align: center;">
+                                        <a class="buttonView" href="read-one-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a>
+                                        <a class="buttonDelete" href="delete-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Delete</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                             <tr><td colspan="7" style="text-align:center;">No records found matching your search criteria.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
+    <!-- Link to External JS -->
+    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Commented out if functionality is below -->
+
     <script>
+        // Sidebar Toggle (Consistent version)
         let sidebar = document.querySelector(".sidebar");
         let sidebarBtn = document.querySelector(".sidebarBtn");
-        sidebarBtn.onclick = function () {
-            sidebar.classList.toggle("active");
-            if (sidebar.classList.contains("active")) {
-                sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else {
-                sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-            }
-        };
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                // Toggle icon class based on sidebar state
+                sidebarBtn.classList.toggle("bx-menu-alt-right", sidebar.classList.contains("active"));
+            };
+        }
 
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-            toggle.addEventListener('click', function () {
-                const parent = this.parentElement;
-                const dropdownMenu = parent.querySelector('.dropdown-menu');
-                parent.classList.toggle('active');
+        // Profile Dropdown Toggle (Consistent version)
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon'); // Assuming you have an icon element
 
-                const chevron = this.querySelector('i');
-                if (parent.classList.contains('active')) {
-                    chevron.classList.remove('bx-chevron-down');
-                    chevron.classList.add('bx-chevron-up');
-                } else {
-                    chevron.classList.remove('bx-chevron-up');
-                    chevron.classList.add('bx-chevron-down');
+        if (profileDetailsContainer && profileDropdown) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if clicking inside it, unless clicking a link
+                if (!event.target.closest('a')) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     // Toggle chevron icon if it exists
+                     if (dropdownIcon) {
+                         dropdownIcon.classList.toggle('bx-chevron-up', profileDropdown.style.display === 'block');
+                     }
                 }
-
-                dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
+                // Allow clicks on links within the dropdown to proceed
             });
+
+            // Close dropdown if clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    // Reset chevron icon if it exists
+                    if (dropdownIcon) {
+                        dropdownIcon.classList.remove('bx-chevron-up');
+                    }
+                }
+            });
+        }
+
+
+        // AJAX Search Implementation
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.querySelector('#purchase-history-list table tbody');
+
+        let debounceTimer;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const searchValue = this.value.trim();
+                // Use ajax_search=1 to trigger the AJAX response in PHP
+                const url = `read-all-history-form.php?ajax_search=1&search=${encodeURIComponent(searchValue)}`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        if (tableBody) {
+                            tableBody.innerHTML = data.trim(); // Replace the table body content
+                        } else {
+                            console.error("Table body not found for updating.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching search results:', error);
+                         if (tableBody) {
+                             tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Error loading data.</td></tr>';
+                         }
+                    });
+            }, 300); // Debounce search requests (300ms delay)
         });
-        </script>
-        <script>
-    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
-        const searchValue = this.value.trim();
-        const url = searchValue ? `read-all-history-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-history-form.php?search=`;
 
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                const tableBody = document.querySelector('#purchase-history-list table tbody');
-                tableBody.innerHTML = data.trim(); // Replace the table body content with the fetched rows
-            })
-            .catch(error => console.error('Error fetching search results:', error));
-    });
-</script>
+    </script>
 </body>
-
 </html>

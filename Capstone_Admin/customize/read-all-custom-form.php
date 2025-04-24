@@ -1,19 +1,23 @@
 <?php
 session_start(); // Start the session
+
 // Include the database connection
 include '../config/database.php'; 
+
 // Check if the admin's ID is stored in the session after login
 if (!isset($_SESSION['admin_id'])) {
     // Redirect to login page if not logged in
     header("Location: ../login.php");
     exit();
 }
+
 // Fetch admin data from the database
 $adminId = $_SESSION['admin_id'];
 $stmt = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admin_ID = :admin_id");
 $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
 // Check if admin data is fetched
 if (!$admin) {
     echo "Admin not found.";
@@ -23,7 +27,7 @@ $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 /**
- * Get the color for the progress bar based on the order status.
+ * Get the color for the progress bar based on the product status.
  */
 function getColorForStatus($status) {
     if ($status >= 90) {
@@ -37,6 +41,23 @@ function getColorForStatus($status) {
     }
 }
 
+// Use the NEW Product Status labels provided in the prompt
+$productStatusLabels = [
+    0   => 'Request Approved',         // 0% - Order placed by the customer
+    10  => 'Design Approved',          // 10% - Finalized by customer
+    20  => 'Material Sourcing',        // 20% - Gathering necessary materials
+    30  => 'Cutting & Shaping',        // 30% - Preparing materials
+    40  => 'Structural Assembly',      // 40% - Base framework built
+    50  => 'Detailing & Refinements',  // 50% - Carvings, upholstery, elements added
+    60  => 'Sanding & Pre-Finishing',  // 60% - Smoothening, preparing for final coat
+    70  => 'Varnishing/Painting',      // 70% - Applying the final finish
+    80  => 'Drying & Curing',          // 80% - Final coating sets in
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    95  => 'Ready for Shipment',
+    98  => 'Order Delivered',
+    100 => 'Order Recieved',           // Note: Typo 'Recieved' in provided map, kept as is. Should likely be 'Received'
+];
+
 // Check if the request is an AJAX search request
 if (isset($_GET['search'])) {
     $search = $_GET['search'];
@@ -45,13 +66,13 @@ if (isset($_GET['search'])) {
             c.Customization_ID, 
             CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
             c.Furniture_Type, 
-            c.Order_Status 
+            c.Product_Status 
         FROM tbl_customizations c
         JOIN tbl_user_info u ON c.User_ID = u.User_ID
         WHERE u.First_Name LIKE :search 
         OR u.Last_Name LIKE :search 
         OR c.Furniture_Type LIKE :search
-        OR c.Order_Status LIKE :search
+        OR c.Product_Status LIKE :search
     ";
     $stmt = $pdo->prepare($query);
     $searchParam = '%' . $search . '%';
@@ -65,14 +86,15 @@ if (isset($_GET['search'])) {
             <th>Customization ID</th>
             <th>User Name</th>
             <th>Furniture Type</th>
-            <th>Order Status</th>
+            <th>Product Status</th>
             <th colspan="3" style="text-align: center;">ACTIONS</th>
         </tr>';
     foreach ($customizations as $customization) {
         $customizationID = htmlspecialchars($customization["Customization_ID"]);
         $userName = htmlspecialchars($customization["User_Name"]);
         $furnitureType = htmlspecialchars($customization["Furniture_Type"]);
-        $orderStatus = $customization["Order_Status"];
+        $productStatus = $customization["Product_Status"];
+        $statusLabel = $productStatusLabels[$productStatus] ?? 'Unknown Status';
         echo '
         <tr>
             <td>'.$customizationID.'</td>
@@ -81,9 +103,9 @@ if (isset($_GET['search'])) {
             <td>
                 <div class="progress" style="width: 150px;">
                     <div class="progress-bar" role="progressbar" 
-                         style="width: '.$orderStatus.'%; background-color: '.getColorForStatus($orderStatus).';" 
-                         aria-valuenow="'.$orderStatus.'" aria-valuemin="0" aria-valuemax="100">
-                        '.$orderStatus.'%
+                         style="width: '.$productStatus.'%; background-color: '.getColorForStatus($productStatus).';" 
+                         aria-valuenow="'.$productStatus.'" aria-valuemin="0" aria-valuemax="100">
+                        '.$statusLabel.'
                     </div>
                 </div>
             </td>
@@ -103,33 +125,19 @@ $query = "
         c.Customization_ID, 
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
         c.Furniture_Type, 
-        c.Order_Status 
+        c.Product_Status 
     FROM tbl_customizations c
     JOIN tbl_user_info u ON c.User_ID = u.User_ID
     WHERE u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR c.Furniture_Type LIKE :search
-    OR c.Order_Status LIKE :search
+    OR c.Product_Status LIKE :search
 ";
 $stmt = $pdo->prepare($query);
 $searchParam = '%' . $search . '%';
 $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
 $stmt->execute();
 $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Map order status to descriptive text
-$orderStatusMap = [
-    0   => 'Order Received',       // 0% - Order placed by the customer
-    10  => 'Order Confirmed',      // 10% - Down payment received
-    20  => 'Design Finalization',  // 20% - Final design confirmed
-    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
-    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
-    50  => 'Mid-Production',       // 50% - Major structural work completed
-    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
-    70  => 'Quality Check',        // 70% - Inspection for defects
-    80  => 'Final Assembly',       // 80% - Last touches, packaging
-    90  => 'Product Finished',     // 90% - Completed and awaiting delivery/pickup
-    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
-];
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -182,7 +190,6 @@ $orderStatusMap = [
             <div class="search-box">
                 <form method="GET" action="">
                     <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
-                 
                 </form>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
@@ -208,7 +215,7 @@ $orderStatusMap = [
                             <th>Customization ID</th>
                             <th>User Name</th>
                             <th>Furniture Type</th>
-                            <th>Order Status</th>
+                            <th>Product Status</th>
                             <th colspan="3" style="text-align: center;">ACTIONS</th>
                         </tr>
                         <?php
@@ -216,7 +223,8 @@ $orderStatusMap = [
                             $customizationID = htmlspecialchars($customization["Customization_ID"]);
                             $userName = htmlspecialchars($customization["User_Name"]);
                             $furnitureType = htmlspecialchars($customization["Furniture_Type"]);
-                            $orderStatus = $customization["Order_Status"];
+                            $productStatus = $customization["Product_Status"];
+                            $statusLabel = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                             echo '
                             <tr>
                                 <td>'.$customizationID.'</td>
@@ -225,9 +233,9 @@ $orderStatusMap = [
                                 <td>
                                     <div class="progress" style="width: 150px;">
                                         <div class="progress-bar" role="progressbar" 
-                                             style="width: '.$orderStatus.'%; background-color: '.getColorForStatus($orderStatus).';" 
-                                             aria-valuenow="'.$orderStatus.'" aria-valuemin="0" aria-valuemax="100">
-                                            '.$orderStatus.'%
+                                             style="width: '.$productStatus.'%; background-color: '.getColorForStatus($productStatus).';" 
+                                             aria-valuenow="'.$productStatus.'" aria-valuemin="0" aria-valuemax="100">
+                                            '.$statusLabel.'
                                         </div>
                                     </div>
                                 </td>
@@ -269,10 +277,8 @@ $orderStatusMap = [
                 dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
         });
-
         document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
             const searchValue = this.value;
-
             // Send an AJAX request to fetch filtered results
             fetch(`read-all-custom-form.php?search=${encodeURIComponent(searchValue)}`)
                 .then(response => response.text())

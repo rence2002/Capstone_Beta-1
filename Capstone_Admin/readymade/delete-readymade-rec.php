@@ -10,14 +10,6 @@ include("../config/database.php");
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $readyMadeOrderID = (int) $_GET['id'];
 
-    // Delete associated progress record
-    $deleteProgressQuery = "DELETE FROM tbl_progress 
-                            WHERE Product_ID = (SELECT Product_ID FROM tbl_ready_made_orders WHERE ReadyMadeOrder_ID = ?) 
-                            AND Order_Type = 'ready_made'";
-    $progressStmt = $pdo->prepare($deleteProgressQuery);
-    $progressStmt->bindValue(1, $readyMadeOrderID, PDO::PARAM_INT);
-    $progressStmt->execute();
-
     // Prepare the delete statement for ready-made order
     $deleteQuery = "DELETE FROM tbl_ready_made_orders WHERE ReadyMadeOrder_ID = ?";
     $stmt = $pdo->prepare($deleteQuery);

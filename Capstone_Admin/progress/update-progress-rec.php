@@ -14,351 +14,215 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Retrieve form data
-$Progress_ID = $_POST['Progress_ID'];
-$Order_Type = $_POST['Order_Type'];
-$Order_Status = $_POST['Order_Status'];
-$Product_Status = $_POST['Product_Status'];
-$Stop_Reason = $_POST['Stop_Reason'];
-$Product_ID = $_POST['Product_ID'];
-$Tracking_Number = isset($_POST['Tracking_Number']) ? $_POST['Tracking_Number'] : null; // Retrieve tracking number if provided
+// --- Retrieve form data ---
+// Get required fields
+$Progress_ID = $_POST['Progress_ID'] ?? null; // Use null coalescing for safety
+$Product_Status = $_POST['Product_Status'] ?? null;
+$Stop_Reason = $_POST['Stop_Reason'] ?? ''; // Default to empty string if not set
 
-// Validate Progress_ID and Order_Type
-if (empty($Progress_ID) || empty($Order_Type)) {
-    echo "Progress ID and Order Type are required.";
+// Get optional fields
+$Tracking_Number = !empty($_POST['Tracking_Number']) ? trim($_POST['Tracking_Number']) : null; // Trim and set to null if empty
+
+// Get fields needed for context/potential future use, but not directly for the simplified update
+$Order_Type = $_POST['Order_Type'] ?? null;
+$Product_ID = $_POST['Product_ID'] ?? null;
+
+// --- Basic Validation ---
+if (empty($Progress_ID) || !is_numeric($Progress_ID)) {
+    echo "Invalid or missing Progress ID.";
     exit();
 }
-
-// Determine the correct table, primary key, and status column based on Order_Type
-$tableName = "";
-$idColumn = "";
-$progressIdColumn = "";
-$statusColumn = ""; // Add this to handle the correct status column dynamically
-
-switch ($Order_Type) {
-    case 'custom':
-        $tableName = "tbl_customizations";
-        $idColumn = "Customization_ID"; // Primary key for tbl_customizations
-        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
-        $statusColumn = "Order_Status"; // Use Order_Status for custom orders
-        break;
-    case 'pre_order':
-        $tableName = "tbl_preorder";
-        $idColumn = "Preorder_ID"; // Primary key for tbl_preorder
-        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
-        $statusColumn = "Preorder_Status"; // Use Preorder_Status for preorders
-        break;
-    case 'ready_made':
-        $tableName = "tbl_ready_made_orders";
-        $idColumn = "ReadyMadeOrder_ID"; // Primary key for tbl_ready_made_orders
-        $progressIdColumn = "Progress_ID"; // Always use Progress_ID for tbl_progress
-        $statusColumn = "Order_Status"; // Use Order_Status for ready-made orders
-        break;
-    default:
-        echo "Invalid order type.";
-        exit;
+if ($Product_Status === null || !is_numeric($Product_Status)) { // Check for null explicitly
+    echo "Invalid or missing Product Status.";
+    exit();
 }
+// Removed Order_Status validation as it's no longer received
 
-error_log("Progress_ID: $Progress_ID, Order_Type: $Order_Type, Table: $tableName, ID Column: $idColumn");
-
-// Handle file uploads for progress pictures
-$uploadDir = "../uploads/progress_pics/";
-$allowedTypes = ['image/jpeg', 'image/png'];
+// --- Handle file uploads for progress pictures ---
+$uploadDir = "../uploads/progress_pics/"; // Relative path from this script's location
+$allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // Added GIF just in case
 $maxFileSize = 5 * 1024 * 1024; // 5MB
-$progressPics = [];
+$progressPicsUpdates = []; // Array to hold SQL update parts for pictures
+$progressPicsValues = []; // Array to hold values for binding picture paths
+
+// Create upload directory if it doesn't exist
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
 
 foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage) {
     $fileInputName = "Progress_Pic_$percentage";
     if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === UPLOAD_ERR_OK) {
-        $fileType = $_FILES[$fileInputName]['type'];
+        $fileTmpPath = $_FILES[$fileInputName]['tmp_name'];
+        $fileName = $_FILES[$fileInputName]['name'];
         $fileSize = $_FILES[$fileInputName]['size'];
+        $fileType = mime_content_type($fileTmpPath); // More reliable type check
+        $fileNameCmps = explode(".", $fileName);
+        $fileExtension = strtolower(end($fileNameCmps));
 
         // Validate file type and size
         if (!in_array($fileType, $allowedTypes)) {
-            throw new Exception("Invalid file type for $percentage%. Only JPEG and PNG are allowed.");
+            // Consider logging this error instead of dying immediately in production
+            die("Error: Invalid file type for $percentage% ($fileType). Only JPEG, PNG, GIF are allowed.");
         }
         if ($fileSize > $maxFileSize) {
-            throw new Exception("File size exceeds the maximum limit of 5MB for $percentage%.");
+             die("Error: File size exceeds the maximum limit of 5MB for $percentage%.");
         }
 
-        // Generate unique file name and move the file
-        $fileName = uniqid() . "_" . basename($_FILES[$fileInputName]['name']);
-        $filePath = $uploadDir . $fileName;
-        $relativePath = "../uploads/progress_pics/" . $fileName;
+        // Generate unique file name and define paths
+        $newFileName = uniqid("progress_{$percentage}_", true) . '.' . $fileExtension;
+        $destPath = $uploadDir . $newFileName;
+        // Store the path relative to the web root's perspective for DB (adjust if needed)
+        // Assuming 'uploads' is directly under Capstone_Beta
+        $dbPath = "../uploads/progress_pics/" . $newFileName; // Path to store in DB
 
-        if (!move_uploaded_file($_FILES[$fileInputName]['tmp_name'], $filePath)) {
-            throw new Exception("Failed to upload file for $percentage%.");
+        if (move_uploaded_file($fileTmpPath, $destPath)) {
+            $columnName = "Progress_Pic_$percentage";
+            $paramName = ":Progress_Pic_$percentage";
+            $progressPicsUpdates[] = "$columnName = $paramName"; // e.g., "Progress_Pic_10 = :Progress_Pic_10"
+            $progressPicsValues[$paramName] = $dbPath; // e.g., [":Progress_Pic_10" => "../uploads/progress_pics/unique_name.jpg"]
+        } else {
+            // Consider logging this error
+            die("Error: Failed to move uploaded file for $percentage%. Check permissions for $uploadDir");
         }
-
-        $progressPics["Progress_Pic_$percentage"] = $relativePath;
+    } elseif (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] !== UPLOAD_ERR_NO_FILE) {
+        // Handle other upload errors
+        die("Error uploading file for $percentage%: Error code " . $_FILES[$fileInputName]['error']);
     }
 }
 
+// --- Database Update Logic ---
 try {
     // Start a transaction
     $pdo->beginTransaction();
 
-    // Fetch the progress record from tbl_progress
-    $fetchProgressQuery = "
-        SELECT * 
-        FROM tbl_progress 
-        WHERE Progress_ID = :Progress_ID
-    ";
-    $fetchProgressStmt = $pdo->prepare($fetchProgressQuery);
-    $fetchProgressStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
-    $fetchProgressStmt->execute();
-    $progressRecord = $fetchProgressStmt->fetch(PDO::FETCH_ASSOC);
+    // *** SIMPLIFIED: Update ONLY tbl_progress ***
 
-    if (!$progressRecord) {
-        throw new Exception("No matching progress record found for Progress_ID: $Progress_ID.");
+    // Build the base update query for tbl_progress
+    $updateFields = [
+        "Product_Status = :Product_Status",
+        "Stop_Reason = :Stop_Reason"
+        // LastUpdate is handled by DB trigger/default
+    ];
+
+    // Add Tracking_Number to the update if it's provided
+    if ($Tracking_Number !== null) {
+        $updateFields[] = "Tracking_Number = :Tracking_Number";
     }
 
-    // Debugging: Confirm progressRecord
-    error_log("Fetched progressRecord: " . json_encode($progressRecord));
-
-    // For preorders, fetch the correct Preorder_ID from tbl_preorder
-    if ($Order_Type === 'pre_order') {
-        $fetchPreorderQuery = "
-            SELECT Preorder_ID
-            FROM tbl_preorder
-            WHERE Product_ID = :Product_ID AND User_ID = :User_ID
-        ";
-        $fetchPreorderStmt = $pdo->prepare($fetchPreorderQuery);
-        $fetchPreorderStmt->bindParam(':Product_ID', $Product_ID, PDO::PARAM_INT);
-        $fetchPreorderStmt->bindParam(':User_ID', $progressRecord['User_ID'], PDO::PARAM_STR);
-        $fetchPreorderStmt->execute();
-        $preorderRecord = $fetchPreorderStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$preorderRecord) {
-            throw new Exception("No matching Preorder_ID found for Product_ID: $Product_ID and User_ID: " . $progressRecord['User_ID']);
-        }
-
-        $Preorder_ID = $preorderRecord['Preorder_ID'];
-
-        // Debugging: Confirm Preorder_ID
-        error_log("Fetched Preorder_ID: $Preorder_ID for Product_ID: $Product_ID and User_ID: " . $progressRecord['User_ID']);
+    // Add progress picture fields to the update query if any were uploaded
+    if (!empty($progressPicsUpdates)) {
+        $updateFields = array_merge($updateFields, $progressPicsUpdates);
     }
 
-    // For custom orders, fetch the Customization_ID from tbl_customizations
-    if ($Order_Type === 'custom') {
-        $fetchCustomizationQuery = "
-            SELECT Customization_ID
-            FROM tbl_customizations
-            WHERE Product_ID = :Product_ID
-        ";
-        $fetchCustomizationStmt = $pdo->prepare($fetchCustomizationQuery);
-        $fetchCustomizationStmt->bindParam(':Product_ID', $Product_ID, PDO::PARAM_INT);
-        $fetchCustomizationStmt->execute();
-        $customizationRecord = $fetchCustomizationStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$customizationRecord) {
-            throw new Exception("Customization record not found for Product_ID $Product_ID.");
-        }
-
-        $Customization_ID = $customizationRecord['Customization_ID'];
-
-        // Debugging: Confirm Customization_ID
-        error_log("Fetched Customization_ID: $Customization_ID for Product_ID: $Product_ID");
-    }
-
-    // Fetch the correct ReadyMadeOrder_ID for ready-made orders
-    if ($Order_Type === 'ready_made') {
-        $fetchReadyMadeOrderQuery = "
-            SELECT ReadyMadeOrder_ID
-            FROM tbl_ready_made_orders
-            WHERE Product_ID = :Product_ID AND User_ID = :User_ID
-        ";
-        $fetchReadyMadeOrderStmt = $pdo->prepare($fetchReadyMadeOrderQuery);
-        $fetchReadyMadeOrderStmt->bindParam(':Product_ID', $Product_ID, PDO::PARAM_INT);
-        $fetchReadyMadeOrderStmt->bindParam(':User_ID', $progressRecord['User_ID'], PDO::PARAM_STR);
-        $fetchReadyMadeOrderStmt->execute();
-        $readyMadeOrderRecord = $fetchReadyMadeOrderStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$readyMadeOrderRecord) {
-            throw new Exception("No matching ReadyMadeOrder_ID found for Product_ID: $Product_ID and User_ID: " . $progressRecord['User_ID']);
-        }
-
-        $ReadyMadeOrder_ID = $readyMadeOrderRecord['ReadyMadeOrder_ID'];
-
-        // Debugging: Confirm ReadyMadeOrder_ID
-        error_log("Fetched ReadyMadeOrder_ID: $ReadyMadeOrder_ID for Product_ID: $Product_ID and User_ID: " . $progressRecord['User_ID']);
-    }
-
-    // Base query to update the specific table
-    $query = "
-        UPDATE $tableName
-        SET 
-            $statusColumn = :Order_Status, -- Use the dynamic status column
-            Product_Status = :Product_Status,
-            Stop_Reason = :Stop_Reason
-    ";
-
-    // Add Tracking_Number to the query if provided
-    if (!empty($Tracking_Number)) {
-        $query .= ", Tracking_Number = :Tracking_Number";
-    }
-
-    // Add progress picture fields to the query if they exist
-    if (!empty($progressPics)) {
-        $query .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
-    }
-
-    $query .= " WHERE $idColumn = :ID";
+    // Construct the final SQL query
+    $sql = "UPDATE tbl_progress SET " . implode(", ", $updateFields) . " WHERE Progress_ID = :Progress_ID";
 
     // Prepare the statement
-    $stmt = $pdo->prepare($query);
+    $stmt = $pdo->prepare($sql);
 
-    // Bind parameters
-    $stmt->bindParam(':Order_Status', $Order_Status, PDO::PARAM_INT);
+    // Bind core parameters
     $stmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
     $stmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
+    $stmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
 
-    if (!empty($Tracking_Number)) {
+    // Bind Tracking_Number if it exists
+    if ($Tracking_Number !== null) {
         $stmt->bindParam(':Tracking_Number', $Tracking_Number, PDO::PARAM_STR);
     }
 
-    if ($Order_Type === 'pre_order') {
-        $stmt->bindParam(':ID', $Preorder_ID, PDO::PARAM_INT); // Use the correct Preorder_ID
-    } elseif ($Order_Type === 'custom') {
-        $stmt->bindParam(':ID', $Customization_ID, PDO::PARAM_INT); // Use Customization_ID for custom orders
-    } else {
-        $stmt->bindParam(':ID', $ReadyMadeOrder_ID, PDO::PARAM_INT); // Use ReadyMadeOrder_ID for ready-made orders
-    }
-
     // Bind progress picture parameters if they exist
-    foreach ($progressPics as $key => $value) {
-        $stmt->bindValue(":$key", $value, PDO::PARAM_STR);
+    foreach ($progressPicsValues as $paramName => $value) {
+        $stmt->bindValue($paramName, $value, PDO::PARAM_STR);
     }
 
-    // Execute the query
-    $rowsAffected = $stmt->execute();
-    if (!$rowsAffected || $stmt->rowCount() === 0) {
-        throw new Exception("Failed to update progress record in $tableName. Rows affected: " . $stmt->rowCount());
-    }
+    // Execute the update query for tbl_progress
+    $stmt->execute();
 
-    // Debugging: Confirm rows affected
-    error_log("Updated $tableName with ID: " . ($Order_Type === 'custom' ? $Customization_ID : $Progress_ID));
-    error_log("Query: $query");
-    error_log("Parameters: " . json_encode([
-        'Order_Status' => $Order_Status,
-        'Product_Status' => $Product_Status,
-        'Stop_Reason' => $Stop_Reason,
-        'ID' => $Progress_ID
-    ]));
+    // Optional: Check if rows were actually affected (useful for debugging)
+    $rowCount = $stmt->rowCount();
+    // error_log("Updated tbl_progress for Progress_ID: $Progress_ID. Rows affected: $rowCount");
+    // if ($rowCount === 0) {
+    //     // This might happen if the submitted data is identical to the existing data.
+    //     // Decide if this is an error or just informational.
+    //     // error_log("Warning: No rows updated for Progress_ID: $Progress_ID. Data might be unchanged.");
+    // }
 
-    // Update the corresponding record in tbl_progress
-    $progressQuery = "
-        UPDATE tbl_progress
-        SET 
-            Order_Status = :Order_Status,
-            Product_Status = :Product_Status,
-            Stop_Reason = :Stop_Reason
-    ";
 
-    // Add Tracking_Number to the query if provided
-    if (!empty($Tracking_Number)) {
-        $progressQuery .= ", Tracking_Number = :Tracking_Number";
-    }
-
-    // Add progress picture fields to the query if they exist
-    if (!empty($progressPics)) {
-        $progressQuery .= ", " . implode(", ", array_map(fn($key) => "$key = :$key", array_keys($progressPics)));
-    }
-
-    $progressQuery .= " WHERE $progressIdColumn = :Progress_ID";
-
-    // Prepare the statement for tbl_progress
-    $progressStmt = $pdo->prepare($progressQuery);
-
-    // Bind parameters
-    $progressStmt->bindParam(':Order_Status', $Order_Status, PDO::PARAM_INT);
-    $progressStmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
-    $progressStmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
-    $progressStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
-
-    if (!empty($Tracking_Number)) {
-        $progressStmt->bindParam(':Tracking_Number', $Tracking_Number, PDO::PARAM_STR);
-    }
-
-    // Bind progress picture parameters if they exist
-    foreach ($progressPics as $key => $value) {
-        $progressStmt->bindValue(":$key", $value, PDO::PARAM_STR);
-    }
-
-    // Execute the query for tbl_progress
-    $rowsAffectedProgress = $progressStmt->execute();
-    if (!$rowsAffectedProgress || $progressStmt->rowCount() === 0) {
-        throw new Exception("Failed to update progress record in tbl_progress. Rows affected: " . $progressStmt->rowCount());
-    }
-
-    // Debugging: Confirm rows affected
-    error_log("Updated tbl_progress with Progress_ID: $Progress_ID");
-
-    // Check if both Order_Status and Product_Status are 100
-    if ($Order_Status == 100 && $Product_Status == 100) {
-        // Fetch the record from tbl_progress
-        $fetchQuery = "
-            SELECT * 
-            FROM tbl_progress 
-            WHERE $progressIdColumn = :Progress_ID
-        ";
+    // --- History Transfer Logic (Based ONLY on Product_Status) ---
+    if ($Product_Status == 100) {
+        // 1. Fetch the completed record from tbl_progress
+        $fetchQuery = "SELECT * FROM tbl_progress WHERE Progress_ID = :Progress_ID";
         $fetchStmt = $pdo->prepare($fetchQuery);
         $fetchStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
         $fetchStmt->execute();
         $progressRecord = $fetchStmt->fetch(PDO::FETCH_ASSOC);
 
         if ($progressRecord) {
-            // Insert the record into tbl_purchase_history
+            // 2. Insert the record into tbl_purchase_history (Removed Order_Status)
             $insertQuery = "
                 INSERT INTO tbl_purchase_history (
-                    User_ID, Product_ID, Product_Name, Quantity, Total_Price, 
-                    Order_Type, Purchase_Date, Order_Status, Product_Status
+                    User_ID, Product_ID, Product_Name, Quantity, Total_Price,
+                    Order_Type, Purchase_Date, Product_Status -- Removed Order_Status
                 ) VALUES (
-                    :User_ID, :Product_ID, :Product_Name, :Quantity, :Total_Price, 
-                    :Order_Type, NOW(), :Order_Status, :Product_Status
+                    :User_ID, :Product_ID, :Product_Name, :Quantity, :Total_Price,
+                    :Order_Type, NOW(), :Product_Status -- Removed :Order_Status
                 )
             ";
             $insertStmt = $pdo->prepare($insertQuery);
 
             // Bind parameters for tbl_purchase_history
-            $insertStmt->bindParam(':User_ID', $progressRecord['User_ID'], PDO::PARAM_STR);
-            $insertStmt->bindParam(':Product_ID', $progressRecord['Product_ID'], PDO::PARAM_INT);
-            $insertStmt->bindParam(':Product_Name', $progressRecord['Product_Name'], PDO::PARAM_STR);
-            $insertStmt->bindParam(':Quantity', $progressRecord['Quantity'], PDO::PARAM_INT);
-            $insertStmt->bindParam(':Total_Price', $progressRecord['Total_Price'], PDO::PARAM_STR);
-            $insertStmt->bindParam(':Order_Type', $progressRecord['Order_Type'], PDO::PARAM_STR);
-            $insertStmt->bindParam(':Order_Status', $Order_Status, PDO::PARAM_INT);
-            $insertStmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
+            $insertStmt->bindParam(':User_ID', $progressRecord['User_ID']);
+            $insertStmt->bindParam(':Product_ID', $progressRecord['Product_ID']);
+            $insertStmt->bindParam(':Product_Name', $progressRecord['Product_Name']);
+            $insertStmt->bindParam(':Quantity', $progressRecord['Quantity']);
+            $insertStmt->bindParam(':Total_Price', $progressRecord['Total_Price']);
+            $insertStmt->bindParam(':Order_Type', $progressRecord['Order_Type']);
+            // Bind the Product_Status that triggered the completion
+            $insertStmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT); // Use the variable from POST
 
-            // Execute the insert query
             if (!$insertStmt->execute()) {
-                throw new Exception("Failed to transfer record to tbl_purchase_history.");
+                throw new Exception("Failed to transfer record to tbl_purchase_history. Error: " . implode(", ", $insertStmt->errorInfo()));
             }
 
-            // Delete the record from tbl_progress
-            $deleteQuery = "
-                DELETE FROM tbl_progress 
-                WHERE $progressIdColumn = :Progress_ID
-            ";
+            // 3. Delete the record from tbl_progress
+            $deleteQuery = "DELETE FROM tbl_progress WHERE Progress_ID = :Progress_ID";
             $deleteStmt = $pdo->prepare($deleteQuery);
             $deleteStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
 
-            // Execute the delete query
             if (!$deleteStmt->execute()) {
-                throw new Exception("Failed to delete record from tbl_progress.");
+                throw new Exception("Failed to delete record from tbl_progress after history transfer. Error: " . implode(", ", $deleteStmt->errorInfo()));
             }
+             // error_log("Transferred and deleted Progress_ID: $Progress_ID");
+
+        } else {
+             // This shouldn't happen if the update succeeded, but good to log
+             error_log("Warning: Could not find Progress_ID $Progress_ID to transfer to history after update.");
         }
     }
 
     // Commit the transaction
     $pdo->commit();
 
-    // Redirect to the read-all-progress-form.php page with success message
-    header("Location: ../progress/read-all-progress-form.php?success=1");
+    // Redirect on success
+    header("Location: ../progress/read-all-progress-form.php?success=1&id=" . $Progress_ID); // Optionally pass ID back
     exit();
-} catch (Exception $e) {
-    // Rollback the transaction in case of error
+
+} catch (PDOException $e) {
+    // Rollback the transaction in case of database error
     $pdo->rollBack();
-    echo "Error: " . $e->getMessage();
+    // Log the detailed error
+    error_log("Database Error in update-progress-rec.php: " . $e->getMessage());
+    echo "Database Error: Failed to update progress. Please check logs or contact support."; // User-friendly message
+    // echo "Error: " . $e->getMessage(); // Show detailed error during development
+
+} catch (Exception $e) {
+    // Rollback the transaction for other errors (like file upload issues handled earlier)
+    if ($pdo->inTransaction()) { // Check if transaction started before rolling back
+       $pdo->rollBack();
+    }
+    // Log the error
+    error_log("General Error in update-progress-rec.php: " . $e->getMessage());
+    echo "Error: " . $e->getMessage(); // Show specific error message
 }
 ?>

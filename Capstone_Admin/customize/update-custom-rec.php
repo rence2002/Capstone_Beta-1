@@ -1,155 +1,238 @@
 <?php
 session_start();
-include '../config/database.php';
+include '../config/database.php'; // Provides $pdo
 
+// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: /Capstone/login.php");
+    // Use a more robust relative path or absolute path if needed
+    header("Location: ../login.php");
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $customizationID = $_POST['txtCustomizationID'] ?? null;
+// Ensure this script is accessed via POST method
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo "Invalid request method.";
+    exit();
+}
 
-    // Fetch existing values
+// --- Configuration ---
+// Define the base directory for uploads relative to *this* script's location
+// This script is in Capstone_Admin/customize/, uploads are in Capstone_Admin/uploads/
+$uploadBaseDir = __DIR__ . "/../uploads/customizations/"; // Absolute server path for file operations
+$dbPathPrefix = "../uploads/customizations/"; // Relative path to store in DB (relative to Capstone_Admin/)
+
+// Create upload directory if it doesn't exist
+if (!is_dir($uploadBaseDir)) {
+    if (!mkdir($uploadBaseDir, 0777, true)) {
+        die("Failed to create upload directory: " . $uploadBaseDir);
+    }
+}
+
+// --- Form Data Processing ---
+$customizationID = $_POST['txtCustomizationID'] ?? null;
+
+if (!$customizationID) {
+    echo "Customization ID is missing.";
+    exit();
+}
+
+try {
+    // Fetch existing customization data to compare and get old image paths
     $stmt = $pdo->prepare("SELECT * FROM tbl_customizations WHERE Customization_ID = :id");
-    $stmt->bindParam(':id', $customizationID);
+    $stmt->bindParam(':id', $customizationID, PDO::PARAM_INT);
     $stmt->execute();
     $existingData = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existingData) {
-        echo "Customization record not found.";
+        echo "Customization record not found for ID: " . htmlspecialchars($customizationID);
         exit();
     }
 
-    // Initialize an array to hold the data to be updated
-    $updateData = [];
-    $bindParams = [];
+    // --- Prepare Update ---
+    $updateFields = []; // Stores "FieldName = :placeholder" strings
+    $bindParams = [':customizationID' => $customizationID]; // Stores parameters to bind
 
-    // Function to handle field updates
-    function updateField($fieldName, $postName, &$updateData, &$bindParams, $existingData, $pdo) {
-        if (isset($_POST[$postName]) && $_POST[$postName] != $existingData[$fieldName]) {
-            $updateData[$fieldName] = $_POST[$postName];
-            $bindParams[':' . $fieldName] = $_POST[$postName];
+    // Helper function to add fields to update if changed
+    function addFieldToUpdate($fieldName, $postName, &$updateFields, &$bindParams, $existingValue) {
+        if (isset($_POST[$postName]) && $_POST[$postName] !== $existingValue) {
+            $placeholder = ':' . $fieldName;
+            $updateFields[] = "`" . $fieldName . "` = " . $placeholder; // Use backticks for field names
+            $bindParams[$placeholder] = $_POST[$postName];
+            return true; // Indicate that the field was added for update
         }
+        return false; // Indicate no change
     }
 
-    // Directory to store uploaded images
-    $uploadDir = "../uploads/customizations/";
+    // Helper function to handle image processing (removal and upload)
+    function processImageField($fieldNamePrefix, $inputName, $existingDbPath, $uploadBaseDir, $dbPathPrefix, &$updateFields, &$bindParams) {
+        $dbFieldName = $fieldNamePrefix . '_Image_URL';
+        $removeCheckboxName = 'remove_' . $inputName;
+        $placeholder = ':' . $dbFieldName;
+        $imageRemoved = false;
 
-    function uploadImage($inputName, $uploadDir, $existingImage, &$updateData, &$bindParams) {
-        if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] == UPLOAD_ERR_OK) {
-            $fileTmp = $_FILES[$inputName]['tmp_name'];
-            $fileName = basename($_FILES[$inputName]['name']);
-            $targetPath = $uploadDir . time() . "_" . $fileName;
+        // 1. Check for Removal Request
+        if (isset($_POST[$removeCheckboxName]) && $_POST[$removeCheckboxName] == '1') {
+            // If removal is checked, mark for DB update to NULL and delete file
+            $updateFields[] = "`" . $dbFieldName . "` = " . $placeholder;
+            $bindParams[$placeholder] = null; // Set DB field to NULL
+            $imageRemoved = true;
 
-            if (move_uploaded_file($fileTmp, $targetPath)) {
-                //remove the existing image if its not empty
-                if (!empty($existingImage) && file_exists($existingImage)) {
-                    unlink($existingImage);
+            // Construct absolute server path for deletion
+            // Need to adjust the DB path ('../uploads/...') to a server path
+            // Assuming $existingDbPath is like '../uploads/customizations/image.jpg'
+            // and this script is in 'customize/', the server path is correct relative to the script's parent dir
+            $existingServerPath = realpath(__DIR__ . '/../' . substr($existingDbPath, 3)); // Go up one level from __DIR__ then follow path
+
+            if (!empty($existingDbPath) && $existingServerPath && file_exists($existingServerPath)) {
+                if (!unlink($existingServerPath)) {
+                    // Log error or notify admin, but continue script execution
+                    error_log("Failed to delete image: " . $existingServerPath);
                 }
-
-                $fieldName = str_replace(['Image'], ['_Image'], $inputName) . "_URL";
-                $updateData[$fieldName] = $targetPath;
-                $bindParams[':' . $fieldName] = $targetPath;
-                return;
-            }
-            else {
-                echo "Failed to upload image";
             }
         }
-        //if there is no new image dont add to the update data.
+
+        // 2. Check for New Upload (only if not removed)
+        if (!$imageRemoved && isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] == UPLOAD_ERR_OK) {
+            $fileTmp = $_FILES[$inputName]['tmp_name'];
+            // Sanitize filename (optional but recommended)
+            $fileName = preg_replace("/[^a-zA-Z0-9.\-_]/", "_", basename($_FILES[$inputName]['name']));
+            $uniqueFileName = time() . "_" . $fileName;
+            $targetServerPath = $uploadBaseDir . $uniqueFileName; // Absolute path for move_uploaded_file
+            $targetDbPath = $dbPathPrefix . $uniqueFileName; // Relative path for DB storage
+
+            if (move_uploaded_file($fileTmp, $targetServerPath)) {
+                // Successfully uploaded new file
+                $updateFields[] = "`" . $dbFieldName . "` = " . $placeholder;
+                $bindParams[$placeholder] = $targetDbPath; // Store relative path in DB
+
+                // Delete the *old* image if a new one was successfully uploaded *and* remove wasn't checked
+                 $existingServerPath = realpath(__DIR__ . '/../' . substr($existingDbPath, 3));
+                if (!empty($existingDbPath) && $existingServerPath && file_exists($existingServerPath)) {
+                     if (!unlink($existingServerPath)) {
+                         error_log("Failed to delete old image after new upload: " . $existingServerPath);
+                     }
+                }
+            } else {
+                // Handle upload failure (e.g., log error, notify user)
+                error_log("Failed to move uploaded file to: " . $targetServerPath);
+                // Decide if you want to stop the script or just skip this image update
+                echo "Error uploading " . htmlspecialchars($inputName) . ". Changes might not be fully saved.";
+                // exit(); // Optional: stop if image upload is critical
+            }
+        }
+        // If no removal and no new upload, do nothing for this image field.
     }
 
-    // Update fields only if they have new values
-    updateField('Furniture_Type', 'txtFurnitureType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Furniture_Type_Additional_Info', 'txtFurnitureTypeAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Standard_Size', 'txtStandardSize', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Desired_Size', 'txtDesiredSize', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Color', 'txtColor', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Color_Additional_Info', 'txtColorAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Texture', 'txtTexture', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Texture_Additional_Info', 'txtTextureAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Wood_Type', 'txtWoodType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Wood_Additional_Info', 'txtWoodAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Foam_Type', 'txtFoamType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Foam_Additional_Info', 'txtFoamAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Cover_Type', 'txtCoverType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Cover_Additional_Info', 'txtCoverAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Design', 'txtDesign', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Design_Additional_Info', 'txtDesignAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Tile_Type', 'txtTileType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Tile_Additional_Info', 'txtTileAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Metal_Type', 'txtMetalType', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Metal_Additional_Info', 'txtMetalAdditionalInfo', $updateData, $bindParams, $existingData, $pdo);
-    // Correct the field name to Order_Status
-    updateField('Order_Status', 'txtStatus', $updateData, $bindParams, $existingData, $pdo);
-    updateField('Product_Status', 'txtProductStatus', $updateData, $bindParams, $existingData, $pdo);
 
-    //upload images
-    uploadImage('colorImage', $uploadDir, $existingData['Color_Image_URL'], $updateData, $bindParams);
-    uploadImage('woodImage', $uploadDir, $existingData['Wood_Image_URL'], $updateData, $bindParams);
-    uploadImage('foamImage', $uploadDir, $existingData['Foam_Image_URL'], $updateData, $bindParams);
-    uploadImage('designImage', $uploadDir, $existingData['Design_Image_URL'], $updateData, $bindParams);
-    uploadImage('textureImage', $uploadDir, $existingData['Texture_Image_URL'], $updateData, $bindParams);
-    uploadImage('coverImage', $uploadDir, $existingData['Cover_Image_URL'], $updateData, $bindParams);
-    uploadImage('tileImage', $uploadDir, $existingData['Tile_Image_URL'], $updateData, $bindParams);
-    uploadImage('metalImage', $uploadDir, $existingData['Metal_Image_URL'], $updateData, $bindParams);
+    // --- Process Text/Select Fields ---
+    addFieldToUpdate('Furniture_Type', 'txtFurnitureType', $updateFields, $bindParams, $existingData['Furniture_Type']);
+    addFieldToUpdate('Furniture_Type_Additional_Info', 'txtFurnitureTypeAdditionalInfo', $updateFields, $bindParams, $existingData['Furniture_Type_Additional_Info']);
+    addFieldToUpdate('Standard_Size', 'txtStandardSize', $updateFields, $bindParams, $existingData['Standard_Size']);
+    addFieldToUpdate('Desired_Size', 'txtDesiredSize', $updateFields, $bindParams, $existingData['Desired_Size']);
+    addFieldToUpdate('Color', 'txtColor', $updateFields, $bindParams, $existingData['Color']);
+    addFieldToUpdate('Color_Additional_Info', 'txtColorAdditionalInfo', $updateFields, $bindParams, $existingData['Color_Additional_Info']);
+    addFieldToUpdate('Texture', 'txtTexture', $updateFields, $bindParams, $existingData['Texture']);
+    addFieldToUpdate('Texture_Additional_Info', 'txtTextureAdditionalInfo', $updateFields, $bindParams, $existingData['Texture_Additional_Info']);
+    addFieldToUpdate('Wood_Type', 'txtWoodType', $updateFields, $bindParams, $existingData['Wood_Type']);
+    addFieldToUpdate('Wood_Additional_Info', 'txtWoodAdditionalInfo', $updateFields, $bindParams, $existingData['Wood_Additional_Info']);
+    addFieldToUpdate('Foam_Type', 'txtFoamType', $updateFields, $bindParams, $existingData['Foam_Type']);
+    addFieldToUpdate('Foam_Additional_Info', 'txtFoamAdditionalInfo', $updateFields, $bindParams, $existingData['Foam_Additional_Info']);
+    addFieldToUpdate('Cover_Type', 'txtCoverType', $updateFields, $bindParams, $existingData['Cover_Type']);
+    addFieldToUpdate('Cover_Additional_Info', 'txtCoverAdditionalInfo', $updateFields, $bindParams, $existingData['Cover_Additional_Info']);
+    addFieldToUpdate('Design', 'txtDesign', $updateFields, $bindParams, $existingData['Design']);
+    addFieldToUpdate('Design_Additional_Info', 'txtDesignAdditionalInfo', $updateFields, $bindParams, $existingData['Design_Additional_Info']);
+    addFieldToUpdate('Tile_Type', 'txtTileType', $updateFields, $bindParams, $existingData['Tile_Type']);
+    addFieldToUpdate('Tile_Additional_Info', 'txtTileAdditionalInfo', $updateFields, $bindParams, $existingData['Tile_Additional_Info']);
+    addFieldToUpdate('Metal_Type', 'txtMetalType', $updateFields, $bindParams, $existingData['Metal_Type']);
+    addFieldToUpdate('Metal_Additional_Info', 'txtMetalAdditionalInfo', $updateFields, $bindParams, $existingData['Metal_Additional_Info']);
 
-    
-    // Construct the update query dynamically
-    $updateQueryParts = [];
-    foreach ($updateData as $field => $value) {
-        $updateQueryParts[] = "$field = :$field";
-    }
+    // Process Product Status - Important for tbl_progress sync
+    $productStatusChanged = addFieldToUpdate('Product_Status', 'txtProductStatus', $updateFields, $bindParams, $existingData['Product_Status']);
 
-    if (!empty($updateQueryParts)) {
-        $updateQuery = "UPDATE tbl_customizations SET " . implode(", ", $updateQueryParts) . ", Last_Update = NOW() WHERE Customization_ID = :customizationID";
+    // --- Process Image Fields ---
+    processImageField('Color', 'colorImage', $existingData['Color_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Texture', 'textureImage', $existingData['Texture_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Wood', 'woodImage', $existingData['Wood_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Foam', 'foamImage', $existingData['Foam_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Cover', 'coverImage', $existingData['Cover_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Design', 'designImage', $existingData['Design_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Tile', 'tileImage', $existingData['Tile_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+    processImageField('Metal', 'metalImage', $existingData['Metal_Image_URL'], $uploadBaseDir, $dbPathPrefix, $updateFields, $bindParams);
+
+
+    // --- Execute Update Query if Changes Were Made ---
+    if (!empty($updateFields)) {
+        // Add Last_Update timestamp
+        $updateFields[] = "`Last_Update` = NOW()";
+
+        $updateQuery = "UPDATE `tbl_customizations` SET " . implode(", ", $updateFields) . " WHERE `Customization_ID` = :customizationID";
 
         $stmt = $pdo->prepare($updateQuery);
 
-        // Bind parameters
-        foreach ($bindParams as $key => $value) {
-            $stmt->bindValue($key, $value);
-        }
+        // Bind all parameters collected
+        if ($stmt->execute($bindParams)) {
+            $message = "Record updated successfully.";
 
-        $stmt->bindParam(':customizationID', $customizationID);
+            // --- Sync with tbl_progress if Product_Status changed and Product_ID exists ---
+            if ($productStatusChanged && !empty($existingData['Product_ID'])) {
+                $newProductStatus = $bindParams[':Product_Status']; // Get the new status value
 
-        if ($stmt->execute()) {
-            // Update tbl_progress with the new statuses
-            $progressUpdateQuery = "UPDATE tbl_progress 
-                                    SET Order_Status = :orderStatus, Product_Status = :productStatus 
-                                    WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
-            $progressStmt = $pdo->prepare($progressUpdateQuery);
-            $progressStmt->bindParam(':orderStatus', $bindParams[':Order_Status'], PDO::PARAM_INT);
-            $progressStmt->bindParam(':productStatus', $bindParams[':Product_Status'], PDO::PARAM_INT);
-            $progressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
-            $progressStmt->execute();
+                $progressUpdateQuery = "UPDATE `tbl_progress`
+                                        SET `Product_Status` = :productStatus, `LastUpdate` = NOW()
+                                        WHERE `Product_ID` = :productID AND `Order_Type` = 'custom'";
+                $progressStmt = $pdo->prepare($progressUpdateQuery);
+                $progressStmt->bindParam(':productStatus', $newProductStatus, PDO::PARAM_INT);
+                $progressStmt->bindParam(':productID', $existingData['Product_ID'], PDO::PARAM_INT);
 
-            // **Check if both statuses in tbl_progress are 100 and delete if so**
-            $checkProgressQuery = "SELECT Order_Status, Product_Status FROM tbl_progress WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
-            $checkProgressStmt = $pdo->prepare($checkProgressQuery);
-            $checkProgressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
-            $checkProgressStmt->execute();
-            $progressData = $checkProgressStmt->fetch(PDO::FETCH_ASSOC);
+                if ($progressStmt->execute()) {
+                     $message .= " Progress status synced.";
 
-            if ($progressData && $progressData['Order_Status'] == 100 && $progressData['Product_Status'] == 100) {
-                $deleteProgressQuery = "DELETE FROM tbl_progress WHERE Product_ID = (SELECT Product_ID FROM tbl_customizations WHERE Customization_ID = :customizationID)";
-                $deleteProgressStmt = $pdo->prepare($deleteProgressQuery);
-                $deleteProgressStmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
-                $deleteProgressStmt->execute();
+                    // --- Check if Product_Status reached 100 (or final state) and delete progress record ---
+                    // Assuming 100 means fully completed and the progress entry is no longer needed
+                    if ($newProductStatus == 100) {
+                        $deleteProgressQuery = "DELETE FROM `tbl_progress`
+                                                WHERE `Product_ID` = :productID AND `Order_Type` = 'custom'";
+                        $deleteProgressStmt = $pdo->prepare($deleteProgressQuery);
+                        $deleteProgressStmt->bindParam(':productID', $existingData['Product_ID'], PDO::PARAM_INT);
+                        if ($deleteProgressStmt->execute()) {
+                            $message .= " Completed progress record removed.";
+                        } else {
+                             $message .= " Failed to remove completed progress record.";
+                             error_log("Failed to delete progress record for Product_ID: " . $existingData['Product_ID']);
+                        }
+                    }
+                } else {
+                    $message .= " Failed to sync progress status.";
+                    error_log("Failed to update progress status for Product_ID: " . $existingData['Product_ID']);
+                    // Log error: print_r($progressStmt->errorInfo());
+                }
+            } elseif ($productStatusChanged && empty($existingData['Product_ID'])) {
+                 $message .= " Product_Status updated, but no associated Product_ID found to sync progress.";
             }
 
-            header("Location: read-all-custom-form.php?message=Record updated successfully");
+            // Redirect after successful update
+            header("Location: read-all-custom-form.php?message=" . urlencode($message));
             exit();
+
         } else {
+            // Handle update failure
             echo "Error updating customization record.";
-            print_r($stmt->errorInfo()); // Debugging
+            // Log error: print_r($stmt->errorInfo());
+            exit();
         }
     } else {
-        header("Location: read-all-custom-form.php?message=No changes were made");
+        // No changes detected
+        header("Location: read-all-custom-form.php?message=" . urlencode("No changes were made."));
         exit();
     }
-} else {
-    echo "Invalid request.";
+
+} catch (PDOException $e) {
+    echo "Database Error: " . $e->getMessage();
+    // Log error: error_log("Database Error: " . $e->getMessage());
+    exit();
+} catch (Exception $e) {
+    echo "An error occurred: " . $e->getMessage();
+    // Log error: error_log("General Error: " . $e->getMessage());
+    exit();
 }
 ?>

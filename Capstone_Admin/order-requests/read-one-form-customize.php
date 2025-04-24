@@ -2,7 +2,7 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
 // Check if the admin's ID is stored in the session after login
 if (!isset($_SESSION['admin_id'])) {
@@ -24,20 +24,35 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
 
 // Check if Request_ID is passed in the URL
 if (isset($_GET['id'])) {
     $requestID = $_GET['id'];
-    
+
     try {
-        // Fetch order request details
+        // Fetch order request details along with customization details
+        // Removed orq.Order_Status, added orq.Payment_Status, orq.Processed
         $query = "
-            SELECT 
-                orq.*, 
-                u.First_Name, 
-                u.Last_Name, 
-                c.Furniture_Type, 
+            SELECT
+                orq.Request_ID,
+                orq.User_ID,
+                orq.Quantity,
+                orq.Order_Type,
+                orq.Total_Price,
+                orq.Payment_Status, -- Added
+                orq.Request_Date,
+                orq.Processed,      -- Added
+                u.First_Name,
+                u.Last_Name,
+                c.Furniture_Type,
                 c.Furniture_Type_Additional_Info,
                 c.Standard_Size,
                 c.Desired_Size,
@@ -64,8 +79,8 @@ if (isset($_GET['id'])) {
                 c.Tile_Additional_Info,
                 c.Metal_Type,
                 c.Metal_Image_URL,
-                c.Metal_Additional_Info,
-                orq.Order_Status AS Request_Status
+                c.Metal_Additional_Info
+                -- Removed orq.Order_Status AS Request_Status
             FROM tbl_order_request orq
             JOIN tbl_user_info u ON orq.User_ID = u.User_ID
             LEFT JOIN tbl_customizations_temp c ON orq.Customization_ID = c.Temp_Customization_ID
@@ -77,43 +92,66 @@ if (isset($_GET['id'])) {
         $orderRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($orderRequest) {
+            // Assign fetched data to variables with htmlspecialchars
             $userName = htmlspecialchars($orderRequest['First_Name'] . ' ' . $orderRequest['Last_Name']);
-            $furnitureType = htmlspecialchars($orderRequest['Furniture_Type']);
-            $furnitureTypeAdditionalInfo = htmlspecialchars($orderRequest['Furniture_Type_Additional_Info']);
-            $standardSize = htmlspecialchars($orderRequest['Standard_Size']);
-            $desiredSize = htmlspecialchars($orderRequest['Desired_Size']);
-            $color = htmlspecialchars($orderRequest['Color']);
-            $colorImageURL = htmlspecialchars($orderRequest['Color_Image_URL']);
-            $colorAdditionalInfo = htmlspecialchars($orderRequest['Color_Additional_Info']);
-            $texture = htmlspecialchars($orderRequest['Texture']);
-            $textureImageURL = htmlspecialchars($orderRequest['Texture_Image_URL']);
-            $textureAdditionalInfo = htmlspecialchars($orderRequest['Texture_Additional_Info']);
-            $woodType = htmlspecialchars($orderRequest['Wood_Type']);
-            $woodImageURL = htmlspecialchars($orderRequest['Wood_Image_URL']);
-            $woodAdditionalInfo = htmlspecialchars($orderRequest['Wood_Additional_Info']);
-            $foamType = htmlspecialchars($orderRequest['Foam_Type']);
-            $foamImageURL = htmlspecialchars($orderRequest['Foam_Image_URL']);
-            $foamAdditionalInfo = htmlspecialchars($orderRequest['Foam_Additional_Info']);
-            $coverType = htmlspecialchars($orderRequest['Cover_Type']);
-            $coverImageURL = htmlspecialchars($orderRequest['Cover_Image_URL']);
-            $coverAdditionalInfo = htmlspecialchars($orderRequest['Cover_Additional_Info']);
-            $design = htmlspecialchars($orderRequest['Design']);
-            $designImageURL = htmlspecialchars($orderRequest['Design_Image_URL']);
-            $designAdditionalInfo = htmlspecialchars($orderRequest['Design_Additional_Info']);
-            $tileType = htmlspecialchars($orderRequest['Tile_Type']);
-            $tileImageURL = htmlspecialchars($orderRequest['Tile_Image_URL']);
-            $tileAdditionalInfo = htmlspecialchars($orderRequest['Tile_Additional_Info']);
-            $metalType = htmlspecialchars($orderRequest['Metal_Type']);
-            $metalImageURL = htmlspecialchars($orderRequest['Metal_Image_URL']);
-            $metalAdditionalInfo = htmlspecialchars($orderRequest['Metal_Additional_Info']);
-            $status = htmlspecialchars($orderRequest['Request_Status']); // Use the alias
-            $requestDate = htmlspecialchars($orderRequest['Request_Date']);
+            $requestDate = htmlspecialchars(date('F j, Y, g:i a', strtotime($orderRequest['Request_Date']))); // Format date
+            $paymentStatus = htmlspecialchars($orderRequest['Payment_Status']);
+            $processedStatus = $orderRequest['Processed'] == 0 ? 'Pending Confirmation' : 'Processed'; // Determine processing status text
+
+            $furnitureType = htmlspecialchars($orderRequest['Furniture_Type'] ?? 'N/A');
+            $furnitureTypeAdditionalInfo = htmlspecialchars($orderRequest['Furniture_Type_Additional_Info'] ?? '');
+            $standardSize = htmlspecialchars($orderRequest['Standard_Size'] ?? 'N/A');
+            $desiredSize = htmlspecialchars($orderRequest['Desired_Size'] ?? 'N/A');
+
+            // Function to safely get and escape customization details
+            function getCustomizationDetail($data, $key, $default = 'N/A') {
+                return htmlspecialchars($data[$key] ?? $default);
+            }
+            function getCustomizationImage($data, $key) {
+                 return !empty($data[$key]) ? htmlspecialchars($data[$key]) : null;
+            }
+            function getCustomizationInfo($data, $key) {
+                 return !empty($data[$key]) ? htmlspecialchars($data[$key]) : null;
+            }
+
+            $color = getCustomizationDetail($orderRequest, 'Color');
+            $colorImageURL = getCustomizationImage($orderRequest, 'Color_Image_URL');
+            $colorAdditionalInfo = getCustomizationInfo($orderRequest, 'Color_Additional_Info');
+
+            $texture = getCustomizationDetail($orderRequest, 'Texture');
+            $textureImageURL = getCustomizationImage($orderRequest, 'Texture_Image_URL');
+            $textureAdditionalInfo = getCustomizationInfo($orderRequest, 'Texture_Additional_Info');
+
+            $woodType = getCustomizationDetail($orderRequest, 'Wood_Type');
+            $woodImageURL = getCustomizationImage($orderRequest, 'Wood_Image_URL');
+            $woodAdditionalInfo = getCustomizationInfo($orderRequest, 'Wood_Additional_Info');
+
+            $foamType = getCustomizationDetail($orderRequest, 'Foam_Type');
+            $foamImageURL = getCustomizationImage($orderRequest, 'Foam_Image_URL');
+            $foamAdditionalInfo = getCustomizationInfo($orderRequest, 'Foam_Additional_Info');
+
+            $coverType = getCustomizationDetail($orderRequest, 'Cover_Type');
+            $coverImageURL = getCustomizationImage($orderRequest, 'Cover_Image_URL');
+            $coverAdditionalInfo = getCustomizationInfo($orderRequest, 'Cover_Additional_Info');
+
+            $design = getCustomizationDetail($orderRequest, 'Design');
+            $designImageURL = getCustomizationImage($orderRequest, 'Design_Image_URL');
+            $designAdditionalInfo = getCustomizationInfo($orderRequest, 'Design_Additional_Info');
+
+            $tileType = getCustomizationDetail($orderRequest, 'Tile_Type');
+            $tileImageURL = getCustomizationImage($orderRequest, 'Tile_Image_URL');
+            $tileAdditionalInfo = getCustomizationInfo($orderRequest, 'Tile_Additional_Info');
+
+            $metalType = getCustomizationDetail($orderRequest, 'Metal_Type');
+            $metalImageURL = getCustomizationImage($orderRequest, 'Metal_Image_URL');
+            $metalAdditionalInfo = getCustomizationInfo($orderRequest, 'Metal_Additional_Info');
+
         } else {
-            echo "Customization request not found.";
+            echo "Customization request not found or details missing.";
             exit();
         }
     } catch (PDOException $e) {
-        echo "Error: " . $e->getMessage();
+        echo "Database Error: " . $e->getMessage();
         exit();
     }
 } else {
@@ -121,316 +159,245 @@ if (isset($_GET['id'])) {
     exit();
 }
 
-// Status mapping
-$statusLabels = [
-    0 => 'Pending',
-    10 => 'Order Placed',
-    20 => 'Payment Processing',
-    30 => 'Order Confirmed',
-    40 => 'Preparing for Shipment',
-    50 => 'Shipped',
-    60 => 'Out for Delivery',
-    70 => 'Delivered',
-    80 => 'Installed',
-    100 => 'Complete'
-];
+// Removed old $statusLabels array as it's not relevant here
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Custom Request Details</title> <!-- Specific Title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
+    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Removed -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
+    <!-- <link href="../static/js/admin_home.js" rel=""> --> <!-- Incorrect link type -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        .table th { width: 25%; background-color: #f8f9fa; }
+        .table td { width: 75%; }
+        .customization-img { max-width: 200px; height: auto; display: block; margin-top: 5px; }
+        .additional-info { margin-top: 5px; font-style: italic; color: #555; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image"> <!-- Use class -->
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li>
+              <a href="../dashboard/dashboard.php">
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Dashboard</span>
+              </a>
+          </li>
+          <li>
+              <a href="../purchase-history/read-all-history-form.php">
+                  <i class="bx bx-history"></i> <!-- Changed icon -->
+                  <span class="links_name">Purchase History</span>
+              </a>
+          </li>
+          <li>
+              <a href="../reviews/read-all-reviews-form.php">
+                  <i class="bx bx-message-dots"></i>
+                  <span class="links_name">All Reviews</span>
+              </a>
+          </li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Custom Request Details</span> <!-- Updated title -->
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Search..." />
-                <i class="bx bx-search"></i>
+            <!-- Removed search box -->
+            <div class="profile-details" id="profile-details-container"> <!-- Added ID -->
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
             </div>
+        </nav>
+        <br><br><br>
 
+        <div class="container_boxes">
+            <h4>CUSTOMIZATION REQUEST DETAILS (ID: <?= htmlspecialchars($requestID) ?>)</h4>
 
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+            <table class="table table-bordered table-striped"> <!-- Bootstrap table classes -->
+                <tr><th>User Name</th><td><?= $userName ?></td></tr>
+                <tr><th>Request Date</th><td><?= $requestDate ?></td></tr>
+                <tr><th>Processing Status</th><td><?= $processedStatus ?></td></tr>
+                <tr><th>Payment Status</th><td><?= ucwords(str_replace('_', ' ', $paymentStatus)) ?></td></tr>
+                <tr><th>Total Price</th><td>₱ <?= number_format((float)($orderRequest['Total_Price'] ?? 0), 2) ?></td></tr>
+                <tr><th>Quantity</th><td><?= htmlspecialchars($orderRequest['Quantity'] ?? 1) ?></td></tr>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
-<br><br><br>
-
-<div class="container_boxes">
-    <h4>CUSTOMIZATION REQUEST DETAILS</h4>
-    <table width="100%" border="1" cellspacing="5">
-        <tr>
-            <th>USER NAME</th>
-            <td><?php echo $userName; ?></td>
-        </tr>
-        <tr>
-            <th>FURNITURE TYPE</th>
-            <td><?php echo $furnitureType; ?></td>
-        </tr>
-        <tr>
-            <th>FURNITURE TYPE ADDITIONAL INFO</th>
-            <td><?php echo $furnitureTypeAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>STANDARD SIZE</th>
-            <td><?php echo $standardSize; ?></td>
-        </tr>
-        <tr>
-            <th>DESIRED SIZE</th>
-            <td><?php echo $desiredSize; ?></td>
-        </tr>
-        <tr>
-            <th>COLOR</th>
-            <td><?php echo $color; ?></td>
-        </tr>
-        <tr>
-            <th>COLOR IMAGE</th>
-            <td>
-                <?php if ($colorImageURL): ?>
-                    <img src="<?php echo $colorImageURL; ?>" alt="Color Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No color image available.
+                <tr><th colspan="2" class="text-center bg-secondary text-white">Furniture Details</th></tr>
+                <tr><th>Furniture Type</th><td><?= $furnitureType ?></td></tr>
+                <?php if ($furnitureTypeAdditionalInfo): ?>
+                    <tr><th>Type Additional Info</th><td><?= $furnitureTypeAdditionalInfo ?></td></tr>
                 <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>COLOR ADDITIONAL INFO</th>
-            <td><?php echo $colorAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>TEXTURE</th>
-            <td><?php echo $texture; ?></td>
-        </tr>
-        <tr>
-            <th>TEXTURE IMAGE</th>
-            <td>
-                <?php if ($textureImageURL): ?>
-                    <img src="<?php echo $textureImageURL; ?>" alt="Texture Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No texture image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>TEXTURE ADDITIONAL INFO</th>
-            <td><?php echo $textureAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>WOOD TYPE</th>
-            <td><?php echo $woodType; ?></td>
-        </tr>
-        <tr>
-            <th>WOOD IMAGE</th>
-            <td>
-                <?php if ($woodImageURL): ?>
-                    <img src="<?php echo $woodImageURL; ?>" alt="Wood Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No wood image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>WOOD ADDITIONAL INFO</th>
-            <td><?php echo $woodAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>FOAM TYPE</th>
-            <td><?php echo $foamType; ?></td>
-        </tr>
-        <tr>
-            <th>FOAM IMAGE</th>
-            <td>
-                <?php if ($foamImageURL): ?>
-                    <img src="<?php echo $foamImageURL; ?>" alt="Foam Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No foam image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>FOAM ADDITIONAL INFO</th>
-            <td><?php echo $foamAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>COVER TYPE</th>
-            <td><?php echo $coverType; ?></td>
-        </tr>
-        <tr>
-            <th>COVER IMAGE</th>
-            <td>
-                <?php if ($coverImageURL): ?>
-                    <img src="<?php echo $coverImageURL; ?>" alt="Cover Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No cover image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>COVER ADDITIONAL INFO</th>
-            <td><?php echo $coverAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>DESIGN</th>
-            <td><?php echo $design; ?></td>
-        </tr>
-        <tr>
-            <th>DESIGN IMAGE</th>
-            <td>
-                <?php if ($designImageURL): ?>
-                    <img src="<?php echo $designImageURL; ?>" alt="Design Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No design image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>DESIGN ADDITIONAL INFO</th>
-            <td><?php echo $designAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>TILE TYPE</th>
-            <td><?php echo $tileType; ?></td>
-        </tr>
-        <tr>
-            <th>TILE IMAGE</th>
-            <td>
-                <?php if ($tileImageURL): ?>
-                    <img src="<?php echo $tileImageURL; ?>" alt="Tile Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No tile image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>TILE ADDITIONAL INFO</th>
-            <td><?php echo $tileAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>METAL TYPE</th>
-            <td><?php echo $metalType; ?></td>
-        </tr>
-        <tr>
-            <th>METAL IMAGE</th>
-            <td>
-                <?php if ($metalImageURL): ?>
-                    <img src="<?php echo $metalImageURL; ?>" alt="Metal Image" style="width: 300px; height: 300px;">
-                <?php else: ?>
-                    No metal image available.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <th>METAL ADDITIONAL INFO</th>
-            <td><?php echo $metalAdditionalInfo; ?></td>
-        </tr>
-        <tr>
-            <th>STATUS</th>
-            <td><?php echo $statusLabels[$status] ?? 'Unknown'; ?></td>
-        </tr>
-        <tr>
-            <th>REQUEST DATE</th>
-            <td><?php echo $requestDate; ?></td>
-        </tr>
-    </table>
-    <br>
-    <a href="read-all-request-form.php" class="btn btn-primary">Back to Order Requests</a>
-</div>
-</section>
+                <tr><th>Standard Size</th><td><?= $standardSize ?></td></tr>
+                <tr><th>Desired Size</th><td><?= $desiredSize ?></td></tr>
 
-<script>
-    let sidebar = document.querySelector(".sidebar");
-    let sidebarBtn = document.querySelector(".sidebarBtn");
-    sidebarBtn.onclick = function () {
-        sidebar.classList.toggle("active");
-        if (sidebar.classList.contains("active")) {
-            sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-        } else {
-            sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                <tr><th colspan="2" class="text-center bg-secondary text-white">Material & Appearance</th></tr>
+                <tr>
+                    <th>Color</th>
+                    <td>
+                        <?= $color ?>
+                        <?php if ($colorImageURL): ?>
+                            <img src="<?= $colorImageURL ?>" alt="Color Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($colorAdditionalInfo): ?>
+                            <div class="additional-info"><?= $colorAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Texture</th>
+                    <td>
+                        <?= $texture ?>
+                        <?php if ($textureImageURL): ?>
+                            <img src="<?= $textureImageURL ?>" alt="Texture Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($textureAdditionalInfo): ?>
+                            <div class="additional-info"><?= $textureAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Wood Type</th>
+                    <td>
+                        <?= $woodType ?>
+                        <?php if ($woodImageURL): ?>
+                            <img src="<?= $woodImageURL ?>" alt="Wood Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($woodAdditionalInfo): ?>
+                            <div class="additional-info"><?= $woodAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Foam Type</th>
+                    <td>
+                        <?= $foamType ?>
+                        <?php if ($foamImageURL): ?>
+                            <img src="<?= $foamImageURL ?>" alt="Foam Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($foamAdditionalInfo): ?>
+                            <div class="additional-info"><?= $foamAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Cover Type</th>
+                    <td>
+                        <?= $coverType ?>
+                        <?php if ($coverImageURL): ?>
+                            <img src="<?= $coverImageURL ?>" alt="Cover Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($coverAdditionalInfo): ?>
+                            <div class="additional-info"><?= $coverAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Design</th>
+                    <td>
+                        <?= $design ?>
+                        <?php if ($designImageURL): ?>
+                            <img src="<?= $designImageURL ?>" alt="Design Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($designAdditionalInfo): ?>
+                            <div class="additional-info"><?= $designAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Tile Type</th>
+                    <td>
+                        <?= $tileType ?>
+                        <?php if ($tileImageURL): ?>
+                            <img src="<?= $tileImageURL ?>" alt="Tile Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($tileAdditionalInfo): ?>
+                            <div class="additional-info"><?= $tileAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                 <tr>
+                    <th>Metal Type</th>
+                    <td>
+                        <?= $metalType ?>
+                        <?php if ($metalImageURL): ?>
+                            <img src="<?= $metalImageURL ?>" alt="Metal Sample" class="customization-img">
+                        <?php endif; ?>
+                        <?php if ($metalAdditionalInfo): ?>
+                            <div class="additional-info"><?= $metalAdditionalInfo ?></div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+
+            </table>
+            <br>
+            <a href="read-all-request-form.php" class="buttonBack btn btn-secondary">Back to Order Requests</a>
+        </div>
+    </section>
+
+    <script>
+        // Sidebar Toggle
+        let sidebar = document.querySelector(".sidebar");
+        let sidebarBtn = document.querySelector(".sidebarBtn");
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+                } else {
+                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                }
+            };
         }
-    };
 
-    document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-    toggle.addEventListener('click', function () {
-        const parent = this.parentElement; // Get the parent <li> of the toggle
-        const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-        parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+        // Profile Dropdown Toggle (Consistent version)
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
-        // Toggle the chevron icon rotation
-        const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-        if (parent.classList.contains('active')) {
-            chevron.classList.remove('bx-chevron-down');
-            chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-        } else {
-            chevron.classList.remove('bx-chevron-up');
-            chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if click is inside dropdown
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     dropdownIcon.classList.toggle('bx-chevron-up'); // Toggle icon class
+                }
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up'); // Ensure icon is down
+                }
+            });
         }
-        
-        // Toggle the display of the dropdown menu
-        dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-    });
-});
-</script>
+
+        // Removed old dropdown toggle JS
+
+    </script>
 </body>
 </html>

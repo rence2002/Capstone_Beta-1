@@ -2,29 +2,36 @@
 session_start();
 // Include the database connection
 include '../config/database.php';
+
 // Check if the admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../login.php");
     exit();
 }
+
 // Fetch admin data
 $adminId = $_SESSION['admin_id'];
 $stmt = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admin_ID = :admin_id");
 $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (!$admin) {
     echo "Admin not found.";
     exit();
 }
+
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
+
 // Check if Customization_ID is provided
 if (!isset($_GET['id'])) {
     echo "No customization ID provided.";
     exit();
 }
+
 $customizationID = $_GET['id'];
+
 try {
     // Fetch customization details
     $query = "
@@ -38,14 +45,17 @@ try {
     $stmt->bindParam(':customizationID', $customizationID, PDO::PARAM_INT);
     $stmt->execute();
     $customization = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if (!$customization) {
         echo "Customization record not found.";
         exit();
     }
+
     // Function to display data or "N/A" if empty
     function displayData($data) {
         return !empty($data) ? htmlspecialchars($data) : 'N/A';
     }
+
     // Function to display image or "N/A" if empty
     function displayImage($imageURL) {
         if (!empty($imageURL) && file_exists($imageURL)) {
@@ -54,6 +64,7 @@ try {
             return 'N/A';
         }
     }
+
     // Extract data and use displayData function
     $userName = displayData($customization['First_Name'] . ' ' . $customization['Last_Name']);
     $furnitureType = displayData($customization['Furniture_Type']);
@@ -84,26 +95,13 @@ try {
     $metalType = displayData($customization['Metal_Type']);
     $metalImage = displayImage($customization['Metal_Image_URL']);
     $metalAdditionalInfo = displayData($customization['Metal_Additional_Info']);
-    $orderStatus = htmlspecialchars($customization['Order_Status']);
+
+    // Corrected: Use Product_Status instead of Order_Status
     $productStatus = htmlspecialchars($customization['Product_Status']);
     $requestDate = displayData($customization['Request_Date']);
     $lastUpdate = displayData($customization['Last_Update']);
     $productID = displayData($customization['Product_ID']);
-    // Order status labels
-    $orderStatusMap = [
-        0   => 'Order Received',
-        10  => 'Confirmed',
-        20  => 'Design Finalization',
-        30  => 'Material Preparation',
-        40  => 'Production Started',
-        50  => 'Mid-Production',
-        60  => 'Finishing Process',
-        70  => 'Quality Check',
-        80  => 'Final Assembly',
-        90  => 'Ready for Delivery',
-        100 => 'Delivered / Completed'
-    ];
-    $orderStatusText = $orderStatusMap[$orderStatus] ?? 'Unknown Status';
+
     // Product status labels
     $productStatusLabels = [
         0   => 'Concept Stage',
@@ -118,6 +116,8 @@ try {
         90  => 'Final Inspection & Packaging',
         100 => 'Completed'
     ];
+
+    // Corrected: Use $productStatus instead of $orderStatus
     $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
@@ -172,7 +172,6 @@ try {
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-         
             <div class="profile-details" onclick="toggleDropdown()">
                 <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
@@ -217,7 +216,7 @@ try {
                 <tr><td>Metal Type:</td><td><?= $metalType ?></td></tr>
                 <tr><td>Metal Image:</td><td><?= $metalImage ?></td></tr>
                 <tr><td>Metal Additional Info:</td><td><?= $metalAdditionalInfo ?></td></tr>
-                <tr><td>Order Status:</td><td><?= $orderStatus ?>% - <?= $orderStatusText ?></td></tr>
+                <!-- Corrected: Display Product Status -->
                 <tr><td>Product Status:</td><td><?= $productStatus ?>% - <?= $productStatusText ?></td></tr>
                 <tr><td>Request Date:</td><td><?= $requestDate ?></td></tr>
                 <tr><td>Last Update:</td><td><?= $lastUpdate ?></td></tr>

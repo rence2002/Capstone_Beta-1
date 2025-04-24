@@ -2,7 +2,7 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
 // Check if the admin's ID is stored in the session after login
 if (!isset($_SESSION['admin_id'])) {
@@ -25,207 +25,273 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
 
 // Fetch users from the database
-$userStmt = $pdo->prepare("SELECT User_ID, First_Name FROM tbl_user_info");
+$userStmt = $pdo->prepare("SELECT User_ID, First_Name, Last_Name FROM tbl_user_info ORDER BY Last_Name, First_Name"); // Added Last_Name and ordering
 $userStmt->execute();
 $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch products from the database, including Product_Name and Price
-$productStmt = $pdo->prepare("SELECT Product_ID, Product_Name, Price FROM tbl_prod_info");
+$productStmt = $pdo->prepare("SELECT Product_ID, Product_Name, Price FROM tbl_prod_info ORDER BY Product_Name");
 $productStmt->execute();
 $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
 
-$preorderStatus = isset($_GET['preorderStatus']) ? $_GET['preorderStatus'] : 'Pending';  
+// Product Status Labels (Not directly used in this form, but good for reference)
+$productStatusLabels = [
+    0   => 'Request Approved',
+    10  => 'Design Approved',
+    20  => 'Material Sourcing',
+    30  => 'Cutting & Shaping',
+    40  => 'Structural Assembly',
+    50  => 'Detailing & Refinements',
+    60  => 'Sanding & Pre-Finishing',
+    70  => 'Varnishing/Painting',
+    80  => 'Drying & Curing',
+    90  => 'Final Inspection & Packaging',
+    95  => 'Ready for Shipment',
+    98  => 'Order Delivered',
+    100 => 'Order Recieved',
+];
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Create Progress</title> <!-- Specific Title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
+    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Removed, likely redundant -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
+    <!-- <link href="../static/js/admin_home.js" rel=""> --> <!-- Incorrect link type -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        /* Minor adjustments for form readability */
+        .container_boxes table td { padding: 5px; }
+        .container_boxes select, .container_boxes input[type=number], .container_boxes input[type=text] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .container_boxes input[readonly] { background-color: #e9ecef; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image"> <!-- Use class -->
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="active">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li>
+              <a href="../dashboard/dashboard.php"> <!-- Removed active class -->
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Dashboard</span>
+              </a>
+          </li>
+          <li>
+              <a href="../purchase-history/read-all-history-form.php">
+                  <i class="bx bx-history"></i> <!-- Changed icon -->
+                  <span class="links_name">Purchase History</span>
+              </a>
+          </li>
+          <li>
+              <a href="../reviews/read-all-reviews-form.php">
+                  <i class="bx bx-message-dots"></i>
+                  <span class="links_name">All Reviews</span>
+              </a>
+          </li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Create New Progress Record</span> <!-- Updated title -->
             </div>
-           
-
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
+            <div class="profile-details" id="profile-details-container"> <!-- Added ID -->
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
+        </nav>
         <br><br><br>
 
         <div class="container_boxes">
-        <form name="frmProgress" method="POST" enctype="multipart/form-data" action="create-progress-rec.php">
-            <h4>Create New Progress</h4>
-            <table>
-            <tr>
-                <td>User ID:</td>
-                <td>
-                    <select name="User_ID" required>
-                        <option value="" disabled selected>Select User</option>
-                        <?php foreach ($users as $user) : ?>
-                            <option value="<?= htmlspecialchars($user['User_ID']) ?>"><?= htmlspecialchars($user['First_Name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Product:</td>
-                <td>
-                    <select id="productSelect" name="Product_ID" required>
-                        <option value="" disabled selected>Select Product</option>
-                        <?php foreach ($products as $product) : ?>
-                            <option value="<?= htmlspecialchars($product['Product_ID']) ?>" data-price="<?= htmlspecialchars($product['Price']) ?>">
-                                <?= htmlspecialchars($product['Product_Name']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </td>
-            </tr>
+            <!-- Form action points to the new processing script -->
+            <form name="frmProgress" method="POST" action="create-progress-rec.php">
+                <h4>Create New Progress</h4>
+                <table class="table table-borderless" style="width: 50%;"> <!-- Use Bootstrap table for better spacing -->
+                    <tr>
+                        <td style="width: 30%;"><label for="userSelect">User:</label></td>
+                        <td>
+                            <select id="userSelect" name="User_ID" required>
+                                <option value="" disabled selected>Select User</option>
+                                <?php foreach ($users as $user) : ?>
+                                    <option value="<?= htmlspecialchars($user['User_ID']) ?>">
+                                        <?= htmlspecialchars($user['Last_Name'] . ', ' . $user['First_Name']) ?> (<?= htmlspecialchars($user['User_ID']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="productSelect">Product:</label></td>
+                        <td>
+                            <select id="productSelect" name="Product_ID" required>
+                                <option value="" data-price="0" data-name="" disabled selected>Select Product</option>
+                                <?php foreach ($products as $product) : ?>
+                                    <option value="<?= htmlspecialchars($product['Product_ID']) ?>"
+                                            data-price="<?= htmlspecialchars($product['Price']) ?>"
+                                            data-name="<?= htmlspecialchars($product['Product_Name']) ?>">
+                                        <?= htmlspecialchars($product['Product_Name']) ?> (ID: <?= htmlspecialchars($product['Product_ID']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <!-- Hidden input to store Product Name -->
+                            <input type="hidden" id="productNameInput" name="Product_Name" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="orderTypeSelect">Order Type:</label></td>
+                        <td>
+                            <!-- Changed name to match tbl_progress column -->
+                            <select id="orderTypeSelect" name="Order_Type" required>
+                                <option value="" disabled selected>Select Order Type</option>
+                                <option value="pre_order">Pre-order</option> <!-- Use values matching potential enums or consistent strings -->
+                                <option value="ready_made">Ready Made</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="quantityInput">Quantity:</label></td>
+                        <td><input type="number" id="quantityInput" name="Quantity" min="1" value="1" required></td>
+                    </tr>
+                    <tr>
+                        <td><label for="totalPriceInput">Total Price:</label></td>
+                        <td><input type="text" id="totalPriceInput" name="Total_Price" readonly required placeholder="Calculated automatically"></td>
+                    </tr>
+                    <!-- Hidden field for initial Product Status -->
+                    <input type="hidden" name="Product_Status" value="0">
 
-            <tr>
-                <td>Order Type:</td>
-                <td>
-                    <select name="txtOrderType" required>
-                        <option value="" disabled selected>Select Order Type</option>
-                        <option value="Preorder">Preorder</option>
-                        <option value="Ready Made">Ready Made</option>
-                        <option value="Customized">Customized</option>
-                    </select>
-                </td>
-            </tr>
+                    <!-- Removed old Status dropdown -->
+                    <!-- <tr>
+                        <td>Status:</td>
+                        <td><select name="txtStatus">...</select></td>
+                    </tr> -->
+                </table>
 
-            <!-- Updated Status dropdown -->
-            <tr>
-                <td>Status:</td>
-                <td>
-                    <select name="txtStatus">
-                        <option value="Pending" <?php echo ($preorderStatus == 'Pending') ? 'selected' : ''; ?>>Pending</option>
-                        <option value="Confirmed" <?php echo ($preorderStatus == 'Confirmed') ? 'selected' : ''; ?>>Confirmed</option>
-                        <option value="Shipped" <?php echo ($preorderStatus == 'Shipped') ? 'selected' : ''; ?>>Shipped</option>
-                        <option value="Delivered" <?php echo ($preorderStatus == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
-                        <option value="Canceled" <?php echo ($preorderStatus == 'Canceled') ? 'selected' : ''; ?>>Canceled</option>
-                    </select>
-                </td>
-            </tr>
-
-            <tr>
-                <td>Quantity:</td>
-                <td><input type="number" id="quantityInput" name="Quantity" min="1" required></td>
-            </tr>
-            <tr>
-                <td>Total Price:</td>
-                <td><input type="text" id="totalPriceInput" name="Total_Price" readonly></td>
-            </tr>
-            </table>
-
-            <div class="button-container">
-                <input type="submit" value="Submit" class="buttonUpdate">
-                <input type="reset" value="Reset" class="buttonDelete">
-                <a href="read-all-progress-form.php" target="_parent" class="buttonBack">Back to List</a>
-            </div>
-        </form>
+                <div class="button-container mt-3">
+                    <button type="submit" class="buttonUpdate btn btn-success">Create Record</button>
+                    <button type="reset" class="buttonDelete btn btn-warning">Reset Form</button>
+                    <a href="read-all-progress-form.php" class="buttonBack btn btn-secondary">Back to List</a>
+                </div>
+            </form>
         </div>
+    </section>
 
-        <script>
+    <script>
+        // Sidebar Toggle
         let sidebar = document.querySelector(".sidebar");
         let sidebarBtn = document.querySelector(".sidebarBtn");
-        sidebarBtn.onclick = function () {
-            sidebar.classList.toggle("active");
-            if (sidebar.classList.contains("active")) {
-                sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else {
-                sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-            }
-        };
-        
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+                } else {
+                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                }
+            };
+        }
 
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
+        // Profile Dropdown Toggle
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     dropdownIcon.classList.toggle('bx-chevron-up');
+                }
+            });
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up');
+                }
+            });
+        }
+
+        // --- Price Calculation and Product Name Population ---
+        const productSelect = document.getElementById('productSelect');
+        const quantityInput = document.getElementById('quantityInput');
+        const totalPriceInput = document.getElementById('totalPriceInput');
+        const productNameInput = document.getElementById('productNameInput');
+
+        function updatePriceAndName() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+            const name = selectedOption.getAttribute('data-name') || '';
+            const quantity = parseInt(quantityInput.value) || 0;
+
+            const totalPrice = price * quantity;
+
+            totalPriceInput.value = totalPrice.toFixed(2); // Format to 2 decimal places
+            productNameInput.value = name; // Update hidden product name field
+        }
+
+        // Add event listeners
+        if (productSelect && quantityInput && totalPriceInput && productNameInput) {
+            productSelect.addEventListener('change', updatePriceAndName);
+            quantityInput.addEventListener('input', updatePriceAndName);
+
+            // Initial calculation on page load (if a product might be pre-selected, though unlikely here)
+            // updatePriceAndName();
+        } else {
+            console.error("One or more elements for price calculation not found.");
+        }
+
+        // Reset form needs to clear calculated fields too
+        const form = document.forms['frmProgress'];
+        if (form) {
+            form.addEventListener('reset', function() {
+                // Use setTimeout to allow default reset to happen first
+                setTimeout(() => {
+                    totalPriceInput.value = '';
+                    productNameInput.value = '';
+                    // Optionally reset quantity to 1 if desired
+                    // quantityInput.value = 1;
+                }, 0);
+            });
+        }
 
     </script>
-    </section>
 </body>
 </html>

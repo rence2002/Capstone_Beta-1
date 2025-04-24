@@ -304,7 +304,7 @@ if (!empty($pendingOrdersData)) {
     <?php endif; ?>
 </div>
 
-<!-- Order Status -->
+<!-- Order Status
 <div id="order-status-tab" class="tab-content">
     <?php if (empty($progressData)): ?>
         <p>No available data</p>
@@ -332,7 +332,7 @@ if (!empty($pendingOrdersData)) {
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
-</div>
+</div> -->
 
 <!-- Product Status -->
 <div id="product-status-tab" class="tab-content">

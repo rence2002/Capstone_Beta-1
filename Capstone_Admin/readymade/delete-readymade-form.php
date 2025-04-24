@@ -36,7 +36,8 @@ $query = "
         ui.Last_Name AS User_Last_Name, 
         r.Quantity, 
         r.Total_Price, 
-        r.Order_Status, 
+        r.Product_Status, 
+        r.Payment_Status, 
         r.Order_Date
     FROM tbl_ready_made_orders r
     JOIN tbl_prod_info pi ON r.Product_ID = pi.Product_ID
@@ -48,6 +49,10 @@ $stmt->bindParam(':orderID', $_GET['id'], PDO::PARAM_INT);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+if (!$row) {
+    die("Error: Ready-made order not found.");
+}
+
 // Store data records to variables
 $orderID = $row["ReadyMadeOrder_ID"];
 $productID = $row["Product_ID"];
@@ -56,9 +61,9 @@ $userID = $row["User_ID"];
 $userName = $row["User_First_Name"] . ' ' . $row["User_Last_Name"];
 $quantity = $row["Quantity"];
 $totalPrice = $row["Total_Price"];
-$orderStatus = $row["Order_Status"];
+$productStatus = $row["Product_Status"]; // Correct column name
+$paymentStatus = $row["Payment_Status"];
 $orderDate = $row["Order_Date"];
-
 ?>
 
 <!DOCTYPE html>
@@ -73,29 +78,25 @@ $orderDate = $row["Order_Date"];
     <script src="../static/js/dashboard.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
 </head>
 
 <body>
+    <!-- Sidebar and Navbar -->
     <div class="sidebar">
-      <div class="logo-details">
-        <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
-        </span>
-    </div>
+        <div class="logo-details">
+            <span class="logo_name">
+                <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_name">
+            </span>
+        </div>
         <ul class="nav-links">
-        
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
                     <i class="bx bx-comment-detail"></i>
@@ -103,40 +104,30 @@ $orderDate = $row["Order_Date"];
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-message-dots"></i>
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
         </ul>
-
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-          
-
-
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
+        </nav>
 
         <br><br><br>
         <div class="container_boxes">
@@ -175,8 +166,12 @@ $orderDate = $row["Order_Date"];
                         <td>' . htmlspecialchars($totalPrice) . '</td>
                     </tr>
                     <tr>
-                        <td>Order Status:</td>
-                        <td>' . htmlspecialchars($orderStatus) . '</td>
+                        <td>Product Status:</td>
+                        <td>' . htmlspecialchars($productStatus) . '</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Status:</td>
+                        <td>' . htmlspecialchars($paymentStatus) . '</td>
                     </tr>
                     <tr>
                         <td>Order Date:</td>
@@ -192,7 +187,6 @@ $orderDate = $row["Order_Date"];
                 </div>
             </form>
         </div>
-
     </section>
 
     <script>
@@ -206,29 +200,6 @@ $orderDate = $row["Order_Date"];
                 sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
             }
         };
-        
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
-
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
-
-
     </script>
 </body>
 </html>

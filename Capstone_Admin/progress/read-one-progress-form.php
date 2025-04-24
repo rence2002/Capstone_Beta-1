@@ -21,7 +21,14 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
+
 
 // Get the Progress_ID from the URL
 if (!isset($_GET['id'])) {
@@ -31,15 +38,17 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-// Query to fetch progress record
+// Query to fetch progress record directly from tbl_progress
+// Removed Order_Status, removed join to tbl_prod_info, added Quantity, selected p.Product_Name
 $query = "
     SELECT
         p.Progress_ID AS ID,
-        pr.Product_Name,
+        p.Product_Name, -- Fetched directly from tbl_progress
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
         p.Order_Type,
-        p.Order_Status,
+        -- p.Order_Status, -- REMOVED
         p.Product_Status,
+        p.Quantity, -- Added Quantity
         p.Total_Price,
         p.Date_Added AS Request_Date,
         p.LastUpdate AS Last_Update,
@@ -57,7 +66,7 @@ $query = "
         p.Tracking_Number
     FROM tbl_progress p
     JOIN tbl_user_info u ON p.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+    -- JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID -- REMOVED JOIN
     WHERE p.Progress_ID = :id
 ";
 
@@ -71,34 +80,24 @@ if (!$row) {
     exit();
 }
 
-// Map Order Status to descriptive text
-$orderStatusLabels = [
-    0   => 'Order Received',       // 0% - Order placed by the customer
-    10  => 'Order Confirmed',      // 10% - Down payment received
-    20  => 'Design Finalization',  // 20% - Final design confirmed
-    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
-    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
-    50  => 'Mid-Production',       // 50% - Major structural work completed
-    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
-    70  => 'Quality Check',        // 70% - Inspection for defects
-    80  => 'Final Assembly',       // 80% - Last touches, packaging
-    90  => 'Ready for Delivery',   // 90% - Scheduled for transport
-    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
-];
+// REMOVED Order Status Map
+// $orderStatusLabels = [ ... ];
 
-// Map Product Status to descriptive text
+// Updated Product Status Map (using the new one from the prompt)
 $productStatusLabels = [
-    0   => 'Concept Stage',         // 0% - Idea or design submitted
-    10  => 'Design Approved',       // 10% - Finalized by customer
-    20  => 'Material Sourcing',     // 20% - Gathering necessary materials
-    30  => 'Cutting & Shaping',     // 30% - Preparing materials
-    40  => 'Structural Assembly',   // 40% - Base framework built
-    50  => 'Detailing & Refinements', // 50% - Carvings, upholstery, elements added
-    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening, preparing for final coat
-    70  => 'Varnishing/Painting',   // 70% - Applying the final finish
-    80  => 'Drying & Curing',       // 80% - Final coating sets in
+    0   => 'Request Approved',         // 0% - Order placed by the customer
+    10  => 'Design Approved',        // 10% - Finalized by customer
+    20  => 'Material Sourcing',      // 20% - Gathering necessary materials
+    30  => 'Cutting & Shaping',      // 30% - Preparing materials
+    40  => 'Structural Assembly',    // 40% - Base framework built
+    50  => 'Detailing & Refinements',// 50% - Carvings, upholstery, elements added
+    60  => 'Sanding & Pre-Finishing',// 60% - Smoothening, preparing for final coat
+    70  => 'Varnishing/Painting',    // 70% - Applying the final finish
+    80  => 'Drying & Curing',        // 80% - Final coating sets in
     90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
-    100 => 'Completed'              // 100% - Ready for pickup/delivery
+    95  => 'Ready for Shipment',
+    98  => 'Order Delivered',
+    100 => 'Order Recieved', 
 ];
 ?>
 
@@ -106,162 +105,189 @@ $productStatusLabels = [
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Progress Details</title> <!-- More specific title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle for Popper -->
+    <!-- Removed dashboard.js as it might conflict or be redundant -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <style>
+        /* Add some spacing for better readability */
+        .table th { width: 25%; }
+        .table td { width: 75%; }
+        .progress-img { max-width: 150px; height: auto; } /* Slightly larger images */
+        /* Style for completed status */
+        td.completed-action { color: #777; font-style: italic; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image"> <!-- Use a class for logo image -->
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="active">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <!-- <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li> -->
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li>
+              <a href="../dashboard/dashboard.php">
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Dashboard</span>
+              </a>
+          </li>
+          <li>
+              <a href="../purchase-history/read-all-history-form.php">
+                  <i class="bx bx-history"></i> <!-- Changed icon to history -->
+                  <span class="links_name">Purchase History</span>
+              </a>
+          </li>
+          <li>
+              <a href="../reviews/read-all-reviews-form.php">
+                  <i class="bx bx-message-dots"></i>
+                  <span class="links_name">All Reviews</span>
+              </a>
+          </li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Progress Details</span> <!-- Updated title -->
             </div>
-       
-
-
-            <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+            <!-- Removed search box as it's not typical for a 'read one' page -->
+            <div class="profile-details" id="profile-details-container"> <!-- Added ID for JS -->
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button"></i>
-
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
                 <div class="dropdown" id="profileDropdown">
-                    <!-- Modified link here -->
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
                 </div>
             </div>
+        </nav>
+        <br><br><br>
 
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
+        <div class="container_boxes">
+            <h4>PROGRESS DETAILS FOR ID: <?= htmlspecialchars($row['ID']) ?></h4>
 
-
- </nav>
- <br><br><br>
-<div class="container_boxes">
-    <h4>PROGRESS DETAILS</h4>
-    
-    <table class="table table-bordered">
-        <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
-        <tr><th>Order Status</th><td><?= $orderStatusLabels[$row['Order_Status']] ?></td></tr>
-        <?php if (!empty($row['Tracking_Number'])): ?>
-            <tr><th>Tracking Number</th><td><?= htmlspecialchars($row['Tracking_Number']) ?></td></tr>
-        <?php endif; ?>
-        <tr><th>Product Status</th><td><?= $productStatusLabels[$row['Product_Status']] ?></td></tr>
-        <tr><th>Total Price</th><td><?= htmlspecialchars($row['Total_Price']) ?></td></tr>
-        <tr><th>Request Date</th><td><?= htmlspecialchars($row['Request_Date']) ?></td></tr>
-        <tr><th>Last Update</th><td><?= htmlspecialchars($row['Last_Update']) ?></td></tr>
-    </table>
-    
-    <h3>Progress Pictures</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Progress</th>
-                <th>Image</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
-                <?php $picKey = "Progress_Pic_$percentage"; ?>
-                <?php if (!empty($row[$picKey])): ?>
-                    <tr>
-                        <td><strong><?= $percentage ?>%</strong></td>
-                        <td><img src="<?= htmlspecialchars($row[$picKey]) ?>" alt="Progress <?= $percentage ?>%" width="100px" height="auto"></td>
-                    </tr>
+            <table class="table table-bordered table-striped"> <!-- Added striped class -->
+                <tr><th>User Name</th><td><?= htmlspecialchars($row['User_Name']) ?></td></tr>
+                <tr><th>Product Name</th><td><?= htmlspecialchars($row['Product_Name']) ?></td></tr>
+                <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
+                <tr><th>Quantity</th><td><?= htmlspecialchars($row['Quantity']) ?></td></tr> <!-- Display Quantity -->
+                <!-- <tr><th>Order Status</th><td><?= $row['Order_Status'] ?>% - <?= $orderStatusLabels[$row['Order_Status']] ?? 'Unknown Status' ?></td></tr> --> <!-- REMOVED Order Status Row -->
+                <?php if (!empty($row['Tracking_Number'])): ?>
+                    <tr><th>Tracking Number</th><td><?= htmlspecialchars($row['Tracking_Number']) ?></td></tr>
                 <?php endif; ?>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    
-    <table class="table table-bordered">
-        <tr><th>Stop Reason</th><td><?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></td></tr>
-    </table>
-    
-    <div class="button-container">
-    
-        <a href="read-all-progress-form.php" class="buttonBack">Back to List</a>
-        <td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Edit</a></td>
-    </div>
-</div>
+                <tr><th>Product Status</th><td><?= $row['Product_Status'] ?>% - <?= $productStatusLabels[$row['Product_Status']] ?? 'Unknown Status' ?></td></tr> <!-- Uses NEW labels -->
+                <tr><th>Total Price</th><td>₱ <?= number_format((float)$row['Total_Price'], 2, '.', ',') ?></td></tr> <!-- Formatted Price -->
+                <tr><th>Request Date</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Request_Date']))) ?></td></tr> <!-- Formatted Date -->
+                <tr><th>Last Update</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Last_Update']))) ?></td></tr> <!-- Formatted Date -->
+                <tr><th>Stop Reason</th><td><?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></td></tr>
+            </table>
+
+            <h3>Progress Pictures</h3>
+            <?php
+                $hasPictures = false;
+                foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage) {
+                    if (!empty($row["Progress_Pic_$percentage"])) {
+                        $hasPictures = true;
+                        break;
+                    }
+                }
+            ?>
+
+            <?php if ($hasPictures): ?>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Progress</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage): ?>
+                            <?php $picKey = "Progress_Pic_$percentage"; ?>
+                            <?php if (!empty($row[$picKey])): ?>
+                                <?php
+                                    // Construct the correct image path relative to the web root
+                                    $imagePath = $row[$picKey];
+                                    // Assuming paths are stored like '../uploads/progress_pics/...'
+                                    // If the script is in Capstone_Admin/progress/, then '../' goes up to Capstone_Admin/
+                                    // So the path should be correct relative to the script location.
+                                    // If paths are stored differently (e.g., absolute from web root), adjust here.
+                                    $imageDisplayPath = htmlspecialchars($imagePath);
+                                ?>
+                                <tr>
+                                    <td><strong><?= $percentage ?>%</strong></td>
+                                    <td><img src="<?= $imageDisplayPath ?>" alt="Progress <?= $percentage ?>%" class="progress-img img-thumbnail"></td> <!-- Added img-thumbnail -->
+                                </tr>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No progress pictures have been uploaded yet.</p>
+            <?php endif; ?>
+
+            <div class="button-container mt-3"> <!-- Added margin top -->
+                <a href="read-all-progress-form.php" class="buttonBack btn btn-secondary">Back to List</a>
+                <?php // Only show Edit button if the product status is not completed (status < 100)
+                if ($row['Product_Status'] < 100): ?>
+                    <a class="buttonEdit btn btn-warning" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>">Edit</a>
+                <?php else: ?>
+                    <span class="completed-action ms-2">(Order Completed)</span> <!-- Indicate completed status if edit is hidden -->
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
 
     <script>
-        function showProgressPic(picUrl) {
-            const picRow = document.getElementById('progress-pic-row');
-            const picImg = document.getElementById('progress-pic');
-            if (picUrl) {
-                picImg.src = picUrl;
-                picRow.style.display = 'table-row';
-            } else {
-                picRow.style.display = 'none';
-            }
-        }
-
+        // Sidebar Toggle
         let sidebar = document.querySelector(".sidebar");
         let sidebarBtn = document.querySelector(".sidebarBtn");
-        sidebarBtn.onclick = function () {
-            sidebar.classList.toggle("active");
-            if (sidebar.classList.contains("active")) {
-                sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-        };
-
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-            toggle.addEventListener('click', function () {
-                const parent = this.parentElement;
-                const dropdownMenu = parent.querySelector('.dropdown-menu');
-                parent.classList.toggle('active');
-
-                const chevron = this.querySelector('i');
-                if (parent.classList.contains('active')) {
-                    chevron.classList.remove('bx-chevron-down');
-                    chevron.classList.add('bx-chevron-up');
+        if (sidebar && sidebarBtn) {
+            sidebarBtn.onclick = function () {
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
                 } else {
-                    chevron.classList.remove('bx-chevron-up');
-                    chevron.classList.add('bx-chevron-down');
+                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
                 }
+            };
+        }
 
-                dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
+        // Profile Dropdown Toggle
+        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdownIcon = document.getElementById('dropdown-icon');
+
+        if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+            profileDetailsContainer.addEventListener('click', function(event) {
+                // Prevent dropdown from closing if click is inside dropdown
+                if (!profileDropdown.contains(event.target)) {
+                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                     dropdownIcon.classList.toggle('bx-chevron-up'); // Toggle icon class
+                }
             });
-        });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!profileDetailsContainer.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                    dropdownIcon.classList.remove('bx-chevron-up'); // Ensure icon is down
+                }
+            });
+        }
+
+        // Note: Removed showProgressPic function as it wasn't used in the final HTML structure.
+        // Note: Removed old dropdown-toggle related JS.
     </script>
 </body>
 </html>

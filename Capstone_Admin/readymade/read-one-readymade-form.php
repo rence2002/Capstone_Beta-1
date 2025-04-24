@@ -2,7 +2,7 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
 // Assuming the admin's ID is stored in session after login
 if (!isset($_SESSION['admin_id'])) {
@@ -29,19 +29,19 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 try {
     // Query to fetch order details along with product name, 3D model URL, and user full name
+    // Corrected the query to fetch Product_Status from tbl_ready_made_orders
     $query = "
-        SELECT 
-            r.ReadyMadeOrder_ID, 
-            r.Product_ID, 
-            p.Product_Name, 
+        SELECT
+            r.ReadyMadeOrder_ID,
+            r.Product_ID,
+            p.Product_Name,
             p.GLB_File_URL,
-            r.User_ID, 
-            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
-            r.Quantity, 
-            r.Total_Price, 
-            r.Order_Status, 
-            r.Product_Status, 
-            r.Order_Date 
+            r.User_ID,
+            CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
+            r.Quantity,
+            r.Total_Price,
+            r.Product_Status, -- Fetching Product_Status from the orders table
+            r.Order_Date
         FROM tbl_ready_made_orders r
         JOIN tbl_prod_info p ON r.Product_ID = p.Product_ID
         JOIN tbl_user_info u ON r.User_ID = u.User_ID
@@ -70,45 +70,31 @@ try {
     $userName = $row["User_Name"];
     $quantity = $row["Quantity"];
     $totalPrice = $row["Total_Price"];
-    $orderStatus = $row["Order_Status"];
-    $productStatus = $row["Product_Status"];
+    // $orderStatus = $row["Order_Status"]; // Removed as it wasn't in the SELECT and Product_Status is used
+    $productStatus = $row["Product_Status"]; // Use the status from the order table
     $orderDate = $row["Order_Date"];
 
-    // Map order status to descriptive text
-$orderStatusMap = [
-    0   => 'Order Received',       // 0% - Order placed by the customer
-    10  => 'Order Confirmed',      // 10% - Down payment received
-    20  => 'Design Finalization',  // 20% - Final design confirmed
-    30  => 'Material Preparation', // 30% - Sourcing and cutting materials
-    40  => 'Production Started',   // 40% - Carpentry/assembly in progress
-    50  => 'Mid-Production',       // 50% - Major structural work completed
-    60  => 'Finishing Process',    // 60% - Upholstery, varnishing, detailing
-    70  => 'Quality Check',        // 70% - Inspection for defects
-    80  => 'Final Assembly',       // 80% - Last touches, packaging
-    90  => 'Ready for Delivery',   // 90% - Scheduled for transport
-    100 => 'Delivered / Completed' // 100% - Customer has received the furniture
-];
+    
+    // Updated Product Status Map (using the new one from the prompt)
+    $productStatusLabels = [
+        0   => 'Request Approved', // 0% - Order placed by the customer
+        10  => 'Design Approved', // 10% - Finalized by customer (Note: This might be more relevant for Custom/PreOrder, but included for consistency if used)
+        20  => 'Payment Processing', // 20% - Or Material Sourcing if applicable
+        30  => 'Order Confirmed / Cutting & Shaping', // 30% - Preparing materials / Confirmed
+        40  => 'Structural Assembly / Preparing for Shipment', // 40% - Base framework built / Prep for ship
+        50  => 'Shipped / Detailing & Refinements',// 50% - Carvings, elements added / Shipped
+        60  => 'Out for Delivery / Sanding & Pre-Finishing',// 60% - Smoothening / Out for delivery
+        70  => 'Delivered / Varnishing/Painting', // 70% - Applying the final finish / Delivered
+        80  => 'Installed / Drying & Curing', // 80% - Final coating sets in / Installed
+        90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+        95  => 'Ready for Shipment', // 95% - Ready for handover/shipment
+        98  => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
+        100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
+    ];
+    // --- END UPDATED MAP ---
 
-// Get order status text
-$orderStatusText = $orderStatusMap[$orderStatus] ?? 'Unknown Status';
-
-// Map product status to descriptive text
-$productStatusLabels = [
-    0   => 'Concept Stage',         // 0% - Idea or design submitted
-    10  => 'Design Approved',       // 10% - Finalized by customer
-    20  => 'Material Sourcing',     // 20% - Gathering necessary materials
-    30  => 'Cutting & Shaping',     // 30% - Preparing materials
-    40  => 'Structural Assembly',   // 40% - Base framework built
-    50  => 'Detailing & Refinements', // 50% - Carvings, upholstery, elements added
-    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening, preparing for final coat
-    70  => 'Varnishing/Painting',   // 70% - Applying the final finish
-    80  => 'Drying & Curing',       // 80% - Final coating sets in
-    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
-    100 => 'Completed'              // 100% - Ready for pickup/delivery
-];
-
-// Get product status text
-$productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
+    // Get product status text using the updated map
+    $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 
 
 } catch (Exception $e) {
@@ -123,7 +109,7 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
     <meta charset="UTF-8" />
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="../static/js/dashboard.js"></script>
@@ -144,14 +130,14 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
         </span>
     </div>
         <ul class="nav-links">
-        
+
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
+
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
                     <i class="bx bx-comment-detail"></i>
@@ -159,11 +145,12 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
+            
         </ul>
 
     </div>
@@ -174,7 +161,7 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-    
+
 
 
             <div class="profile-details" onclick="toggleDropdown()">
@@ -190,7 +177,7 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
             </div>
 
 <!-- Link to External JS -->
-<script src="dashboard.js"></script>
+<script src="../static/js/dashboard.js"></script>
 
 
  </nav>
@@ -200,24 +187,25 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
             <form name="frmReadyMadeRec" method="POST" action="">
                 <h4>View Ready-Made Order Record</h4>
                 <table>
-                    <tr><td>Order ID:</td><td><?php echo $readyMadeOrderID; ?></td></tr>
-                    <tr><td>Product Name:</td><td><?php echo $productName; ?></td></tr>
+                    <tr><td>Order ID:</td><td><?php echo htmlspecialchars($readyMadeOrderID); ?></td></tr>
+                    <tr><td>Product Name:</td><td><?php echo htmlspecialchars($productName); ?></td></tr>
                     <tr>
                         <td>3D Model:</td>
                         <td>
                             <?php if ($glbFileURL): ?>
-                                <model-viewer src="<?php echo $glbFileURL; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                                <model-viewer src="<?php echo htmlspecialchars($glbFileURL); ?>" auto-rotate camera-controls style="width: 300px; height: 300px; background-color: #f0f0f0; border-radius: 5px;"></model-viewer>
                             <?php else: ?>
                                 No 3D model available.
                             <?php endif; ?>
                         </td>
                     </tr>
-                    <tr><td>User Name:</td><td><?php echo $userName; ?></td></tr>
-                    <tr><td>Quantity:</td><td><?php echo $quantity; ?></td></tr>
+                    <tr><td>User Name:</td><td><?php echo htmlspecialchars($userName); ?></td></tr>
+                    <tr><td>Quantity:</td><td><?php echo htmlspecialchars($quantity); ?></td></tr>
                     <tr><td>Total Price:</td><td><?php echo number_format($totalPrice, 2); ?></td></tr>
-                    <tr><td>Status:</td><td><?php echo $orderStatusText; ?></td></tr>
-                    <tr><td>Product Status:</td><td><?php echo $productStatusText; ?></td></tr>
-                    <tr><td>Order Date:</td><td><?php echo $orderDate; ?></td></tr>
+                    <!-- Removed Order Status display as Product Status is more relevant here -->
+                    <!-- <tr><td>Order Status:</td><td><?php // echo htmlspecialchars($orderStatusText); ?></td></tr> -->
+                    <tr><td>Product Status:</td><td><?php echo htmlspecialchars($productStatusText); ?></td></tr>
+                    <tr><td>Order Date:</td><td><?php echo htmlspecialchars($orderDate); ?></td></tr>
                 </table>
                 <div class="button-container">
                     <br>
@@ -239,28 +227,61 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                 sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
             }
         };
-        
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
 
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
+        // Simple dropdown toggle for profile details
+        function toggleDropdown() {
+            document.getElementById("profileDropdown").classList.toggle("show");
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+          if (!event.target.matches('.profile-details') && !event.target.matches('.profile-details *')) {
+            var dropdowns = document.getElementsByClassName("dropdown");
+            for (var i = 0; i < dropdowns.length; i++) {
+              var openDropdown = dropdowns[i];
+              if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+              }
             }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
+          }
+        }
+
+        // Sidebar dropdowns (if any were added)
+        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent default link behavior
+            const parentLi = this.closest('li'); // Find the parent <li> element
+            const subMenu = parentLi.querySelector('.sub-menu'); // Find the sub-menu within this <li>
+
+            // Close other open sub-menus
+            document.querySelectorAll('.nav-links li .sub-menu').forEach((menu) => {
+                if (menu !== subMenu) {
+                    menu.style.display = 'none';
+                    menu.closest('li').classList.remove('active'); // Remove active class from others
+                }
+            });
+
+             // Toggle the current sub-menu
+            if (subMenu) {
+                const isActive = parentLi.classList.toggle('active');
+                subMenu.style.display = isActive ? 'block' : 'none';
+
+                 // Toggle chevron icon
+                const chevron = this.querySelector('.bx-chevron-down, .bx-chevron-up');
+                if (chevron) {
+                    if (isActive) {
+                        chevron.classList.remove('bx-chevron-down');
+                        chevron.classList.add('bx-chevron-up');
+                    } else {
+                        chevron.classList.remove('bx-chevron-up');
+                        chevron.classList.add('bx-chevron-down');
+                    }
+                }
+            }
         });
     });
     </script>
+    <!-- Add model-viewer script -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </body>
 </html>

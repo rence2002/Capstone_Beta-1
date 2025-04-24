@@ -50,9 +50,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="../static/js/dashboard.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
 
 </head>
@@ -65,14 +63,12 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </span>
     </div>
         <ul class="nav-links">
-        
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
                     <i class="bx bx-comment-detail"></i>
@@ -80,13 +76,12 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-message-dots"></i>
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
         </ul>
-
     </div>
 
     <section class="home-section">
@@ -95,26 +90,16 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-         
-         
-
-
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
+    </nav>
 
         <br><br><br>
         <div class="container_boxes">

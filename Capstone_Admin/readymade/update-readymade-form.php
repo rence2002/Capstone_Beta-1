@@ -1,6 +1,5 @@
 <?php
 session_start(); // Start the session
-
 // Include the database connection
 include '../config/database.php';
 
@@ -16,12 +15,10 @@ $stmt = $pdo->prepare("SELECT First_Name, PicPath FROM tbl_admin_info WHERE Admi
 $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-
 if (!$admin) {
     echo "Admin not found.";
     exit();
 }
-
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
@@ -38,7 +35,6 @@ $stmt = $pdo->prepare("
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
         r.Quantity, 
         r.Total_Price, 
-        r.Order_Status, 
         r.Product_Status, 
         r.Order_Date 
     FROM tbl_ready_made_orders r
@@ -49,7 +45,6 @@ $stmt = $pdo->prepare("
 $stmt->bindValue(1, $orderId);
 $stmt->execute();
 $order = $stmt->fetch(PDO::FETCH_ASSOC);
-
 if (!$order) {
     echo "Order not found.";
     exit();
@@ -65,46 +60,65 @@ $userID = $order["User_ID"];
 $userName = $order["User_Name"];
 $quantity = $order["Quantity"];
 $totalPrice = $order["Total_Price"];
-$orderStatus = $order["Order_Status"];
 $productStatus = $order["Product_Status"];
 $orderDate = $order["Order_Date"];
 
-// Order status mapping for Readymade
-$orderStatusMap = [
-    0   => 'Order Received (0%)',
-    10  => 'Order Confirmed (10%)',
-    70  => 'Quality Check (70%)',
-    90  => 'Ready for Delivery (90%)',
-    100 => 'Delivered / Completed (100%)'
+// Product status mapping for Ready-Made Orders
+$productStatusLabels = [
+    0   => 'Request Approved', // 0% - Order placed by the customer
+    10  => 'Design Approved', // 10% - Finalized by customer (Note: This might be more relevant for Custom/PreOrder, but included for consistency if used)
+    20  => 'Payment Processing', // 20% - Or Material Sourcing if applicable
+    30  => 'Order Confirmed / Cutting & Shaping', // 30% - Preparing materials / Confirmed
+    40  => 'Structural Assembly / Preparing for Shipment', // 40% - Base framework built / Prep for ship
+    50  => 'Shipped / Detailing & Refinements',// 50% - Carvings, elements added / Shipped
+    60  => 'Out for Delivery / Sanding & Pre-Finishing',// 60% - Smoothening / Out for delivery
+    70  => 'Delivered / Varnishing/Painting', // 70% - Applying the final finish / Delivered
+    80  => 'Installed / Drying & Curing', // 80% - Final coating sets in / Installed
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    95  => 'Ready for Shipment', // 95% - Ready for handover/shipment
+    98  => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
+    100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
 ];
-
-// Product status mapping for Readymade
-$productStatusMap = [
-    90 => 'Final Inspection & Packaging (90%)',
-    100 => 'Completed (100%)'
-];
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="../static/js/dashboard.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <script>
+        // Function to calculate total price dynamically
+        function calculateTotalPrice() {
+            const quantityInput = document.getElementById('quantity');
+            const totalPriceInput = document.getElementById('totalPrice');
+            const unitPrice = <?php echo json_encode($productPrice); ?>; // Get the product's unit price from PHP
 
+            // Calculate total price
+            const quantity = parseInt(quantityInput.value, 10);
+            if (!isNaN(quantity) && quantity > 0) {
+                const totalPrice = quantity * unitPrice;
+                totalPriceInput.value = totalPrice.toFixed(2); // Format to 2 decimal places
+            } else {
+                totalPriceInput.value = ''; // Clear total price if quantity is invalid
+            }
+        }
+
+        // Attach event listener to quantity input
+        document.addEventListener('DOMContentLoaded', () => {
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('input', calculateTotalPrice);
+            }
+        });
+    </script>
 </head>
-
 <body>
     <div class="sidebar">
       <div class="logo-details">
@@ -113,14 +127,12 @@ $productStatusMap = [
         </span>
     </div>
         <ul class="nav-links">
-        
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
                     <i class="bx bx-comment-detail"></i>
@@ -128,52 +140,37 @@ $productStatusMap = [
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-message-dots"></i>
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
         </ul>
-
     </div>
-
     <section class="home-section">
     <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-      
-
-
             <div class="profile-details" onclick="toggleDropdown()">
                 <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
-
                 <div class="dropdown" id="profileDropdown">
-                    <!-- Modified link here -->
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
                 </div>
             </div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
-
+    </nav>
 <br><br><br>
-
         <div class="container_boxes">
             <form name="frmReadyMadeOrder" method="POST" action="update-readymade-rec.php">
                 <h4>Update Ready-Made Order</h4>
                 <table>
                     <tr>
                         <td>Order ID:</td>
-                        <td><input type="text" name="txtOrderID" value="<?php echo htmlspecialchars($readyMadeOrderID); ?>" readonly></td>
+                        <td><input type="hidden" name="txtReadyMadeOrderID_hidden" value="<?php echo htmlspecialchars($readyMadeOrderID); ?>"></td>
                     </tr>
                     <tr>
                         <td>Product Name:</td>
@@ -202,28 +199,19 @@ $productStatusMap = [
                         <td><input type="text" id="totalPrice" name="txtTotalPrice" value="<?php echo htmlspecialchars($totalPrice); ?>" readonly></td>
                     </tr>
                     <tr>
-                        <td>Order Status:</td>
-                        <td>
-                            <select name="txtOrderStatus">
-                                <?php foreach ($orderStatusMap as $value => $label): ?>
-                                    <option value="<?php echo $value; ?>" <?php echo ($orderStatus == $value) ? 'selected' : ''; ?>><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
                         <td>Product Status:</td>
                         <td>
                             <select name="txtProductStatus">
-                                <?php foreach ($productStatusMap as $value => $label): ?>
-                                    <option value="<?php echo $value; ?>" <?php echo ($productStatus == $value) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                <?php foreach ($productStatusLabels as $value => $label): ?>
+                                    <option value="<?php echo $value; ?>" <?php echo ($productStatus == $value) ? 'selected' : ''; ?>>
+                                        <?php echo $label; ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>
                 </table>
                 <div class="button-container">
-                   
                     <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>
                     <input type="submit" value="Update" class="buttonUpdate">
                 </div>
@@ -241,13 +229,11 @@ $productStatusMap = [
                 sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
             }
         };
-        
         document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
         toggle.addEventListener('click', function () {
             const parent = this.parentElement; // Get the parent <li> of the toggle
             const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
             parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
-
             // Toggle the chevron icon rotation
             const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
             if (parent.classList.contains('active')) {
@@ -257,13 +243,10 @@ $productStatusMap = [
                 chevron.classList.remove('bx-chevron-up');
                 chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
             }
-            
             // Toggle the display of the dropdown menu
             dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
         });
     });
-
-
     </script>
 </body>
 </html>

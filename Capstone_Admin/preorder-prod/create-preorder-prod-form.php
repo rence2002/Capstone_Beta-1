@@ -2,17 +2,14 @@
 session_start(); // Start the session
 
 // Include the database connection
-include '../config/database.php'; 
+include '../config/database.php';
 
-// Assuming the admin's ID is stored in session after login
+// Check if the admin's ID is stored in the session after login
 if (!isset($_SESSION['admin_id'])) {
     // Redirect to login page if not logged in
     header("Location: ../login.php");
     exit();
 }
-
-// Initialize the preorder status variable
-$orderStatus = ''; // or you can set it to a default value
 
 // Fetch admin data from the database
 $adminId = $_SESSION['admin_id'];
@@ -21,148 +18,130 @@ $stmt->bindParam(':admin_id', $adminId);
 $stmt->execute();
 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check if admin data is fetched
 if (!$admin) {
     echo "Admin not found.";
     exit();
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$profilePicPath = $admin['PicPath'];
+if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
+    // Assuming PicPath is relative to the Capstone_Admin directory
+    $profilePicPath = '../' . $profilePicPath;
+}
+$profilePicPath = htmlspecialchars($profilePicPath);
 
-// Fetch product data for dropdown (only readymade products)
+
+// Fetch product data for dropdown (Consider if pre-orders should only be for readymade?)
+// Keeping the original filter for now.
 $productQuery = "SELECT Product_ID, Product_Name, Price, GLB_File_URL FROM tbl_prod_info WHERE product_type = 'readymade'";
 $productStmt = $pdo->prepare($productQuery);
 $productStmt->execute();
 $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch user data for dropdown
-$userQuery = "SELECT User_ID, CONCAT(First_Name, ' ', Last_Name) AS User_Name FROM tbl_user_info";
+$userQuery = "SELECT User_ID, CONCAT(First_Name, ' ', Last_Name) AS User_Name FROM tbl_user_info ORDER BY Last_Name, First_Name"; // Added ordering
 $userStmt = $pdo->prepare($userQuery);
 $userStmt->execute();
 $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data safely
-    $productID = isset($_POST['txtProductID']) ? $_POST['txtProductID'] : null;
-    $userID = isset($_POST['txtUserID']) ? $_POST['txtUserID'] : null;
-    $quantity = isset($_POST['txtQuantity']) ? $_POST['txtQuantity'] : null;
-    $totalPrice = isset($_POST['txtTotalPrice']) ? $_POST['txtTotalPrice'] : null;
-    $orderStatus = isset($_POST['txtOrderStatus']) ? $_POST['txtOrderStatus'] : 0;
+// REMOVED the incorrect PHP processing block from within the form file.
+// Form submission is handled by the 'action' attribute target.
 
-    // Check for required fields
-    if ($productID && $userID && $quantity && $totalPrice && $orderStatus !== null) {
-        // Insert the preorder into the database
-        $insertQuery = "INSERT INTO tbl_preorder (Product_ID, User_ID, Quantity, Total_Price, Preorder_Status) VALUES (:product_id, :user_id, :quantity, :total_price, :order_status)";
-        $insertStmt = $pdo->prepare($insertQuery);
-        $insertStmt->bindParam(':product_id', $productID);
-        $insertStmt->bindParam(':user_id', $userID);
-        $insertStmt->bindParam(':quantity', $quantity);
-        $insertStmt->bindParam(':total_price', $totalPrice);
-        $insertStmt->bindParam(':order_status', $orderStatus);
-
-        // Execute the insert statement
-        if ($insertStmt->execute()) {
-            header("Location: read-all-preorder-form.php?message=Preorder created successfully");
-            exit();
-        } else {
-            echo "Error creating preorder.";
-        }
-    } else {
-        echo "Please fill all required fields.";
-    }
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Create Pre-Order Request</title> <!-- Specific Title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle -->
+    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Removed -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
+    <!-- <link href="../static/js/admin_home.js" rel=""> --> <!-- Incorrect link type -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        /* Minor adjustments for form readability */
+        .container_boxes table td { padding: 5px; vertical-align: top; }
+        .container_boxes select, .container_boxes input[type=number], .container_boxes input[type=text] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .container_boxes input[readonly] { background-color: #e9ecef; }
+        model-viewer { width: 100%; max-width: 300px; height: 300px; border: 1px solid #ccc; }
+    </style>
 </head>
 
 <body>
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_name">
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE" class="logo_image"> <!-- Use class -->
         </span>
-    </div>
-        <ul class="nav-links">
-        
-            <li>
-                <a href="../dashboard/dashboard.php" class="">
-                    <i class="bx bx-grid-alt"></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-            </li>
-         
-            <li>
-                <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
-                    <span class="links_name">All Purchase History</span>
-                </a>
-            </li>
-            <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
-        </ul>
-
+      </div>
+      <ul class="nav-links">
+          <li>
+              <a href="../dashboard/dashboard.php">
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Dashboard</span>
+              </a>
+          </li>
+          <li>
+              <a href="../purchase-history/read-all-history-form.php">
+                  <i class="bx bx-history"></i> <!-- Changed icon -->
+                  <span class="links_name">Purchase History</span>
+              </a>
+          </li>
+          <li>
+              <a href="../reviews/read-all-reviews-form.php">
+                  <i class="bx bx-message-dots"></i>
+                  <span class="links_name">All Reviews</span>
+              </a>
+          </li>
+          <!-- Add other relevant links here -->
+      </ul>
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Create Pre-Order Request</span> <!-- Updated title -->
             </div>
-       
-
-            <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
-
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
-
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
-
-
- </nav>
-
+            <div class="profile-details" id="profile-details-container"> <!-- Added ID -->
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
+        </nav>
         <br><br><br>
+
         <div class="container_boxes">
-            <form name="frmPreorder" method="POST" action="create-preorder-prod-rec.php">
-                <h4>Create Preorder</h4>
-                <table>
+            <!-- Update action to point to the script that inserts into tbl_order_request -->
+            <form name="frmPreorder" method="POST" action="create-preorder-prod-rec.php"> <!-- Renamed target script -->
+                <h4>Create Pre-Order Request</h4>
+                <table class="table table-borderless" style="width: 60%;"> <!-- Use Bootstrap table -->
                     <tr>
-                        <td>Product:</td>
+                        <td style="width: 30%;"><label for="productSelect">Product:</label></td>
                         <td>
-                            <select name="txtProductID" id="productSelect" required>
-                                <option value="">Select Product</option>
+                            <!-- Use column name 'Product_ID' -->
+                            <select name="Product_ID" id="productSelect" class="form-select" required>
+                                <option value="" data-price="0" data-glb="">Select Product</option>
                                 <?php foreach ($products as $product): ?>
-                                    <option value="<?php echo $product['Product_ID']; ?>" data-price="<?php echo htmlspecialchars($product['Price']); ?>" data-glb="<?php echo htmlspecialchars($product['GLB_File_URL']); ?>">
+                                    <option value="<?php echo $product['Product_ID']; ?>" data-price="<?php echo htmlspecialchars($product['Price']); ?>" data-glb="<?php echo htmlspecialchars($product['GLB_File_URL'] ?? ''); ?>">
                                         <?php echo htmlspecialchars($product['Product_Name']); ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -170,56 +149,94 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </td>
                     </tr>
                     <tr>
-                        <td>3D Model:</td>
+                        <td><label for="modelViewer">3D Model:</label></td>
                         <td>
-                            <model-viewer id="modelViewer" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                            <model-viewer id="modelViewer" auto-rotate camera-controls></model-viewer>
                         </td>
                     </tr>
                     <tr>
-                        <td>User ID:</td>
+                        <td><label for="userSelect">User:</label></td>
                         <td>
-                            <select name="txtUserID" required>
+                            <!-- Use column name 'User_ID' -->
+                            <select name="User_ID" id="userSelect" class="form-select" required>
                                 <option value="">Select User</option>
                                 <?php foreach ($users as $user): ?>
                                     <option value="<?php echo htmlspecialchars($user['User_ID']); ?>">
-                                        <?php echo htmlspecialchars($user['User_Name']); ?>
+                                        <?php echo htmlspecialchars($user['User_Name']); ?> (<?php echo htmlspecialchars($user['User_ID']); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>
                     <tr>
-                        <td>Quantity:</td>
-                        <td><input type="number" name="txtQuantity" id="quantityInput" min="1" required></td>
+                        <td><label for="quantityInput">Quantity:</label></td>
+                        <td>
+                            <!-- Use column name 'Quantity' -->
+                            <input type="number" name="Quantity" id="quantityInput" class="form-control" min="1" value="1" required>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Total Price:</td>
-                        <td><input type="text" name="txtTotalPrice" id="totalPrice" readonly required></td>
+                        <td><label for="totalPriceInput">Total Price:</label></td>
+                        <td>
+                            <!-- Use column name 'Total_Price' -->
+                            <input type="text" name="Total_Price" id="totalPriceInput" class="form-control" readonly required placeholder="Calculated automatically">
+                        </td>
                     </tr>
                 </table>
 
-                <div class="button-container">
-                    <input type="submit" value="Submit" class="buttonUpdate">
-                    <input type="reset" value="Reset" class="buttonDelete">
-                    <a href="read-all-preorder-prod-form.php" target="_parent" class="buttonBack">Back to List</a>
+                <!-- Hidden fields for tbl_order_request -->
+                <input type="hidden" name="Order_Type" value="pre_order">
+                <input type="hidden" name="Payment_Status" value="Pending">
+                <input type="hidden" name="Processed" value="0">
+
+                <div class="button-container mt-3">
+                    <button type="submit" class="buttonUpdate btn btn-success">Create Request</button>
+                    <button type="reset" class="buttonDelete btn btn-warning">Reset Form</button>
+                    <!-- Update link to point to the order requests list -->
+                    <a href="../order-requests/read-all-request-form.php" class="buttonBack btn btn-secondary">Back to Order Requests</a>
                 </div>
             </form>
         </div>
 
         <script>
+            // Sidebar Toggle
             let sidebar = document.querySelector(".sidebar");
             let sidebarBtn = document.querySelector(".sidebarBtn");
-            sidebarBtn.onclick = function () {
-                sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-                } else sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-            };
+            if (sidebar && sidebarBtn) {
+                sidebarBtn.onclick = function () {
+                    sidebar.classList.toggle("active");
+                    if (sidebar.classList.contains("active")) {
+                        sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+                    } else {
+                        sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                    }
+                };
+            }
+
+            // Profile Dropdown Toggle (Consistent version)
+            const profileDetailsContainer = document.getElementById('profile-details-container');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const dropdownIcon = document.getElementById('dropdown-icon');
+
+            if (profileDetailsContainer && profileDropdown && dropdownIcon) {
+                profileDetailsContainer.addEventListener('click', function(event) {
+                    if (!profileDropdown.contains(event.target)) {
+                         profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                         dropdownIcon.classList.toggle('bx-chevron-up');
+                    }
+                });
+                document.addEventListener('click', function(event) {
+                    if (!profileDetailsContainer.contains(event.target)) {
+                        profileDropdown.style.display = 'none';
+                        dropdownIcon.classList.remove('bx-chevron-up');
+                    }
+                });
+            }
 
             // Calculate total price
             const productSelect = document.getElementById('productSelect');
             const quantityInput = document.getElementById('quantityInput');
-            const totalPriceInput = document.getElementById('totalPrice');
+            const totalPriceInput = document.getElementById('totalPriceInput'); // Corrected ID
 
             function calculateTotalPrice() {
                 const selectedOption = productSelect.options[productSelect.selectedIndex];
@@ -230,45 +247,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 totalPriceInput.value = totalPrice.toFixed(2); // Format to 2 decimal places
             }
 
-            // Event listeners
-            productSelect.addEventListener('change', calculateTotalPrice);
-            quantityInput.addEventListener('input', calculateTotalPrice);
-
-            document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
-
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
-        </script>
-        <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-        <script>
-            document.getElementById('productSelect').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
+            // Update 3D Model Viewer
+            function updateModelViewer() {
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
                 const glbFileURL = selectedOption.getAttribute('data-glb');
                 const modelViewer = document.getElementById('modelViewer');
-                
-                if (glbFileURL) {
-                    modelViewer.src = glbFileURL;
-                } else {
-                    modelViewer.removeAttribute('src');
+
+                if (modelViewer) { // Check if element exists
+                    if (glbFileURL && glbFileURL !== 'null' && glbFileURL !== '') { // Check for valid URL
+                        modelViewer.src = glbFileURL;
+                        modelViewer.style.display = 'block'; // Show viewer
+                    } else {
+                        modelViewer.removeAttribute('src');
+                        modelViewer.style.display = 'none'; // Hide viewer if no model
+                    }
                 }
-            });
+            }
+
+            // Event listeners
+            if (productSelect && quantityInput && totalPriceInput) {
+                productSelect.addEventListener('change', () => {
+                    calculateTotalPrice();
+                    updateModelViewer();
+                });
+                quantityInput.addEventListener('input', calculateTotalPrice);
+
+                // Initial setup on page load
+                calculateTotalPrice();
+                updateModelViewer();
+            }
+
+            // Reset form needs to clear calculated fields and hide model viewer
+            const form = document.forms['frmPreorder'];
+            if (form) {
+                form.addEventListener('reset', function() {
+                    // Use setTimeout to allow default reset to happen first
+                    setTimeout(() => {
+                        if(totalPriceInput) totalPriceInput.value = '';
+                        const modelViewer = document.getElementById('modelViewer');
+                        if(modelViewer) {
+                             modelViewer.removeAttribute('src');
+                             modelViewer.style.display = 'none';
+                        }
+                        // Optionally reset quantity to 1
+                        // if(quantityInput) quantityInput.value = 1;
+                    }, 0);
+                });
+            }
+
         </script>
+        <!-- Ensure model-viewer script is loaded -->
+        <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     </section>
 </body>
 </html>

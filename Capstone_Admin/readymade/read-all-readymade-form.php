@@ -27,6 +27,24 @@ if (!$admin) {
 $adminName = htmlspecialchars($admin['First_Name']);
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
+// Updated Product Status Map (using the new one from the prompt)
+$productStatusLabels = [
+    0 => 'Request Approved', // 0% - Order placed by the customer
+    10 => 'Design Approved', // 10% - Finalized by customer (Note: This might be more relevant for Custom/PreOrder, but included for consistency if used)
+    20 => 'Payment Processing', // 20% - Or Material Sourcing if applicable
+    30 => 'Order Confirmed / Cutting & Shaping', // 30% - Preparing materials / Confirmed
+    40 => 'Structural Assembly / Preparing for Shipment', // 40% - Base framework built / Prep for ship
+    50 => 'Shipped / Detailing & Refinements',// 50% - Carvings, elements added / Shipped
+    60 => 'Out for Delivery / Sanding & Pre-Finishing',// 60% - Smoothening / Out for delivery
+    70 => 'Delivered / Varnishing/Painting', // 70% - Applying the final finish / Delivered
+    80 => 'Installed / Drying & Curing', // 80% - Final coating sets in / Installed
+    90 => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    95 => 'Ready for Shipment', // 95% - Ready for handover/shipment
+    98 => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
+    100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
+];
+
+
 // Fetch ready-made order records from the database
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
@@ -36,7 +54,7 @@ $query = "
         p.Product_Name,
         rmo.Quantity,
         rmo.Total_Price,
-        rmo.Order_Status,
+        rmo.Product_Status, -- Corrected column name
         rmo.Order_Date
     FROM tbl_ready_made_orders rmo
     JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
@@ -44,7 +62,7 @@ $query = "
     WHERE u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR p.Product_Name LIKE :search
-    OR rmo.Order_Status LIKE :search
+    OR rmo.Product_Status LIKE :search -- Corrected column name
 ";
 $stmt = $pdo->prepare($query);
 $searchParam = '%' . $search . '%';
@@ -52,21 +70,10 @@ $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Order Status mapping
-$statusLabels = [
-    0 => 'Pending',
-    10 => 'Order Placed',
-    20 => 'Payment Processing',
-    30 => 'Order Confirmed',
-    40 => 'Preparing for Shipment',
-    50 => 'Shipped',
-    60 => 'Out for Delivery',
-    70 => 'Delivered',
-    80 => 'Installed',
-    100 => 'Complete'
-];
 
+// --- AJAX Search Response ---
 if (isset($_GET['search'])) {
+    // Use the updated $productStatusLabels here as well
     echo '<table width="100%" border="1" cellspacing="5">
         <thead>
             <tr>
@@ -78,31 +85,37 @@ if (isset($_GET['search'])) {
             </tr>
         </thead>
         <tbody>';
-    foreach ($rows as $row) {
-        $orderID = htmlspecialchars($row["ReadyMadeOrder_ID"]);
-        $userName = htmlspecialchars($row["User_Name"]);
-        $productName = htmlspecialchars($row["Product_Name"]);
-        $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
-        $orderStatusValue = (int)$row["Order_Status"];
-        $progressPercent = min(max($orderStatusValue, 0), 100);
-        $orderStatus = htmlspecialchars($statusLabels[$orderStatusValue] ?? 'Unknown');
+    if (count($rows) > 0) {
+        foreach ($rows as $row) {
+            $orderID = htmlspecialchars($row["ReadyMadeOrder_ID"]);
+            $userName = htmlspecialchars($row["User_Name"]);
+            $productName = htmlspecialchars($row["Product_Name"]);
+            $totalPrice = number_format((float)$row["Total_Price"], 2, '.', '');
+            $productStatusValue = (int)$row["Product_Status"]; // Corrected variable name
+            $progressPercent = min(max($productStatusValue, 0), 100); // Use the status value directly for progress %
+            // Use the new status labels array for the tooltip
+            $productStatusLabel = htmlspecialchars($productStatusLabels[$productStatusValue] ?? 'Unknown Status (' . $productStatusValue . ')'); 
 
-        echo '
-        <tr>
-            <td>' . $userName . '</td>
-            <td>' . $productName . '</td>
-            <td>' . $totalPrice . '</td>
-            <td>
-                <div class="progress" style="width: 150px;">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: ' . $progressPercent . '%;" aria-valuenow="' . $progressPercent . '" aria-valuemin="0" aria-valuemax="100">
-                        ' . $progressPercent . '%
+            echo '
+            <tr>
+                <td>' . $userName . '</td>
+                <td>' . $productName . '</td>
+                <td>' . $totalPrice . '</td>
+                <td>
+                    <div class="progress" style="width: 150px;" title="' . $productStatusLabel . '">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: ' . $progressPercent . '%;" aria-valuenow="' . $progressPercent . '" aria-valuemin="0" aria-valuemax="100">
+                            ' . $progressPercent . '%
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=' . $orderID . '" target="_parent">View</a></td>
-            <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=' . $orderID . '" target="_parent">Edit</a></td>
-            <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=' . $orderID . '" target="_parent">Delete</a></td>
-        </tr>';
+                    <!-- Removed the <small> tag that displayed the label text -->
+                </td>
+                <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=' . $orderID . '" target="_parent">View</a></td>
+                <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=' . $orderID . '" target="_parent">Edit</a></td>
+                <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=' . $orderID . '" target="_parent" onclick="return confirm(\'Are you sure you want to delete this order?\');">Delete</a></td>
+            </tr>';
+        }
+    } else {
+        echo '<tr><td colspan="7" style="text-align:center;">No orders found matching your search.</td></tr>';
     }
     echo '</tbody></table>';
     exit; // Stop further execution for AJAX requests
@@ -113,19 +126,34 @@ if (isset($_GET['search'])) {
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Ready-Made Orders</title> <!-- More specific title -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script> <!-- Use bundle for Popper -->
+    <!-- Removed dashboard.js script as it wasn't provided and might conflict -->
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
-    <!-- <link href="../static/css-files/dashboard.css" rel="stylesheet"> -->
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <link href="../static/js/admin_home.js" rel="">
+    <!-- Removed link to admin_home.js as it wasn't provided -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
-
+    <style>
+        /* Add tooltip styling for progress bar */
+        .progress[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            background-color: #555;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 10;
+            margin-top: -25px; /* Adjust as needed */
+            margin-left: 10px; /* Adjust as needed */
+        }
+        /* Removed the td small style as the element is gone */
+    </style>
 </head>
 
 <body>
@@ -136,175 +164,190 @@ if (isset($_GET['search'])) {
         </span>
     </div>
         <ul class="nav-links">
-        
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-         
+            
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="">
-                    <i class="bx bx-comment-detail"></i>
+                    <i class="bx bx-history"></i> <!-- Changed icon -->
                     <span class="links_name">All Purchase History</span>
                 </a>
             </li>
             <li>
-    <a href="../reviews/read-all-reviews-form.php">
-        <i class="bx bx-message-dots"></i> <!-- Changed to a more appropriate message icon -->
-        <span class="links_name">All Reviews</span>
-    </a>
-</li>
+                <a href="../reviews/read-all-reviews-form.php">
+                    <i class="bx bx-star"></i> <!-- Changed to star icon -->
+                    <span class="links_name">All Reviews</span>
+                </a>
+            </li>
+                </a>
+            </li>
         </ul>
-
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Dashboard</span>
+                <span class="dashboard">Ready-Made Orders</span> <!-- Updated Title -->
             </div>
             <div class="search-box">
-                <form method="GET" action="">
-                    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" />
+                <!-- Use a form for better semantics, though handled by JS -->
+                <form id="searchForm" action="" method="GET">
+                     <input type="text" id="searchInput" name="search" placeholder="Search User, Product, Status#..." value="<?php echo htmlspecialchars($search); ?>" />
+                     <i class="bx bx-search"></i> <!-- Search Icon -->
                 </form>
             </div>
 
-
-            <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+            <div class="profile-details">
+                 <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
-
-                <div class="dropdown" id="profileDropdown">
-                    <!-- Modified link here -->
-                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
-                    <a href="../admin/logout.php">Logout</a>
-                </div>
+                 <div class="dropdown" id="profileDropdown">
+                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                     <a href="../admin/logout.php">Logout</a>
+                 </div>
             </div>
- </nav>
-<!-- Link to External JS -->
-<script src="dashboard.js"></script>
+        </nav>
 
+        <br><br><br>
 
+        <div class="container_boxes">
+            <h4>READY-MADE ORDERS LIST <a href="create-readymade-form.php" class="buttonCreate">Create New Order</a></h4> <!-- Added class to create button -->
+            <!-- Add Back to Dashboard button -->
+            <div class="button-container">
+                <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
+            </div>
+            <div id="ready-made-orders-list">
+                <table width="100%" border="1" cellspacing="5">
+                    <thead>
+                        <tr>
+                            <th>USER NAME</th>
+                            <th>PRODUCT NAME</th>
+                            <th>TOTAL PRICE</th>
+                            <th>ORDER STATUS</th>
+                            <th colspan="3" style="text-align: center;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($rows) > 0): ?>
+                            <?php foreach ($rows as $row): 
+                                $productStatusValue = (int)$row["Product_Status"]; // Corrected variable
+                                $progressPercent = min(max($productStatusValue, 0), 100);
+                                // Use the new status labels array for the tooltip
+                                $productStatusLabel = htmlspecialchars($productStatusLabels[$productStatusValue] ?? 'Unknown Status (' . $productStatusValue . ')'); 
+                            ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row["User_Name"]) ?></td>
+                                    <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
+                                    <td><?= number_format((float)$row["Total_Price"], 2, '.', '') ?></td>
+                                    <td>
+                                        <div class="progress" style="width: 150px;" title="<?= $productStatusLabel ?>"> <!-- Add title for tooltip -->
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $progressPercent ?>%;" aria-valuenow="<?= $progressPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                                <?= $progressPercent ?>%
+                                            </div>
+                                        </div>
+                                        <!-- Removed the <small> tag that displayed the label text -->
+                                    </td>
+                                    <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">View</a></td>
+                                    <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Edit</a></td>
+                                    <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a></td> <!-- Added confirmation -->
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" style="text-align:center;">No ready-made orders found.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<br><br><br>
-
-<div class="container_boxes">
-    <h4>READY-MADE ORDERS LIST <a href="create-readymade-form.php">Create New Ready-Made Order</a></h4>
-    <!-- Add Back to Dashboard button -->
-    <div class="button-container">
-                    <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-                </div>
-    <div id="ready-made-orders-list">
-        <table width="100%" border="1" cellspacing="5">
-            <thead>
-                <tr>
-                    <th>USER NAME</th>
-                    <th>PRODUCT NAME</th>
-                    <th>TOTAL PRICE</th>
-                    <th>ORDER STATUS</th>
-                    <th colspan="3" style="text-align: center;">ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($rows as $row): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row["User_Name"]) ?></td>
-                        <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
-                        <td><?= number_format((float)$row["Total_Price"], 2, '.', '') ?></td>
-                        <td>
-                            <div class="progress" style="width: 150px;">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: <?= min(max((int)$row["Order_Status"], 0), 100) ?>%;" aria-valuenow="<?= min(max((int)$row["Order_Status"], 0), 100) ?>" aria-valuemin="0" aria-valuemax="100">
-                                    <?= min(max((int)$row["Order_Status"], 0), 100) ?>%
-                                </div>
-                            </div>
-                        </td>
-                        <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">View</a></td>
-                        <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Edit</a></td>
-                        <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Delete</a></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-</section>
+    </section>
 
 <script>
-        let sidebar = document.querySelector(".sidebar");
-        let sidebarBtn = document.querySelector(".sidebarBtn");
-        sidebarBtn.onclick = function () {
-            sidebar.classList.toggle("active");
-            if (sidebar.classList.contains("active")) {
-                sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            } else {
-                sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-            }
-        };
-        
-        document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-        toggle.addEventListener('click', function () {
-            const parent = this.parentElement; // Get the parent <li> of the toggle
-            const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-            parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
+    let sidebar = document.querySelector(".sidebar");
+    let sidebarBtn = document.querySelector(".sidebarBtn");
+    let profileDetails = document.querySelector(".profile-details");
+    let dropdown = document.getElementById("profileDropdown");
+    let searchInput = document.getElementById("searchInput");
+    let readyMadeOrdersList = document.getElementById('ready-made-orders-list');
 
-            // Toggle the chevron icon rotation
-            const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-            if (parent.classList.contains('active')) {
-                chevron.classList.remove('bx-chevron-down');
-                chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-            } else {
-                chevron.classList.remove('bx-chevron-up');
-                chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-            }
-            
-            // Toggle the display of the dropdown menu
-            dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-        });
-    });
+    sidebarBtn.onclick = function () {
+        sidebar.classList.toggle("active");
+        if (sidebar.classList.contains("active")) {
+            sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+        } else {
+            sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+        }
+    };
 
-    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
+    profileDetails.onclick = function() {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        // Toggle chevron direction (optional)
+        const chevron = profileDetails.querySelector('.bx-chevron-down');
+        if (dropdown.style.display === 'block') {
+            chevron.classList.add('bx-chevron-up');
+            chevron.classList.remove('bx-chevron-down');
+        } else {
+            chevron.classList.remove('bx-chevron-up');
+            chevron.classList.add('bx-chevron-down');
+        }
+    }
+
+    // Close dropdown if clicking outside
+    window.onclick = function(event) {
+      if (!profileDetails.contains(event.target)) {
+        dropdown.style.display = 'none';
+        const chevron = profileDetails.querySelector('.bx-chevron-up');
+        if(chevron){
+             chevron.classList.remove('bx-chevron-up');
+             chevron.classList.add('bx-chevron-down');
+        }
+      }
+    }
+
+    // --- AJAX Search ---
+    let searchTimeout; // To debounce search requests
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimeout); // Clear previous timeout
         const searchValue = this.value.trim();
 
-        // Determine the URL based on whether the search bar is empty
-        const url = searchValue ? `read-all-readymade-form.php?search=${encodeURIComponent(searchValue)}` : `read-all-readymade-form.php`;
+        // Set a timeout to wait briefly after user stops typing
+        searchTimeout = setTimeout(() => {
+            const url = `read-all-readymade-form.php?search=${encodeURIComponent(searchValue)}`;
 
-        // Send an AJAX request to fetch results
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                // Update the ready-made orders list with the filtered results
-                const readyMadeOrdersList = document.getElementById('ready-made-orders-list');
-                readyMadeOrdersList.innerHTML = data.trim(); // Ensure no extra whitespace is added
-            })
-            .catch(error => console.error('Error fetching search results:', error));
+            // Show loading indicator (optional)
+            readyMadeOrdersList.innerHTML = '<p style="text-align:center;">Loading...</p>'; 
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // The response should be the HTML of the table section
+                    readyMadeOrdersList.innerHTML = data; 
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                    readyMadeOrdersList.innerHTML = '<p style="text-align:center; color: red;">Error loading results.</p>'; // Show error
+                });
+        }, 300); // Wait 300ms after typing stops
     });
 
-    // Ensure the table resets to its original state when the search input is cleared
-    document.querySelector('.search-box input[name="search"]').addEventListener('blur', function () {
-        if (!this.value.trim()) {
-            // Reload the page to reset the table to its original state
-            location.reload();
-        }
+    // Prevent form submission on enter key for search, as it's handled by JS
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault(); 
     });
 
-    document.querySelector('.search-box input[name="search"]').addEventListener('input', function () {
-        const searchValue = this.value;
-
-        // Send an AJAX request to fetch filtered results
-        fetch(`read-all-readymade-form.php?search=${encodeURIComponent(searchValue)}`)
-            .then(response => response.text())
-            .then(data => {
-                // Update the ready-made orders list with the filtered results
-                const readyMadeOrdersList = document.getElementById('ready-made-orders-list');
-                readyMadeOrdersList.innerHTML = data;
-            })
-            .catch(error => console.error('Error fetching search results:', error));
-    });
 </script>
 </body>
 </html>
