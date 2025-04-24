@@ -118,173 +118,167 @@ function old_value($field, $data, $default = '') {
     <!-- Back Button -->
     <div class="buttons1">
         <a href="/Capstone_Beta/Capstone_Client/login/login.php" class="login">
-            <button type="button">Back To Login</button>
+            <button type="button"><i class="fas fa-arrow-left"></i> Back To Login</button>
         </a>
     </div>
 
-    <!-- Form Container -->
-    <div class="form-container">
-        <!-- 3D Model -->
+    <!-- Main Container -->
+    <div class="container">
+        <!-- 3D Model Container -->
         <div class="model-container" id="modelContainer">
-        <model-viewer
-            src="../static/images/school_furniture_pack.glb"
-            alt="3D Model"
-            auto-rotate
-            camera-controls
-            camera-orbit="0deg 60deg 2.5m"
-            field-of-view="50deg"
-            style="width: 100%; height: 100%;">
-            </model-viewer>
+           <model-viewer src="../static/images/house.glb" shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
         </div>
 
-        <!-- Form Wrapper -->
-        <div class="form-wrapper">
-            <h1>Create Your Account</h1>
+        <!-- Form Container -->
+        <div class="form-container">
+            <div class="form-wrapper">
+                <h1>Create Your Account</h1>
 
-            <!-- General Error Display Area -->
-            <?php if (isset($signup_errors['general']) || isset($signup_errors['database'])) : ?>
-                <div class="error-messages-summary">
-                    <strong>Please fix the following issues:</strong>
-                    <ul>
-                        <?php if (isset($signup_errors['general'])) echo '<li>' . htmlspecialchars($signup_errors['general']) . '</li>'; ?>
-                        <?php if (isset($signup_errors['database'])) echo '<li>' . htmlspecialchars($signup_errors['database']) . '</li>'; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
+                <!-- General Error Display Area -->
+                <?php if (isset($signup_errors['general']) || isset($signup_errors['database'])) : ?>
+                    <div class="error-messages-summary">
+                        <strong>Please fix the following issues:</strong>
+                        <ul>
+                            <?php if (isset($signup_errors['general'])) echo '<li>' . htmlspecialchars($signup_errors['general']) . '</li>'; ?>
+                            <?php if (isset($signup_errors['database'])) echo '<li>' . htmlspecialchars($signup_errors['database']) . '</li>'; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
 
-            <!-- Signup Form -->
-            <form id="signupForm" method="POST" action="signup-rec.php" enctype="multipart/form-data" novalidate>
-                <!-- Step 1: Personal Info -->
-                <div class="form-step" id="step1">
-                    <!-- Fields: firstName, lastName, middleName, homeAddress -->
-                    <h2>Step 1: Personal Information</h2>
-                     <div class="form-group">
-                        <label for="firstName">First Name <span class="required">*</span></label>
-                        <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required
-                               value="<?php echo old_value('firstName', $form_data); ?>"
-                               class="<?php echo isset($signup_errors['firstName']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('firstName', $signup_errors); ?>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastName">Last Name <span class="required">*</span></label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required
-                               value="<?php echo old_value('lastName', $form_data); ?>"
-                               class="<?php echo isset($signup_errors['lastName']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('lastName', $signup_errors); ?>
-                    </div>
-                    <div class="form-group">
-                        <label for="middleName">Middle Name</label>
-                        <input type="text" id="middleName" name="middleName" placeholder="Enter your middle name"
-                               value="<?php echo old_value('middleName', $form_data); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="homeAddress">Home Address</label>
-                        <input type="text" id="homeAddress" name="homeAddress" placeholder="Enter your home address"
-                               value="<?php echo old_value('homeAddress', $form_data); ?>"
-                               class="<?php echo isset($signup_errors['homeAddress']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('homeAddress', $signup_errors); ?>
-                    </div>
-                </div>
-
-                <!-- Step 2: Account Info -->
-                <div class="form-step hidden" id="step2">
-                    <!-- Fields: email, mobileNumber, password, confirm-password -->
-                     <h2>Step 2: Account Details</h2>
-                    <div class="form-group">
-                        <label for="email">Email Address <span class="required">*</span></label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email" required
-                               value="<?php echo old_value('email', $form_data); ?>"
-                               class="<?php echo isset($signup_errors['email']) ? 'is-invalid' : ''; ?>"
-                               aria-describedby="email-ajax-error"> <!-- Link error message for accessibility -->
-                        <?php display_error('email', $signup_errors); // Shows error from full submit ?>
-                        <span id="email-ajax-error" class="ajax-error-text" role="alert" aria-live="polite"></span> <!-- Placeholder for AJAX error -->
-                    </div>
-                     <div class="form-group">
-                        <label for="mobileNumber">Mobile Number (11 digits)</label>
-                        <input type="tel" id="mobileNumber" name="mobileNumber" placeholder="e.g., 09123456789" pattern="[0-9]{11}"
-                               value="<?php echo old_value('mobileNumber', $form_data); ?>"
-                               class="<?php echo isset($signup_errors['mobileNumber']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('mobileNumber', $signup_errors); ?>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password (min 8 characters) <span class="required">*</span></label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required minlength="8"
-                               class="<?php echo isset($signup_errors['password']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('password', $signup_errors); ?>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirm-password">Confirm Password <span class="required">*</span></label>
-                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required
-                               class="<?php echo isset($signup_errors['confirm-password']) ? 'is-invalid' : ''; ?>">
-                        <?php display_error('confirm-password', $signup_errors); ?>
-                    </div>
-                </div>
-
-                <!-- Step 3: Uploads -->
-                <div class="form-step hidden" id="step3">
-                    <!-- Fields: profilePic, validID -->
-                     <h2>Step 3: Verification Documents</h2>
-                    <div class="form-group">
-                        <label for="profilePic">Profile Picture (Optional)</label>
-                        <div class="upload-btn-wrapper">
-                            <button type="button" class="btn">Choose Profile Picture</button>
-                            <input type="file" name="profilePic" id="profilePic" accept="image/jpeg, image/png, image/gif" />
+                <!-- Signup Form -->
+                <form id="signupForm" method="POST" action="signup-rec.php" enctype="multipart/form-data" novalidate>
+                    <!-- Step 1: Personal Info -->
+                    <div class="form-step" id="step1">
+                        <!-- Fields: firstName, lastName, middleName, homeAddress -->
+                        <h2>Step 1: Personal Information</h2>
+                         <div class="form-group">
+                            <label for="firstName">First Name <span class="required">*</span></label>
+                            <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required
+                                   value="<?php echo old_value('firstName', $form_data); ?>"
+                                   class="<?php echo isset($signup_errors['firstName']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('firstName', $signup_errors); ?>
                         </div>
-                        <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="preview-image">
-                        <?php display_error('profilePic', $signup_errors); ?>
-                    </div>
-                    <div class="form-group">
-                        <label for="validID">Upload Valid ID (Required) <span class="required">*</span></label>
-                        <div class="upload-btn-wrapper">
-                            <button type="button" class="btn">Choose Valid ID</button>
-                            <input type="file" name="validID" id="validID" accept="image/jpeg, image/png, image/gif" required>
+                        <div class="form-group">
+                            <label for="lastName">Last Name <span class="required">*</span></label>
+                            <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required
+                                   value="<?php echo old_value('lastName', $form_data); ?>"
+                                   class="<?php echo isset($signup_errors['lastName']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('lastName', $signup_errors); ?>
                         </div>
-                         <img id="validIDPreview" src="#" alt="Valid ID Preview" class="preview-image">
-                         <?php display_error('validID', $signup_errors); ?>
+                        <div class="form-group">
+                            <label for="middleName">Middle Name</label>
+                            <input type="text" id="middleName" name="middleName" placeholder="Enter your middle name"
+                                   value="<?php echo old_value('middleName', $form_data); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="homeAddress">Home Address</label>
+                            <input type="text" id="homeAddress" name="homeAddress" placeholder="Enter your home address"
+                                   value="<?php echo old_value('homeAddress', $form_data); ?>"
+                                   class="<?php echo isset($signup_errors['homeAddress']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('homeAddress', $signup_errors); ?>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Step 4: Terms -->
-                <div class="form-step hidden" id="step4">
-                    <!-- Field: signupTerms -->
-                    <h2>Step 4: Terms and Conditions</h2>
-                    <div class="form-options">
-                        <label class="terms-label">
-                            <input type="checkbox" name="signupTerms" id="signupTermsCheckbox" required disabled>
-                            I agree to the <button type="button" id="signupTermsButton" class="termsbutton">Terms and Conditions & Privacy Policy</button>
+                    <!-- Step 2: Account Info -->
+                    <div class="form-step hidden" id="step2">
+                        <!-- Fields: email, mobileNumber, password, confirm-password -->
+                         <h2>Step 2: Account Details</h2>
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" placeholder="Enter your email" required
+                                   value="<?php echo old_value('email', $form_data); ?>"
+                                   class="<?php echo isset($signup_errors['email']) ? 'is-invalid' : ''; ?>"
+                                   aria-describedby="email-ajax-error"> <!-- Link error message for accessibility -->
+                            <?php display_error('email', $signup_errors); // Shows error from full submit ?>
+                            <span id="email-ajax-error" class="ajax-error-text" role="alert" aria-live="polite"></span> <!-- Placeholder for AJAX error -->
+                        </div>
+                         <div class="form-group">
+                            <label for="mobileNumber">Mobile Number (11 digits)</label>
+                            <input type="tel" id="mobileNumber" name="mobileNumber" placeholder="e.g., 09123456789" pattern="[0-9]{11}"
+                                   value="<?php echo old_value('mobileNumber', $form_data); ?>"
+                                   class="<?php echo isset($signup_errors['mobileNumber']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('mobileNumber', $signup_errors); ?>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password (min 8 characters) <span class="required">*</span></label>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required minlength="8"
+                                   class="<?php echo isset($signup_errors['password']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('password', $signup_errors); ?>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password <span class="required">*</span></label>
+                            <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required
+                                   class="<?php echo isset($signup_errors['confirm-password']) ? 'is-invalid' : ''; ?>">
+                            <?php display_error('confirm-password', $signup_errors); ?>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Uploads -->
+                    <div class="form-step hidden" id="step3">
+                        <!-- Fields: profilePic, validID -->
+                         <h2>Step 3: Verification Documents</h2>
+                        <div class="form-group">
+                            <label for="profilePic">Profile Picture (Optional)</label>
+                            <div class="upload-btn-wrapper">
+                                <button type="button" class="btn">Choose Profile Picture</button>
+                                <input type="file" name="profilePic" id="profilePic" accept="image/jpeg, image/png, image/gif" />
+                            </div>
+                            <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="preview-image">
+                            <?php display_error('profilePic', $signup_errors); ?>
+                        </div>
+                        <div class="form-group">
+                            <label for="validID">Upload Valid ID (Required) <span class="required">*</span></label>
+                            <div class="upload-btn-wrapper">
+                                <button type="button" class="btn">Choose Valid ID</button>
+                                <input type="file" name="validID" id="validID" accept="image/jpeg, image/png, image/gif" required>
+                            </div>
+                             <img id="validIDPreview" src="#" alt="Valid ID Preview" class="preview-image">
+                             <?php display_error('validID', $signup_errors); ?>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Terms -->
+                    <div class="form-step hidden" id="step4">
+                        <!-- Field: signupTerms -->
+                        <h2>Step 4: Terms and Conditions</h2>
+                        <div class="form-options">
+                            <label class="terms-label">
+                                <input type="checkbox" name="signupTerms" id="signupTermsCheckbox" required disabled>
+                                I agree to the <button type="button" id="signupTermsButton" class="termsbutton">Terms and Conditions & Privacy Policy</button>
+                            </label>
+                             <?php display_error('signupTerms', $signup_errors); ?>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="buttons">
+                        <button type="button" id="prevButton" class="hidden">Prev</button>
+                        <button type="button" id="nextButton">Next</button>
+                    </div>
+                </form>
+
+                <!-- Terms Modal -->
+                <div id="signupTermsModal" class="modal" style="display: none;">
+                    <!-- Modal Content -->
+                     <div class="modal-content">
+                        <span class="close" id="signupModalClose">&times;</span>
+                        <h1>Terms and Conditions & Privacy Policy</h1>
+                        <!-- Terms text -->
+                        <p>Welcome to RM Betis Furniture...</p>
+                        <h2>1. Downpayment Policy</h2><p>...</p>
+                        <h2>2. No Cancellation, Return, and Refund Policy</h2><p>...</p>
+                        <h2>3. Privacy Policy</h2><p>...</p>
+                        <h2>4. Pickup Service Policy</h2><p>...</p>
+                        <p>If you have any questions...</p>
+                        <label class="modal-agree-label">
+                            <input type="checkbox" id="signupModalAgreeCheckbox"> I have read and agree to the terms and conditions
                         </label>
-                         <?php display_error('signupTerms', $signup_errors); ?>
                     </div>
                 </div>
 
-                <!-- Navigation Buttons -->
-                <div class="buttons">
-                    <button type="button" id="prevButton" class="hidden">Prev</button>
-                    <button type="button" id="nextButton">Next</button>
-                </div>
-            </form>
-
-            <!-- Terms Modal -->
-            <div id="signupTermsModal" class="modal" style="display: none;">
-                <!-- Modal Content -->
-                 <div class="modal-content">
-                    <span class="close" id="signupModalClose">&times;</span>
-                    <h1>Terms and Conditions & Privacy Policy</h1>
-                    <!-- Terms text -->
-                    <p>Welcome to RM Betis Furniture...</p>
-                    <h2>1. Downpayment Policy</h2><p>...</p>
-                    <h2>2. No Cancellation, Return, and Refund Policy</h2><p>...</p>
-                    <h2>3. Privacy Policy</h2><p>...</p>
-                    <h2>4. Pickup Service Policy</h2><p>...</p>
-                    <p>If you have any questions...</p>
-                    <label class="modal-agree-label">
-                        <input type="checkbox" id="signupModalAgreeCheckbox"> I have read and agree to the terms and conditions
-                    </label>
-                </div>
-            </div>
-
-        </div><!-- /.form-wrapper -->
-    </div><!-- /.form-container -->
+            </div><!-- /.form-wrapper -->
+        </div><!-- /.form-container -->
+    </div>
 
     <script type="module">
         // --- DOM Elements ---
