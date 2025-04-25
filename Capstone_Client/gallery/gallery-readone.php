@@ -202,7 +202,7 @@ if (!$product) {
         <p>Your pre-order request has been submitted and is now under review.</p>
         <div class="modal-buttons">
             <button id="pre-order-ok-button">OK</button>
-            <a href="../profile/profile.php#pending-orders" class="btn btn-primary">View Pending Orders</a>
+            <a href="../profile/profile.php#pending-orders" class="btn btn-primary" style="text-decoration: none;">View Pending Orders</a>
         </div>
     </div>
 </div>
@@ -214,7 +214,7 @@ if (!$product) {
         <p>Your order has been submitted and is now under review.</p>
         <div class="modal-buttons">
             <button id="buy-now-ok-button">OK</button>
-            <a href="../profile/profile.php#pending-orders" class="btn btn-primary">View Pending Orders</a>
+            <a href="../profile/profile.php#pending-orders" class="btn btn-primary" style="text-decoration: none;">View Pending Orders</a>
         </div>
     </div>
 </div>

@@ -33,139 +33,66 @@ $profilePicPath = htmlspecialchars($profilePicPath);
 
 
 // Initialize the search variable
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+$search = isset($_GET['search']) ? trim($_GET['search']) : ''; // Trim search term
 
-// Status Labels (Simplified - Using Product Status for both columns now)
-$statusLabels = [
-    0   => 'Request Approved / Concept', // Combined potential meanings
-    10  => 'Design Approved',
-    20  => 'Material Sourcing / Prep', // Combined
-    30  => 'Cutting & Shaping',
-    40  => 'Structural Assembly',
-    50  => 'Detailing & Refinements / Mid-Prod', // Combined
-    60  => 'Sanding & Pre-Finishing',
-    70  => 'Varnishing/Painting / Final Coat', // Combined
-    80  => 'Drying & Curing / Assembly & Test', // Combined
-    90  => 'Final Inspection / Ready', // Combined
-    95  => 'Ready for Shipment', // Specific to custom? Keep if needed.
-    98  => 'Order Delivered', // Specific to custom? Keep if needed.
-    100 => 'Completed / Received / Sold', // Combined final states
-];
-
-
-// Base query parts - MODIFIED
-$customQueryPart = "
-    SELECT
-        'custom' AS Order_Type,
-        c.Customization_ID AS ID,
-        c.Furniture_Type AS Product_Name,
+// --- Query Logic Correction ---
+// Query completed orders from tbl_purchase_history
+$query = "
+    SELECT 
+        ph.Purchase_ID AS ID,
+        ph.Order_Type,
+        ph.Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        c.Product_Status AS Status_Value, -- Use Product_Status
-        c.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
-        p.Price AS Price, -- This might be 0.00 for custom, consider fetching calculated price if available elsewhere
-        c.Last_Update AS Last_Update,
-        c.User_ID
-    FROM tbl_customizations c
-    JOIN tbl_user_info u ON c.User_ID = u.User_ID
-    LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID -- Product_ID might be null initially
+        ph.Product_Status AS Status_Value,
+        ph.Total_Price AS Price,
+        ph.Purchase_Date AS Last_Update,
+        ph.User_ID,
+        ph.Product_ID
+    FROM tbl_purchase_history ph
+    JOIN tbl_user_info u ON ph.User_ID = u.User_ID
+    WHERE ph.Product_Status = 100
 ";
-
-$preorderQueryPart = "
-    SELECT
-        'pre_order' AS Order_Type,
-        po.Preorder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        po.Product_Status AS Status_Value, -- Use Product_Status
-        po.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
-        po.Total_Price AS Price, -- Use Total_Price from preorder table
-        po.Order_Date AS Last_Update, -- Use Order_Date as Last_Update
-        u.User_ID
-    FROM tbl_preorder po
-    JOIN tbl_user_info u ON po.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-";
-
-$readyMadeQueryPart = "
-    SELECT
-        'ready_made' AS Order_Type,
-        rmo.ReadyMadeOrder_ID AS ID,
-        pr.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        rmo.Product_Status AS Status_Value, -- Use Product_Status
-        rmo.Product_Status AS Product_Status_Value, -- Keep for clarity if needed, or remove
-        rmo.Total_Price AS Price, -- Use Total_Price from ready_made table
-        rmo.Order_Date AS Last_Update, -- Use Order_Date as Last_Update
-        u.User_ID
-    FROM tbl_ready_made_orders rmo
-    JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
-    JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-";
-
-// Add WHERE clauses - MODIFIED (Use Product_Status = 100 for history)
-$customWhere = "WHERE c.Product_Status = 100";
-$preorderWhere = "WHERE po.Product_Status = 100";
-$readyMadeWhere = "WHERE rmo.Product_Status = 100";
 
 // Add search conditions if search term exists
+$params = []; // Array to hold query parameters
 if (!empty($search)) {
-    // Ensure search conditions target correct aliases and columns
-    $searchConditionCustom = " AND (u.First_Name LIKE :searchCustom OR u.Last_Name LIKE :searchCustom OR c.Furniture_Type LIKE :searchCustom OR c.Customization_ID LIKE :searchCustom)";
-    $searchConditionPreorder = " AND (u.First_Name LIKE :searchPreorder OR u.Last_Name LIKE :searchPreorder OR pr.Product_Name LIKE :searchPreorder OR po.Preorder_ID LIKE :searchPreorder)";
-    $searchConditionReadyMade = " AND (u.First_Name LIKE :searchReadyMade OR u.Last_Name LIKE :searchReadyMade OR pr.Product_Name LIKE :searchReadyMade OR rmo.ReadyMadeOrder_ID LIKE :searchReadyMade)";
-
-    $customWhere .= $searchConditionCustom;
-    $preorderWhere .= $searchConditionPreorder;
-    $readyMadeWhere .= $searchConditionReadyMade;
+    $query .= " AND (u.First_Name LIKE :search OR u.Last_Name LIKE :search OR ph.Product_Name LIKE :search OR ph.Purchase_ID LIKE :search)";
+    $params[':search'] = '%' . $search . '%';
 }
 
-// Combine the queries
-$query = $customQueryPart . $customWhere . " UNION ALL " . // Use UNION ALL if duplicates are acceptable and potentially faster
-         $preorderQueryPart . $preorderWhere . " UNION ALL " .
-         $readyMadeQueryPart . $readyMadeWhere . " ORDER BY Last_Update DESC";
+// Add ordering
+$query .= " ORDER BY ph.Purchase_Date DESC";
 
-
+// Prepare and execute the query
 $stmt = $pdo->prepare($query);
-
-// Bind search parameters separately for each part of the UNION
-if (!empty($search)) {
-    $searchParam = '%' . $search . '%';
-    // Bind parameters with unique names
-    $stmt->bindParam(':searchCustom', $searchParam, PDO::PARAM_STR);
-    $stmt->bindParam(':searchPreorder', $searchParam, PDO::PARAM_STR);
-    $stmt->bindParam(':searchReadyMade', $searchParam, PDO::PARAM_STR);
-}
-
-// *** Line 138 where the error occurred ***
-$stmt->execute();
+$stmt->execute($params); // Pass the parameters array
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle AJAX requests to return only table rows
-if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
+if (isset($_GET['ajax_search'])) {
     ob_start(); // Start output buffering
     if (count($rows) > 0) {
         foreach ($rows as $row) {
-            // Use Total_Price directly if available, format it
-             $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 'N/A';
-             $statusValue = $row['Status_Value'] ?? null; // Get the status value
-             $statusLabel = isset($statusValue) ? ($statusLabels[$statusValue] ?? "Unknown ($statusValue)") : "Unknown";
+            // Format price
+            $totalPrice = isset($row['Price']) ? '₱' . number_format((float) $row['Price'], 2, '.', ',') : 'N/A';
+            // Since this is history, status is always completed
+            $statusLabel = 'Completed';
 
             echo '
             <tr>
-                <td>' . htmlspecialchars($row['Order_Type']) . '</td>
+                <td>' . htmlspecialchars(ucfirst(str_replace('_', ' ', $row['Order_Type']))) . '</td>
                 <td>' . htmlspecialchars($row['User_Name']) . '</td>
                 <td>' . htmlspecialchars($row['Product_Name']) . '</td>
-                <td>' . htmlspecialchars($statusLabel) . '</td> <!-- Display Status Label -->
-                <td>' . htmlspecialchars($statusLabel) . '</td> <!-- Display Status Label again (as Product Status) -->
+                <td>' . htmlspecialchars($statusLabel) . '</td>
                 <td>' . $totalPrice . '</td>
                 <td style="text-align: center;">
-                    <a class="buttonView" href="read-one-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a>
-                    <a class="buttonDelete" href="delete-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">Delete</a>
+                    <a class="buttonView" href="read-one-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . urlencode($row['Order_Type']) . '" target="_parent">View</a>
+                    <a class="buttonDelete" href="delete-history-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . urlencode($row['Order_Type']) . '" target="_parent" onclick="return confirm(\'Are you sure you want to delete this history record?\');">Delete</a>
                 </td>
             </tr>';
         }
     } else {
-        echo '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>';
+        echo '<tr><td colspan="6" style="text-align:center;">No purchase history records found' . (!empty($search) ? ' matching your search' : '') . '.</td></tr>';
     }
     $tableContent = ob_get_clean(); // Get buffered content
     echo $tableContent; // Send it back
@@ -177,11 +104,10 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard - Purchase History</title> <!-- More specific title -->
+    <title>Admin Dashboard - Purchase History</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Ensure bootstrap.bundle.min.js is loaded if dropdowns need Popper -->
     <script src="../static/js/bootstrap.bundle.min.js"></script>
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
@@ -199,6 +125,7 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
             cursor: pointer;
             font-size: 0.9em;
             margin-left: 5px; /* Add some space between buttons */
+            display: inline-block; /* Ensure proper spacing */
         }
         .buttonDelete:hover {
             background-color: #c82333; /* Darker red */
@@ -248,6 +175,30 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
             position: relative; /* Needed for absolute positioning of dropdown */
             cursor: pointer; /* Indicate it's clickable */
         }
+        /* Ensure table layout is consistent */
+        #purchase-history-list table {
+            table-layout: fixed; /* Helps with column widths */
+            width: 100%;
+        }
+        #purchase-history-list th,
+        #purchase-history-list td {
+            word-wrap: break-word; /* Prevent long text from breaking layout */
+            vertical-align: middle; /* Align content vertically */
+        }
+        /* Adjust column widths as needed */
+        #purchase-history-list th:nth-child(1), /* Order Type */
+        #purchase-history-list td:nth-child(1) { width: 10%; }
+        #purchase-history-list th:nth-child(2), /* User Name */
+        #purchase-history-list td:nth-child(2) { width: 20%; }
+        #purchase-history-list th:nth-child(3), /* Product Name */
+        #purchase-history-list td:nth-child(3) { width: 25%; }
+        #purchase-history-list th:nth-child(4), /* Status */
+        #purchase-history-list td:nth-child(4) { width: 10%; }
+        #purchase-history-list th:nth-child(5), /* Total Price */
+        #purchase-history-list td:nth-child(5) { width: 15%; }
+        #purchase-history-list th:nth-child(6), /* Actions */
+        #purchase-history-list td:nth-child(6) { width: 20%; text-align: center; }
+
 
     </style>
 </head>
@@ -256,22 +207,20 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
     <div class="sidebar">
       <div class="logo-details">
         <span class="logo_name">
-            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_image"> <!-- Use logo_image class -->
+            <img src="../static/images/rm raw png.png" alt="RM BETIS FURNITURE"  class="logo_image">
         </span>
     </div>
         <ul class="nav-links">
-
             <li>
                 <a href="../dashboard/dashboard.php" class="">
                     <i class="bx bx-grid-alt"></i>
                     <span class="links_name">Dashboard</span>
                 </a>
             </li>
-
             <li>
                 <a href="../purchase-history/read-all-history-form.php" class="active">
-                    <i class="bx bx-history"></i> <!-- Changed icon -->
-                    <span class="links_name">All Purchase History</span>
+                    <i class="bx bx-history"></i>
+                    <span class="links_name">Purchase History</span>
                 </a>
             </li>
             <li>
@@ -280,7 +229,7 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
                     <span class="links_name">All Reviews</span>
                 </a>
             </li>
-             <!-- Add other nav links as needed -->
+             <!-- Add other relevant nav links -->
         </ul>
     </div>
 
@@ -288,12 +237,14 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
     <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
-                <span class="dashboard">Purchase History</span> <!-- Updated title -->
+                <span class="dashboard">Purchase History</span>
             </div>
             <div class="search-box">
-                 <!-- Removed form tag, handled by JS -->
-                 <input type="text" id="searchInput" placeholder="Search by Name, Product, ID..." value="<?php echo htmlspecialchars($search); ?>" />
-                 <i class="bx bx-search"></i>
+                <!-- Search form -->
+                <form id="search-form" method="GET" action="">
+                    <input type="text" id="searchInput" name="search" placeholder="Search User, Product, or ID..." value="<?php echo htmlspecialchars($search); ?>" />
+                    <!-- Removed search button as AJAX handles it on input -->
+                </form>
             </div>
 
             <!-- Profile Details Container -->
@@ -323,18 +274,17 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
 
 
             <!-- Add Back to Dashboard button -->
-            <div class="button-container" style="margin-bottom: 15px;"> <!-- Added margin -->
+            <div class="button-container" style="margin-bottom: 15px;">
                     <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
             </div>
             <div id="purchase-history-list">
-                <table width="100%" border="1" cellspacing="0" cellpadding="5"> <!-- Adjusted table style -->
+                <table width="100%" border="1" cellspacing="0" cellpadding="5">
                     <thead>
                         <tr>
                             <th>ORDER TYPE</th>
                             <th>USER NAME</th>
                             <th>PRODUCT NAME</th>
                             <th>STATUS</th> <!-- Simplified Status Column -->
-                            <th>PRODUCT STATUS</th> <!-- Kept for consistency, shows same as Status -->
                             <th>TOTAL PRICE</th>
                             <th style="text-align: center;">ACTIONS</th>
                         </tr>
@@ -343,35 +293,32 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
                         <?php if (count($rows) > 0): ?>
                             <?php foreach ($rows as $row): ?>
                                 <?php
-                                    // Use Total_Price directly if available, format it
-                                    $totalPrice = isset($row['Price']) ? number_format((float) $row['Price'], 2, '.', '') : 'N/A';
-                                    $statusValue = $row['Status_Value'] ?? null; // Get the status value
-                                    $statusLabel = isset($statusValue) ? ($statusLabels[$statusValue] ?? "Unknown ($statusValue)") : "Unknown";
+                                    // Format price
+                                    $totalPrice = isset($row['Price']) ? '₱' . number_format((float) $row['Price'], 2, '.', ',') : 'N/A';
+                                    // Status is always completed here
+                                    $statusLabel = 'Completed';
                                 ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($row['Order_Type']) ?></td>
+                                    <td><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $row['Order_Type']))) ?></td>
                                     <td><?= htmlspecialchars($row['User_Name']) ?></td>
                                     <td><?= htmlspecialchars($row['Product_Name']) ?></td>
-                                    <td><?= htmlspecialchars($statusLabel) ?></td> <!-- Display Status Label -->
-                                    <td><?= htmlspecialchars($statusLabel) ?></td> <!-- Display Status Label again -->
+                                    <td><?= htmlspecialchars($statusLabel) ?></td>
                                     <td><?= $totalPrice ?></td>
                                     <td style="text-align: center;">
                                         <a class="buttonView" href="read-one-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">View</a>
                                         <a class="buttonDelete" href="delete-history-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>" target="_parent">Delete</a>
+
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                             <tr><td colspan="7" style="text-align:center;">No records found matching your search criteria.</td></tr>
+                             <tr><td colspan="6" style="text-align:center;">No purchase history records found<?= !empty($search) ? ' matching your search' : '' ?>.</td></tr> <!-- Adjusted colspan -->
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
-
-    <!-- Link to External JS -->
-    <!-- <script src="../static/js/dashboard.js"></script> --> <!-- Commented out if functionality is below -->
 
     <script>
         // Sidebar Toggle (Consistent version)
@@ -380,7 +327,6 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
         if (sidebar && sidebarBtn) {
             sidebarBtn.onclick = function () {
                 sidebar.classList.toggle("active");
-                // Toggle icon class based on sidebar state
                 sidebarBtn.classList.toggle("bx-menu-alt-right", sidebar.classList.contains("active"));
             };
         }
@@ -388,26 +334,21 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
         // Profile Dropdown Toggle (Consistent version)
         const profileDetailsContainer = document.getElementById('profile-details-container');
         const profileDropdown = document.getElementById('profileDropdown');
-        const dropdownIcon = document.getElementById('dropdown-icon'); // Assuming you have an icon element
+        const dropdownIcon = document.getElementById('dropdown-icon');
 
         if (profileDetailsContainer && profileDropdown) {
             profileDetailsContainer.addEventListener('click', function(event) {
-                // Prevent dropdown from closing if clicking inside it, unless clicking a link
                 if (!event.target.closest('a')) {
                      profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-                     // Toggle chevron icon if it exists
                      if (dropdownIcon) {
                          dropdownIcon.classList.toggle('bx-chevron-up', profileDropdown.style.display === 'block');
                      }
                 }
-                // Allow clicks on links within the dropdown to proceed
             });
 
-            // Close dropdown if clicking outside
             document.addEventListener('click', function(event) {
                 if (!profileDetailsContainer.contains(event.target)) {
                     profileDropdown.style.display = 'none';
-                    // Reset chevron icon if it exists
                     if (dropdownIcon) {
                         dropdownIcon.classList.remove('bx-chevron-up');
                     }
@@ -425,7 +366,6 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const searchValue = this.value.trim();
-                // Use ajax_search=1 to trigger the AJAX response in PHP
                 const url = `read-all-history-form.php?ajax_search=1&search=${encodeURIComponent(searchValue)}`;
 
                 fetch(url)
@@ -445,7 +385,7 @@ if (isset($_GET['ajax_search'])) { // Changed parameter name to avoid conflict
                     .catch(error => {
                         console.error('Error fetching search results:', error);
                          if (tableBody) {
-                             tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Error loading data.</td></tr>';
+                             tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: red;">Error loading data.</td></tr>'; // Adjusted colspan
                          }
                     });
             }, 300); // Debounce search requests (300ms delay)

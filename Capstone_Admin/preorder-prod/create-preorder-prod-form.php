@@ -67,17 +67,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- <link href="../static/js/admin_home.js" rel=""> --> <!-- Incorrect link type -->
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
     <style>
-        /* Minor adjustments for form readability */
-        .container_boxes table td { padding: 5px; vertical-align: top; }
-        .container_boxes select, .container_boxes input[type=number], .container_boxes input[type=text] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .container_boxes input[readonly] { background-color: #e9ecef; }
-        model-viewer { width: 100%; max-width: 300px; height: 300px; border: 1px solid #ccc; }
+      
     </style>
 </head>
 
@@ -130,73 +120,81 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
         <br><br><br>
 
         <div class="container_boxes">
-            <!-- Update action to point to the script that inserts into tbl_order_request -->
-            <form name="frmPreorder" method="POST" action="create-preorder-prod-rec.php"> <!-- Renamed target script -->
-                <h4>Create Pre-Order Request</h4>
-                <table class="table table-borderless" style="width: 60%;"> <!-- Use Bootstrap table -->
-                    <tr>
-                        <td style="width: 30%;"><label for="productSelect">Product:</label></td>
-                        <td>
-                            <!-- Use column name 'Product_ID' -->
-                            <select name="Product_ID" id="productSelect" class="form-select" required>
-                                <option value="" data-price="0" data-glb="">Select Product</option>
-                                <?php foreach ($products as $product): ?>
-                                    <option value="<?php echo $product['Product_ID']; ?>" data-price="<?php echo htmlspecialchars($product['Price']); ?>" data-glb="<?php echo htmlspecialchars($product['GLB_File_URL'] ?? ''); ?>">
-                                        <?php echo htmlspecialchars($product['Product_Name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label for="modelViewer">3D Model:</label></td>
-                        <td>
-                            <model-viewer id="modelViewer" auto-rotate camera-controls></model-viewer>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label for="userSelect">User:</label></td>
-                        <td>
-                            <!-- Use column name 'User_ID' -->
-                            <select name="User_ID" id="userSelect" class="form-select" required>
-                                <option value="">Select User</option>
-                                <?php foreach ($users as $user): ?>
-                                    <option value="<?php echo htmlspecialchars($user['User_ID']); ?>">
-                                        <?php echo htmlspecialchars($user['User_Name']); ?> (<?php echo htmlspecialchars($user['User_ID']); ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label for="quantityInput">Quantity:</label></td>
-                        <td>
-                            <!-- Use column name 'Quantity' -->
-                            <input type="number" name="Quantity" id="quantityInput" class="form-control" min="1" value="1" required>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label for="totalPriceInput">Total Price:</label></td>
-                        <td>
-                            <!-- Use column name 'Total_Price' -->
-                            <input type="text" name="Total_Price" id="totalPriceInput" class="form-control" readonly required placeholder="Calculated automatically">
-                        </td>
-                    </tr>
-                </table>
+    <h4>
+        CREATE PRE-ORDER REQUEST
+      
+    </h4>
 
-                <!-- Hidden fields for tbl_order_request -->
-                <input type="hidden" name="Order_Type" value="pre_order">
-                <input type="hidden" name="Payment_Status" value="Pending">
-                <input type="hidden" name="Processed" value="0">
 
-                <div class="button-container mt-3">
-                    <button type="submit" class="buttonUpdate btn btn-success">Create Request</button>
-                    <button type="reset" class="buttonDelete btn btn-warning">Reset Form</button>
-                    <!-- Update link to point to the order requests list -->
-                    <a href="../order-requests/read-all-request-form.php" class="buttonBack btn btn-secondary">Back to Order Requests</a>
-                </div>
-            </form>
+    <form name="frmPreorder" method="POST" action="create-preorder-prod-rec.php">
+        <div id="preorder-form">
+            <table width="100%" border="1" cellspacing="5">
+                <tr>
+                    <td style="width: 30%;"><label for="productSelect">Product:</label></td>
+                    <td>
+                        <select name="Product_ID" id="productSelect" class="form-select" required>
+                            <option value="" data-price="0" data-glb="">Select Product</option>
+                            <?php foreach ($products as $product): ?>
+                                <option value="<?php echo $product['Product_ID']; ?>"
+                                        data-price="<?php echo htmlspecialchars($product['Price']); ?>"
+                                        data-glb="<?php echo htmlspecialchars($product['GLB_File_URL'] ?? ''); ?>">
+                                    <?php echo htmlspecialchars($product['Product_Name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="modelViewer">3D Model:</label></td>
+                    <td>
+                        <model-viewer id="modelViewer" auto-rotate camera-controls style="width: 100%; height: 300px;"></model-viewer>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="userSelect">User:</label></td>
+                    <td>
+                        <select name="User_ID" id="userSelect" class="form-select" required>
+                            <option value="">Select User</option>
+                            <?php foreach ($users as $user): ?>
+                                <option value="<?php echo htmlspecialchars($user['User_ID']); ?>">
+                                    <?php echo htmlspecialchars($user['User_Name']); ?> (<?php echo htmlspecialchars($user['User_ID']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="quantityInput">Quantity:</label></td>
+                    <td>
+                        <input type="number" name="Quantity" id="quantityInput" class="form-control" min="1" value="1" required>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="totalPriceInput">Total Price:</label></td>
+                    <td>
+                        <input type="text" name="Total_Price" id="totalPriceInput" class="form-control" readonly required placeholder="Calculated automatically">
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Hidden fields -->
+            <input type="hidden" name="Order_Type" value="pre_order">
+            <input type="hidden" name="Payment_Status" value="Pending">
+            <input type="hidden" name="Processed" value="0">
         </div>
+
+        <!-- Buttons under the table -->
+        <div class="button-container mt-3">
+        <a href="../preorder-prod/read-all-preorder-prod-form.php" class="buttonBack">Back to List</a>
+            <button type="submit" class="buttonUpdate btn btn-success">Create Request</button>
+            <button type="reset" class="buttonDelete btn btn-warning">Reset Form</button>
+        </div>
+    </form>
+</div>
 
         <script>
             // Sidebar Toggle

@@ -276,83 +276,85 @@ function calculatePercentage($status) {
         </nav>
         <br><br><br>
 
-        <div class="container_boxes">
-            <h4>PROGRESS LIST</h4>
-            <!-- Add Back to Dashboard button -->
-            <div class="button-container mb-3"> <!-- Added margin bottom -->
-                <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
-                <!-- Removed Create New Progress link as it seems broken based on create-progress-rec.php -->
-                <!-- <a href="create-progress-form.php" class="buttonCreate">Create New Progress</a> -->
-            </div>
-            <div id="progress-list">
-                <!-- Updated Main Table: Removed Order Status column, adjusted colspan, updated Edit condition -->
-                <!-- *** FIX: Removed PHP code accessing Order_Status within the comment *** -->
-                <table class="table table-bordered table-striped"> <!-- Added bootstrap classes -->
-                    <thead>
-                        <tr>
-                            <th>ORDER TYPE</th>
-                            <th>USER NAME</th>
-                            <th>PRODUCT NAME</th>
-                            <!-- <th>ORDER STATUS</th> --> <!-- REMOVED -->
-                            <th>PRODUCT STATUS</th>
-                            <th>TOTAL PRICE</th>
-                            <th colspan="2" style="text-align: center;">ACTIONS</th> <!-- Adjusted colspan -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (count($rows) > 0): ?>
-                            <?php foreach ($rows as $row): ?>
-                                <?php
-                                // Fetch Product_Name dynamically ONLY if it's empty in tbl_progress (fallback)
-                                if (empty($row['Product_Name']) && !empty($row['Product_ID'])) {
-                                    $prodStmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
-                                    $prodStmt->execute([$row['Product_ID']]);
-                                    $productInfo = $prodStmt->fetch(PDO::FETCH_ASSOC);
-                                    $row['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
-                                } elseif (empty($row['Product_Name'])) {
-                                     $row['Product_Name'] = 'N/A'; // Handle case where both are missing
-                                }
+    <div class="container_boxes">
+    <h4>PROGRESS LIST
 
-                                $productStatusPercentage = calculatePercentage($row['Product_Status']);
-                                ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['Order_Type']) ?></td>
-                                    <td><?= htmlspecialchars($row['User_Name']) ?></td>
-                                    <td><?= htmlspecialchars($row['Product_Name']) ?></td>
-                                    <!--<td>
-                                        <div class="status-bar">
-                                            <div class="status-bar-fill order-status-bar" style="width: ... %;"> // PHP code removed
-                                                ... % // PHP code removed
-                                            </div>
-                                        </div>
-                                    </td>--> <!-- REMOVED -->
-                                    <td>
-                                        <div class="status-bar" title="<?= $productStatusLabels[$row['Product_Status']] ?? 'Unknown Status' ?>"> <!-- Added title attribute -->
-                                            <div class="status-bar-fill product-status-bar" style="width: <?= $productStatusPercentage ?>%;">
-                                                <?= $productStatusPercentage ?>%
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>₱ <?= number_format((float) $row['Total_Price'], 2, '.', ',') ?></td> <!-- Added currency format -->
-                                    <td style="text-align: center;"><a class="buttonView btn btn-sm btn-info" href="read-one-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>">View</a></td>
-                                    <?php // Updated Edit condition to use Product_Status ?>
-                                    <?php if($row['Product_Status'] != 100): ?>
-                                        <td style="text-align: center;"><a class="buttonEdit btn btn-sm btn-warning" href="update-progress-form.php?id=<?= htmlspecialchars($row['ID']) ?>&order_type=<?= htmlspecialchars($row['Order_Type']) ?>">Edit</a></td>
-                                    <?php else: ?>
-                                        <td style="text-align: center;" class="completed-action">Completed</td> <!-- Indicate completed -->
-                                    <?php endif; ?>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center">No progress records found.</td> <!-- Adjusted colspan -->
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
+    <a href="create-progress-form.php">Create New Pre-Order Request</a>
+    </h4>
+
+    <div class="button-container">
+        <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
+    </div>
+
+    <div id="progress-list">
+        <table width="100%" border="1" cellspacing="5">
+            <tr>
+                <th>Order Type</th>
+                <th>User Name</th>
+                <th>Product Name</th>
+                <th>Product Status</th>
+                <th>Total Price</th>
+                <th colspan="2" style="text-align: center;">ACTIONS</th>
+            </tr>
+
+            <?php if (count($rows) > 0): ?>
+                <?php foreach ($rows as $row): ?>
+                    <?php
+                    if (empty($row['Product_Name']) && !empty($row['Product_ID'])) {
+                        $prodStmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
+                        $prodStmt->execute([$row['Product_ID']]);
+                        $productInfo = $prodStmt->fetch(PDO::FETCH_ASSOC);
+                        $row['Product_Name'] = $productInfo['Product_Name'] ?? 'N/A';
+                    } elseif (empty($row['Product_Name'])) {
+                        $row['Product_Name'] = 'N/A';
+                    }
+
+                    $productStatusPercentage = calculatePercentage($row['Product_Status']);
+                    ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['Order_Type']); ?></td>
+                        <td><?php echo htmlspecialchars($row['User_Name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['Product_Name']); ?></td>
+                        <td>
+                            <div class="status-bar">
+                                <div class="status-bar-fill product-status-bar" style="width: <?php echo $productStatusPercentage; ?>%;">
+                                    <?php echo $productStatusPercentage; ?>%
+                                </div>
+                            </div>
+                        </td>
+                        <td>₱ <?php echo number_format((float) $row['Total_Price'], 2, '.', ','); ?></td>
+                        <td style="text-align: center;">
+                            <a class="buttonView" href="read-one-progress-form.php?id=<?php echo htmlspecialchars($row['ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">View</a>
+                        </td>
+                        <td style="text-align: center;">
+                            <?php if ((int)$row['Product_Status'] !== 100): ?>
+                                <a class="buttonEdit" href="update-progress-form.php?id=<?php echo htmlspecialchars($row['ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">Edit</a>
+                            <?php else: ?>
+                                <span class="completed-action">Completed</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="7" style="text-align: center;">No progress records available.</td>
+                </tr>
+            <?php endif; ?>
+        </table>
+    </div>
+</div>
+
+<script>
+// Optional: Add dropdown toggle JS for profile
+document.getElementById('dropdown-icon').addEventListener('click', function() {
+    document.getElementById('profileDropdown').classList.toggle('show');
+});
+</script>
+
+</section>
+</body>
+</html>
+
 
     <script>
         // Sidebar Toggle

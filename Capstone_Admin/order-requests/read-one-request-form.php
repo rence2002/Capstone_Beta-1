@@ -169,35 +169,34 @@ if (isset($_GET['id'])) {
         <br><br><br>
 
         <div class="container_boxes">
-            <h4>ORDER REQUEST DETAILS (ID: <?= htmlspecialchars($requestID) ?>)</h4>
-            <table class="table table-bordered table-striped"> <!-- Use Bootstrap classes -->
-                <tr><th>User Name</th><td><?= $userName ?></td></tr>
-                <tr><th>Product Name</th><td><?= $productName ?></td></tr>
-                <tr>
-                    <th>3D Model</th>
-                    <td>
-                        <?php if ($glbFileURL): ?>
-                            <model-viewer src="<?= $glbFileURL ?>" alt="3D model of <?= $productName ?>" auto-rotate camera-controls></model-viewer>
-                        <?php else: ?>
-                            No 3D model available.
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr><th>Furniture Type</th><td><?= $furnitureType ?></td></tr>
-                <tr><th>Quantity</th><td><?= $quantity ?></td></tr>
-                <tr><th>Order Type</th><td><?= ucwords(str_replace('_', ' ', $orderType)) ?></td></tr>
-                <!-- Updated Status Display -->
-                <tr><th>Processing Status</th><td><?= $processedStatus ?></td></tr>
-                <tr><th>Payment Status</th><td><?= ucwords(str_replace('_', ' ', $paymentStatus)) ?></td></tr>
-                <!-- Removed old incorrect status row -->
-                <!-- <tr><th>STATUS</th><td><?php // echo $statusLabels[$status] ?? 'Unknown'; ?></td></tr> -->
-                <tr><th>Total Price</th><td>₱ <?= $totalPrice ?></td></tr>
-                <tr><th>Request Date</th><td><?= $requestDate ?></td></tr>
-            </table>
-            <br>
-            <a href="read-all-request-form.php" class="buttonBack btn btn-secondary">Back to Order Requests</a>
-        </div>
-    </section>
+    <h4>ORDER REQUEST DETAILS (ID: <?= htmlspecialchars($requestID) ?>)</h4>
+    
+    <table width="100%" border="1" cellspacing="5">
+        <tr><th>User Name</th><td><?= htmlspecialchars($userName) ?></td></tr>
+        <tr><th>Product Name</th><td><?= htmlspecialchars($productName) ?></td></tr>
+        <tr>
+            <th>3D Model</th>
+            <td>
+                <?php if ($glbFileURL): ?>
+                    <model-viewer src="<?= $glbFileURL ?>" alt="3D model of <?= htmlspecialchars($productName) ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                <?php else: ?>
+                    No 3D model available.
+                <?php endif; ?>
+            </td>
+        </tr>
+        <tr><th>Furniture Type</th><td><?= htmlspecialchars($furnitureType) ?></td></tr>
+        <tr><th>Quantity</th><td><?= htmlspecialchars($quantity) ?></td></tr>
+        <tr><th>Order Type</th><td><?= ucwords(str_replace('_', ' ', htmlspecialchars($orderType))) ?></td></tr>
+        <tr><th>Processing Status</th><td><?= htmlspecialchars($processedStatus) ?></td></tr>
+        <tr><th>Payment Status</th><td><?= ucwords(str_replace('_', ' ', htmlspecialchars($paymentStatus))) ?></td></tr>
+        <tr><th>Total Price</th><td>₱ <?= htmlspecialchars($totalPrice) ?></td></tr>
+        <tr><th>Request Date</th><td><?= htmlspecialchars($requestDate) ?></td></tr>
+    </table>
+
+    <br>
+    <a href="read-all-request-form.php" class="buttonBack">Back to Order Requests</a>
+</div>
+
 
     <script>
         // Sidebar Toggle

@@ -198,7 +198,7 @@ if (isset($_GET['search'])) {
                 <!-- Use a form for better semantics, though handled by JS -->
                 <form id="searchForm" action="" method="GET">
                      <input type="text" id="searchInput" name="search" placeholder="Search User, Product, Status#..." value="<?php echo htmlspecialchars($search); ?>" />
-                     <i class="bx bx-search"></i> <!-- Search Icon -->
+                  
                 </form>
             </div>
 
@@ -254,7 +254,7 @@ if (isset($_GET['search'])) {
                                     </td>
                                     <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">View</a></td>
                                     <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Edit</a></td>
-                                    <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a></td> <!-- Added confirmation -->
+                                    <td style="text-align: center;"><a class="buttonDelete" href="delete-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Delete</a></td> <!-- Added confirmation -->
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>

@@ -259,74 +259,30 @@ try {
             // * STEP 2: Attempt to send the email *
             $mail->send();
 
-            // * STEP 3: If email sends successfully, REDIRECT TO verify.php *
-            // Clear session data related to signup form on success
-            unset($_SESSION['signup_form_data']);
-            unset($_SESSION['signup_errors']);
-            // Pass the email to the verification page via GET parameter
+            // Store email in session for verification page
+            $_SESSION['verification_email'] = $email;
+            
+            // Redirect to verification page
             header("Location: verify.php?email=" . urlencode($email));
-            exit(); // Important: Stop script execution after redirect
+            exit();
 
         } catch (Exception $e) {
-            // * If email sending FAILS *
-            // Log the detailed error for server admin
-            error_log("Mailer Error sending verification to {$email}: {$mail->ErrorInfo}");
-
-            // Set a user-friendly session error message
-            // Provide slightly more specific guidance if possible
-            $errorMessage = "Error: Account created, but failed to send verification email. ";
-            if (str_contains($mail->ErrorInfo, 'authentication failed')) {
-                 $errorMessage .= "There might be an issue with the email configuration. Please contact support.";
-            } else {
-                 $errorMessage .= "Please check your email address or contact support.";
-            }
-             $_SESSION['signup_errors'] = ['general' => $errorMessage];
-
-            // Keep form data in session for potential retry or display
-            $formData = $_POST;
-            unset($formData['password'], $formData['confirm-password']);
-            $_SESSION['signup_form_data'] = $formData;
-
-            // Redirect to LOGIN page with an error status (or back to signup?)
-            // Redirecting to login might be confusing as they haven't verified.
-            // Redirecting back to signup with the error might be better, but the account IS created.
-            // Let's stick with the original redirect to login for now, but add a clear status.
-            header('Location: login.php?status=mail_error');
+            // If email fails, still proceed with registration but log the error
+            error_log("Email could not be sent. Mailer Error: {$mail->ErrorInfo}");
+            $_SESSION['signup_errors']['general'] = "Registration successful but verification email could not be sent. Please contact support.";
+            header('Location: signup.php');
             exit();
         }
     } else {
-        // * If database INSERT FAILS *
-        $errors['database'] = "Error: Failed to create account record. Please try again.";
-        error_log("PDO Error Info during INSERT: " . print_r($stmt->errorInfo(), true));
-        // Redirect back to signup page with error
-        $_SESSION['signup_errors'] = $errors;
-        $formData = $_POST;
-        unset($formData['password'], $formData['confirm-password']);
-        $_SESSION['signup_form_data'] = $formData;
+        // Handle database insertion failure
+        $_SESSION['signup_errors']['database'] = "Error: Registration failed. Please try again.";
         header('Location: signup.php');
         exit();
     }
 } catch (PDOException $e) {
-    // * If database error during INSERT (e.g., duplicate email constraint) *
-    $errors = []; // Re-initialize errors for this catch block
-    // Check for specific duplicate entry error code (SQLSTATE 23000) or message content
-    if ($e->getCode() == '23000' || str_contains(strtolower($e->getMessage()), 'duplicate entry')) {
-         // Check if it's the email constraint (assuming it's named appropriately or is the primary key causing it)
-         if (str_contains(strtolower($e->getMessage()), 'email_address')) { // Adjust 'email_address' if your constraint/index name is different
-            $errors['email'] = "Error: This email address is already registered."; // Specific error for email field
-         } else {
-            $errors['database'] = "Error: A user with some duplicate information already exists."; // More generic duplicate error
-         }
-    } else {
-        $errors['database'] = "Database error: An unexpected issue occurred during signup. Please try again."; // User-friendly message
-        // Log the detailed error for debugging
-        error_log("Database error during signup INSERT: " . $e->getMessage());
-    }
-    // Store errors and redirect back to signup page
-    $_SESSION['signup_errors'] = $errors;
-    $formData = $_POST;
-    unset($formData['password'], $formData['confirm-password']);
-    $_SESSION['signup_form_data'] = $formData;
+    // Handle database errors
+    error_log("Database error: " . $e->getMessage());
+    $_SESSION['signup_errors']['database'] = "Error: Registration failed. Please try again.";
     header('Location: signup.php');
     exit();
 }

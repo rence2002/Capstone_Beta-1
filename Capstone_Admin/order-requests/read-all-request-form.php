@@ -126,85 +126,68 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <br><br><br>
 
         <div class="container_boxes">
-            <h4>PENDING ORDER REQUESTS</h4>
-            <!-- Add Back to Dashboard button -->
-            <div class="button-container mb-3"> <!-- Added margin bottom -->
-                <a href="../dashboard/dashboard.php" class="buttonBack btn btn-secondary">Back to Dashboard</a>
-            </div>
+    <h4>PENDING ORDER REQUESTS</h4>
 
-            <div class="table-responsive"> <!-- Make table responsive -->
-                <table class="table table-bordered table-striped"> <!-- Use Bootstrap table classes -->
-                    <thead>
-                        <tr>
-                            <th>ORDER ID</th>
-                            <th>USER NAME</th>
-                            <th>ORDER TYPE</th>
-                            <!-- <th>STATUS</th> --> <!-- REMOVED incorrect status column -->
-                            <th>CURRENT PAYMENT</th> <!-- Added column for current status -->
-                            <th>SET PAYMENT (on Confirm)</th> <!-- Clarified header for dropdown -->
-                            <th colspan="3">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (count($rows) > 0): ?>
-                            <?php
-                            foreach ($rows as $row) {
-                                $orderID = htmlspecialchars($row["Order_ID"]);
-                                $userName = htmlspecialchars($row["User_Name"]);
-                                $orderType = htmlspecialchars($row["Order_Type"]);
-                                // $status = htmlspecialchars($row["Order_Status"]); // REMOVED
-                                $currentPaymentStatus = htmlspecialchars($row["Payment_Status"]); // Get current payment status
+    <!-- Back to Dashboard -->
+    <div class="button-container mb-3">
+        <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
+    </div>
 
-                                // Determine the view URL based on the order type
-                                // Assuming Customization_ID is needed for custom view, fetch it if necessary
-                                // For now, keeping the original logic but it might need adjustment
-                                if ($orderType == 'custom') {
-                                    // You might need the Customization_ID here from tbl_order_request
-                                    // Let's assume read-one-form-customize.php uses Request_ID for now
-                                    $viewURL = "read-one-form-customize.php?id=$orderID";
-                                } else {
-                                    $viewURL = "read-one-request-form.php?id=$orderID";
-                                }
+    <div id="order-list">
+        <table width="100%" border="1" cellspacing="5">
+            <tr>
+                <th>ORDER ID</th>
+                <th>USER NAME</th>
+                <th>ORDER TYPE</th>
+                <th>CURRENT PAYMENT</th>
+                <th>SET PAYMENT (on Confirm)</th>
+                <th colspan="3" style="text-align: center;">ACTIONS</th>
+            </tr>
+            <?php if (count($rows) > 0): ?>
+                <?php foreach ($rows as $row): 
+                    $orderID = htmlspecialchars($row["Order_ID"]);
+                    $userName = htmlspecialchars($row["User_Name"]);
+                    $orderType = htmlspecialchars($row["Order_Type"]);
+                    $currentPaymentStatus = htmlspecialchars($row["Payment_Status"]);
+                    $viewURL = $orderType == 'custom' 
+                        ? "read-one-form-customize.php?id=$orderID" 
+                        : "read-one-request-form.php?id=$orderID";
+                ?>
+                <tr>
+                    <td><?php echo $orderID; ?></td>
+                    <td><?php echo $userName; ?></td>
+                    <td><?php echo ucwords(str_replace('_', ' ', $orderType)); ?></td>
+                    <td><?php echo ucwords(str_replace('_', ' ', $currentPaymentStatus)); ?></td>
+                    <td>
+                        <form method="POST" action="accept-request-rec.php" id="form_<?php echo $orderID; ?>" style="margin: 0;">
+                            <input type="hidden" name="id" value="<?php echo $orderID; ?>">
+                            <select name="payment_status" id="payment_status_<?php echo $orderID; ?>" required>
+                                <option value="" disabled selected>Select Status</option>
+                                <option value="downpayment_paid">Downpayment Paid</option>
+                                <option value="fully_paid">Fully Paid</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonView" href="<?php echo $viewURL; ?>">View</a>
+                    </td>
+                    <td style="text-align: center;">
+                        <button type="submit" form="form_<?php echo $orderID; ?>" class="buttonAccept">Confirm</button>
+                    </td>
+                    <td style="text-align: center;">
+                        <a class="buttonDecline" href="decline-request-rec.php?id=<?php echo $orderID; ?>">Decline</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="8" style="text-align: center;">No pending order requests found.</td>
+                </tr>
+            <?php endif; ?>
+        </table>
+    </div>
+</div>
 
-                                echo '
-                                <tr>
-                                    <td>' . $orderID . '</td>
-                                    <td>' . $userName . '</td>
-                                    <td>' . ucwords(str_replace('_', ' ', $orderType)) . '</td> <!-- Nicer display -->
-                                    <td>' . ucwords(str_replace('_', ' ', $currentPaymentStatus)) . '</td> <!-- Display current payment status -->
-                                    <td>
-                                        <!-- This form submits to accept-request-rec.php -->
-                                        <form method="POST" action="accept-request-rec.php" id="form_' . $orderID . '" style="margin: 0;">
-                                            <input type="hidden" name="id" value="' . $orderID . '">
-                                            <select name="payment_status" id="payment_status_' . $orderID . '" class="form-select form-select-sm" required>
-                                                <option value="" disabled selected>Select Status</option>
-                                                <option value="downpayment_paid">Downpayment Paid</option>
-                                                <option value="fully_paid">Fully Paid</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td><a class="buttonView btn btn-sm btn-info" href="' . $viewURL . '">View</a></td>
-                                    <td>
-                                        <!-- This button submits the form above it -->
-                                        <button type="submit" form="form_' . $orderID . '" class="buttonAccept btn btn-sm btn-success">Confirm</button>
-                                    </td>
-                                    <td>
-                                        <!-- Decline action - Consider using POST and confirmation for safety -->
-                                        <a class="buttonDecline btn btn-sm btn-danger" href="decline-request-rec.php?id=' . $orderID . '" onclick="return confirm(\'Are you sure you want to decline this request?\');">Decline</a>
-                                    </td>
-                                </tr>';
-                            }
-                            ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="7" class="text-center">No pending order requests found.</td> <!-- Adjusted colspan -->
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div> <!-- End table-responsive -->
-        </div>
-    </section>
 
     <script>
         // Sidebar Toggle

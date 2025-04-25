@@ -160,10 +160,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
                 <form action="delete-preorder-prod-rec.php" method="POST" style="display: inline;">
                     <!-- Pass the Progress_ID to the processing script -->
+                    <a href="read-all-preorder-prod-form.php" class="buttonBack btn btn-secondary" style="margin-left: 10px;">No, Cancel</a>
                     <input type="hidden" name="Progress_ID" value="<?= htmlspecialchars($record['Progress_ID']) ?>">
                     <button type="submit" class="buttonDelete btn btn-danger">Yes, Delete Record</button>
                 </form>
-                <a href="read-all-preorder-prod-form.php" class="buttonBack btn btn-secondary" style="margin-left: 10px;">No, Cancel</a>
+              
             </div>
         </div>
     </section>

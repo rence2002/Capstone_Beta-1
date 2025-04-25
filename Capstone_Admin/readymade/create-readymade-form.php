@@ -148,8 +148,8 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                 </table>
                 <div class="button-container">
-                    <input type="submit" value="Submit" class="buttonUpdate">
-                    <a href="read-all-readymade-form.php" target="_parent" class="buttonBack">Back to List</a>
+                <a href="read-all-readymade-form.php" target="_parent" class="buttonBack">Back to List</a>
+                <input type="submit" value="Submit" class="buttonUpdate">
                 </div>
             </form>
         </div>

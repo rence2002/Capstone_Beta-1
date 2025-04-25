@@ -35,10 +35,9 @@ $profilePicPath = htmlspecialchars($profilePicPath);
 
 // Get the Purchase_ID and Order_Type from the URL
 $purchaseID = $_GET['id'] ?? null;
-$orderType = $_GET['order_type'] ?? null; // Get order type to potentially adjust query/display later if needed
+$orderType = $_GET['order_type'] ?? null;
 
 if (!$purchaseID || !$orderType) {
-    // Redirect back with an error if ID or type is missing
     header("Location: read-all-history-form.php?error=" . urlencode("Missing ID or Order Type."));
     exit();
 }
@@ -46,97 +45,38 @@ if (!$purchaseID || !$orderType) {
 $purchase = null; // Initialize purchase data variable
 
 try {
-    // --- Determine which table to query based on order_type ---
-    // Although this page was originally for tbl_purchase_history,
-    // the link from read-all-history-form passes different IDs.
-    // We need to fetch from the correct source table.
-
-    $query = "";
-    $idParam = ':id'; // Parameter name for the ID
-
-    switch ($orderType) {
-        case 'custom':
-            // Fetch from tbl_customizations where Product_Status = 100
-            $query = "SELECT
-                        c.Customization_ID AS ID,
-                        c.User_ID,
-                        c.Furniture_Type AS Product_Name,
-                        0 AS Quantity, -- Quantity not directly stored here, maybe fetch from progress? Defaulting to 0
-                        p.Price AS Total_Price, -- Price might be 0.00, consider calculated price if available
-                        'custom' AS Order_Type,
-                        c.Last_Update AS Purchase_Date, -- Use Last_Update as the date
-                        c.Product_Status,
-                        CONCAT(ui.First_Name, ' ', ui.Last_Name) AS User_Name,
-                        c.Product_ID
-                      FROM tbl_customizations c
-                      JOIN tbl_user_info ui ON c.User_ID = ui.User_ID
-                      LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
-                      WHERE c.Customization_ID = $idParam AND c.Product_Status = 100"; // Ensure it's completed
-            break;
-
-        case 'pre_order':
-            // Fetch from tbl_preorder where Product_Status = 100
-            $query = "SELECT
-                        po.Preorder_ID AS ID,
-                        po.User_ID,
-                        pr.Product_Name,
-                        po.Quantity,
-                        po.Total_Price,
-                        'pre_order' AS Order_Type,
-                        po.Order_Date AS Purchase_Date, -- Use Order_Date
-                        po.Product_Status,
-                        CONCAT(ui.First_Name, ' ', ui.Last_Name) AS User_Name,
-                        po.Product_ID
-                      FROM tbl_preorder po
-                      JOIN tbl_user_info ui ON po.User_ID = ui.User_ID
-                      JOIN tbl_prod_info pr ON po.Product_ID = pr.Product_ID
-                      WHERE po.Preorder_ID = $idParam AND po.Product_Status = 100"; // Ensure it's completed
-            break;
-
-        case 'ready_made':
-             // Fetch from tbl_ready_made_orders where Product_Status = 100
-             // NOTE: tbl_purchase_history seems redundant if tbl_ready_made_orders holds the final state.
-             // We'll query tbl_ready_made_orders for consistency with the other types.
-            $query = "SELECT
-                        rmo.ReadyMadeOrder_ID AS ID,
-                        rmo.User_ID,
-                        pr.Product_Name,
-                        rmo.Quantity,
-                        rmo.Total_Price,
-                        'ready_made' AS Order_Type,
-                        rmo.Order_Date AS Purchase_Date, -- Use Order_Date
-                        rmo.Product_Status,
-                        CONCAT(ui.First_Name, ' ', ui.Last_Name) AS User_Name,
-                        rmo.Product_ID
-                      FROM tbl_ready_made_orders rmo
-                      JOIN tbl_user_info ui ON rmo.User_ID = ui.User_ID
-                      JOIN tbl_prod_info pr ON rmo.Product_ID = pr.Product_ID
-                      WHERE rmo.ReadyMadeOrder_ID = $idParam AND rmo.Product_Status = 100"; // Ensure it's completed
-            break;
-
-        default:
-            // Invalid order type
-            header("Location: read-all-history-form.php?error=" . urlencode("Invalid Order Type specified."));
-            exit();
-    }
-
+    // Query the purchase history table
+    $query = "SELECT
+                ph.Purchase_ID AS ID,
+                ph.User_ID,
+                ph.Product_Name,
+                ph.Quantity,
+                ph.Total_Price,
+                ph.Order_Type,
+                ph.Purchase_Date,
+                ph.Product_Status,
+                CONCAT(ui.First_Name, ' ', ui.Last_Name) AS User_Name,
+                ph.Product_ID
+              FROM tbl_purchase_history ph
+              JOIN tbl_user_info ui ON ph.User_ID = ui.User_ID
+              WHERE ph.Purchase_ID = :id 
+              AND ph.Order_Type = :order_type
+              AND ph.Product_Status = 100";
 
     $stmt = $pdo->prepare($query);
-    // Bind the ID based on the parameter name used in the query
-    $stmt->bindParam($idParam, $purchaseID, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $purchaseID, PDO::PARAM_INT);
+    $stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
     $stmt->execute();
     $purchase = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$purchase) {
-        // Redirect back with an error if record not found or not completed
         header("Location: read-all-history-form.php?error=" . urlencode("Completed record not found for the specified ID and Type."));
         exit();
     }
 
 } catch (PDOException $e) {
-    // Handle database errors
-    echo "Database Error: " . $e->getMessage();
-    // Log error: error_log("DB Error fetching history details: " . $e->getMessage());
+    error_log("DB Error fetching history details: " . $e->getMessage());
+    header("Location: read-all-history-form.php?error=" . urlencode("Database error occurred."));
     exit();
 }
 

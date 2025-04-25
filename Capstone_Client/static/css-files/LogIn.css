@@ -61,22 +61,24 @@ body.dark-mode {
 
 .container {
   display: flex;
-  flex-direction: row; /* Row layout for larger screens */
+  flex-direction: row;
   width: 900px;
-  height:580px;
+  height: 580px;
   box-shadow: -5px -7px 54px 17px rgba(87,87,87,0.41);
-  /* border-radius: 10px; */
   overflow: hidden;
+  margin: 20px auto;
 }
 
 .left, .right {
-  width: 50%; /* Each takes half the width */
+  width: 50%;
   box-sizing: border-box;
+  overflow: hidden;
 }
+
 .left {
   background-color: #fff;
   padding: 40px;
-  overflow-y: auto; /* Allow vertical scrolling */
+  overflow: hidden;
 }
 
 .left h1 {
@@ -213,11 +215,12 @@ body.dark-mode {
   text-decoration: underline;
 }
 .right {
-  background: linear-gradient(135deg, #d2b48c, #deb887, #f5deb3, #ffe4c4); /* Tan to Bisque gradient */
+  background: linear-gradient(135deg, #d2b48c, #deb887, #f5deb3, #ffe4c4);
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  overflow: hidden;
 }
 .right model-viewer {
   width: 100%;
@@ -254,89 +257,85 @@ text-decoration: underline;
 
 @media (max-width: 768px) {
   .container {
-      flex-direction: column; /* Stack sections vertically */
-      width: 90%; /* Adjust width for smaller screens */
-      height: auto; /* Allow height to adjust dynamically */
+    flex-direction: column;
+    width: 90%;
+    height: auto;
+    min-height: 580px;
   }
-  
-  .left, .right {
-      width: 100%; /* Full width for both sections */
-      height: auto; /* Adjust height */
-  }
-  
-  .left {
-      padding: 20px; /* Reduce padding */
-  }
-  
-  .left h1 {
-      font-size: 20px; /* Smaller font size */
-  }
-  
-  .left p {
-      font-size: 14px; /* Smaller font size */
-  }
-  
-  .form-group input {
-      padding: 8px; /* Reduce padding */
-      font-size: 12px; /* Smaller font size */
-  }
-  
-  .buttons button {
-      padding: 18px; /* Reduce padding */
-      font-size: 12px; /* Smaller font size */
-      gap: 10px;
-  }
-  
-  .right model-viewer {
-      height: 300px; /* Adjust height to fit the screen */
-  }
-  
-  .buttons {
-   
-  
-      align-items: center;
-  }
-  
-  .buttons button {
-      width: 100%;
-      max-width: 200px; /* Limit button width */
-  }
-  
 
+  .left, .right {
+    width: 100%;
+    height: auto;
+  }
+
+  .left {
+    padding: 20px;
+  }
+
+  .left h1 {
+    font-size: 20px;
+  }
+
+  .left p {
+    font-size: 14px;
+  }
+
+  .form-group input {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .buttons button {
+    padding: 18px;
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  .right model-viewer {
+    height: 300px;
+  }
+
+  .buttons {
+    align-items: center;
+  }
+
+  .buttons button {
+    width: 100%;
+    max-width: 200px;
+  }
 }
 
 @media (max-width: 480px) {
   .container {
-      height: auto; /* Adjust height for smaller screens */
-      width: 100%; /* Full width */
-      margin:10px;
-      
+    height: auto;
+    width: 100%;
+    margin:10px;
   }
   
   .left h1 {
-      font-size: 18px; /* Smaller font size */
+    font-size: 18px;
   }
   
   .left p {
-      font-size: 12px; /* Smaller font size */
+    font-size: 12px;
   }
   
   .form-group input {
-      font-size: 10px; /* Smaller font size */
+    font-size: 10px;
   }
   
   .buttons button {
-      font-size: 10px; /* Smaller font size */
+    font-size: 10px;
   }
   
   .right model-viewer {
-      height: 250px; /* Further reduce height */
+    height: 250px;
   }
   
   .theme-toggle {
-      top: 10px; /* Adjust position */
-      right: 10px; /* Adjust position */
-      font-size: 12px; /* Smaller font size */
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
   }
 
   .entypo--switch1 {
@@ -344,6 +343,5 @@ text-decoration: underline;
   }
   .entypo--switch2 {
     display: none;
-   
   }
 }

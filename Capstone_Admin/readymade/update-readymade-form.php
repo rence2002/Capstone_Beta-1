@@ -198,18 +198,7 @@ $productStatusLabels = [
                         <td>Total Price:</td>
                         <td><input type="text" id="totalPrice" name="txtTotalPrice" value="<?php echo htmlspecialchars($totalPrice); ?>" readonly></td>
                     </tr>
-                    <tr>
-                        <td>Product Status:</td>
-                        <td>
-                            <select name="txtProductStatus">
-                                <?php foreach ($productStatusLabels as $value => $label): ?>
-                                    <option value="<?php echo $value; ?>" <?php echo ($productStatus == $value) ? 'selected' : ''; ?>>
-                                        <?php echo $label; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
+                  
                 </table>
                 <div class="button-container">
                     <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>

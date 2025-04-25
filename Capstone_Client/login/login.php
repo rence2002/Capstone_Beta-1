@@ -3,6 +3,13 @@ session_start();
 include '../config/database.php'; // Include your database connection
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if reCAPTCHA is completed
+    if (empty($_POST['g-recaptcha-response'])) {
+        $_SESSION['error_message'] = "Please complete the reCAPTCHA verification.";
+        header("Location: login.php");
+        exit();
+    }
+
     $email = $_POST['email'];
     $password = $_POST['password'];
 
@@ -44,6 +51,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <style>
         /* Add any additional styles here */
+        .g-recaptcha {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            transform-origin: 0 0;
+        }
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        /* Responsive styles for reCAPTCHA */
+        @media screen and (max-width: 768px) {
+            .g-recaptcha {
+                transform: scale(0.85);
+            }
+        }
+        @media screen and (max-width: 480px) {
+            .g-recaptcha {
+                transform: scale(0.75);
+            }
+        }
+        @media screen and (max-width: 320px) {
+            .g-recaptcha {
+                transform: scale(0.65);
+            }
+        }
     </style>
 </head>
 
@@ -57,7 +93,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="social-login">
                <!-- Remove social login buttons here -->
             </div>
-            <!-- <div class="divider">- OR -</div> -->
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="error-message">
+                    <?php 
+                        echo htmlspecialchars($_SESSION['error_message']);
+                        unset($_SESSION['error_message']);
+                    ?>
+                </div>
+            <?php endif; ?>
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="email">Email Address</label>
@@ -67,9 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Enter your password" required>
                 </div>
-                <!-- <div class="g-recaptcha" data-sitekey="6LdGk9wqAAAAAPGLtqpTt5f2IdBdSFGjA806AF7X" style="transform: scale(0.7); transform-origin: 0 0;"></div> -->
+                <div class="g-recaptcha" data-sitekey="6LdGk9wqAAAAAPGLtqpTt5f2IdBdSFGjA806AF7X"></div>
                 <div class="form-options">
-                    <!-- <label><input type="checkbox"> Remember me</label> -->
                     <a href="forget-password.php">Forgot password?</a>
                 </div>
                 <div class="buttons">

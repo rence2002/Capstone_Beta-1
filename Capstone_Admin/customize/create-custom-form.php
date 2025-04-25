@@ -142,7 +142,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Furniture Type Additional Info:</td>
-                    <td><textarea name="txtFurnitureTypeInfo"></textarea></td>
+                    <td><textarea name="txtFurnitureTypeInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Standard Sizes:</td>
@@ -193,7 +193,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Color Additional Info:</td>
-                    <td><textarea name="txtColorInfo"></textarea></td>
+                    <td><textarea name="txtColorInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                 <td>Texture:</td>
@@ -230,7 +230,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Texture Additional Info:</td>
-                    <td><textarea name="txtTextureInfo"></textarea></td>
+                    <td><textarea name="txtTextureInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Wood Type:</td>
@@ -253,7 +253,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Wood Additional Info:</td>
-                    <td><textarea name="txtWoodInfo"></textarea></td>
+                    <td><textarea name="txtWoodInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                 <tr>
@@ -272,7 +272,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Foam Additional Info:</td>
-                    <td><textarea name="txtFoamInfo"></textarea></td>
+                    <td><textarea name="txtFoamInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Cover Type:</td>
@@ -295,7 +295,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Cover Additional Info:</td>
-                    <td><textarea name="txtCoverInfo"></textarea></td>
+                    <td><textarea name="txtCoverInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Design:</td>
@@ -326,7 +326,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Design Additional Info:</td>
-                    <td><textarea name="txtDesignInfo"></textarea></td>
+                    <td><textarea name="txtDesignInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Tile Type:</td>
@@ -346,7 +346,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Tile Additional Info:</td>
-                    <td><textarea name="txtTileInfo"></textarea></td>
+                    <td><textarea name="txtTileInfo" class="form-control"></textarea></td>
                 </tr>
                 <tr>
                     <td>Metal Type:</td>
@@ -364,14 +364,15 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
                 <tr>
                     <td>Metal Additional Info:</td>
-                    <td><textarea name="txtMetalInfo"></textarea></td>
+                    <td><textarea name="txtMetalInfo" class="form-control"></textarea></td>
                 </tr>
             </table>
             
             <div class="button-container">
+            <a href="read-all-custom-form.php" target="_parent" class="buttonBack">Back to List</a>
                 <input type="submit" value="Submit" class="buttonUpdate">
                 <input type="reset" value="Reset" class="buttonDelete">
-                <a href="read-all-custom-form.php" target="_parent" class="buttonBack">Back to List</a>
+               
             </div>
         </form>
     </div>

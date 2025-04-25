@@ -187,7 +187,7 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                     <tr>
                         <td>Quantity:</td>
-                        <td><input type="number" id="quantity" name="txtQuantity" value="<?php echo $quantity; ?>" required oninput="calculateTotalPrice()"></td>
+                        <td><input type="number"  class="form-control" id="quantity" name="txtQuantity" value="<?php echo $quantity; ?>" required oninput="calculateTotalPrice()"></td>
                     </tr>
                     <tr>
                         <td>Price:</td>

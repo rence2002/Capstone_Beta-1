@@ -174,7 +174,7 @@ if (!$progressRecord) {
                     <a href="read-all-preorder-prod-form.php" class="buttonBack btn btn-secondary">Back to List</a>
                     <button type="submit" class="buttonUpdate btn btn-primary">Update Pre-Order Details</button>
                     <!-- Added Button to Update Full Progress -->
-                    <a href="../progress/update-progress-form.php?id=<?= htmlspecialchars($progressID) ?>&order_type=pre_order" class="buttonEdit btn btn-info" style="margin-left: 10px;">Update Order Progress</a>
+                    <a href="../preorder-prod/update-preorder-prod-form.php?id=<?= htmlspecialchars($progressID) ?>&order_type=pre_order" class="buttonEdit btn btn-info" style="margin-left: 10px;">Update Order Progress</a>
                 </div>
             </form>
         </div>

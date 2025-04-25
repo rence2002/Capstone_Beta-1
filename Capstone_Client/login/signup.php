@@ -126,7 +126,7 @@ function old_value($field, $data, $default = '') {
     <div class="container">
         <!-- 3D Model Container -->
         <div class="model-container" id="modelContainer">
-           <model-viewer src="../static/images/house.glb" shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
+           <model-viewer src="../static/images/school_furniture_pack.glb" shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
         </div>
 
         <!-- Form Container -->
@@ -264,12 +264,22 @@ function old_value($field, $data, $default = '') {
                         <span class="close" id="signupModalClose">&times;</span>
                         <h1>Terms and Conditions & Privacy Policy</h1>
                         <!-- Terms text -->
-                        <p>Welcome to RM Betis Furniture...</p>
-                        <h2>1. Downpayment Policy</h2><p>...</p>
-                        <h2>2. No Cancellation, Return, and Refund Policy</h2><p>...</p>
-                        <h2>3. Privacy Policy</h2><p>...</p>
-                        <h2>4. Pickup Service Policy</h2><p>...</p>
-                        <p>If you have any questions...</p>
+                        <h1>Terms and Conditions</h1>
+                <p>Welcome to RM Betis Furniture. By using our system and placing an order, you agree to the following terms and conditions:</p>
+            
+                <h2>1. Downpayment Policy</h2>
+                <p>Before we process or accept your order, you are required to pay a 60% downpayment. The remaining balance must be settled upon completion of the order.</p>
+  
+                <h2>2. No Cancellation, Return, and Refund Policy</h2>
+                <p>Once an order is placed, it is considered final. Cancellations, returns, and refunds are strictly not allowed under any circumstances. Please ensure all details are accurate and final before confirming your order.</p>
+            
+                <h2>3. Privacy Policy</h2>
+                <p>All personal information you provide in this system will be kept private and secure. We are committed to protecting your data and will not share it with third parties without your consent.</p>
+            
+                <h2>4. Pickup Service Policy</h2>
+                <p>Our standard pickup service does not include any freebies. However, for bulk orders, we occasionally offer complimentary small pieces of furniture as a gesture of appreciation. This policy helps us build positive relationships with our customers and reward larger orders with added value.</p>
+            
+                <p>If you have any questions or concerns regarding these terms, please contact us for clarification.</p>
                         <label class="modal-agree-label">
                             <input type="checkbox" id="signupModalAgreeCheckbox"> I have read and agree to the terms and conditions
                         </label>

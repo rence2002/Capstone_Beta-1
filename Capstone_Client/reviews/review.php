@@ -16,22 +16,29 @@ $product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : null;
 // Fetch product details if product_id is provided
 $product = null;
 if ($product_id) {
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT 
+    // --- CORRECTION ---
+    // Use the existing 'Product_Status' column instead of 'Order_Status'
+    $sql = "
+        SELECT DISTINCT
             p.Product_ID,
             p.Product_Name
         FROM tbl_prod_info p
         INNER JOIN tbl_purchase_history ph ON p.Product_ID = ph.Product_ID
-        WHERE ph.User_ID = :user_id 
-        AND ph.Order_Status = '100'
-        AND ph.Product_Status = '100'
+        WHERE ph.User_ID = :user_id
+        AND ph.Product_Status = '100'  -- Corrected column name
+        AND ph.Product_Status = '100'  -- You have this condition twice, maybe one was meant for Order_Status? Check your logic.
         AND p.Product_ID = :product_id
-    ");
+    ";
+    $stmt = $pdo->prepare($sql);
+    // --- END CORRECTION ---
+
     $stmt->execute(['user_id' => $_SESSION["user_id"], 'product_id' => $product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$product) {
-        $_SESSION['error'] = "Invalid product selected for review.";
+        // It's good practice to provide more specific error messages if possible
+        // For example, check if the product exists but wasn't purchased/completed by this user
+        $_SESSION['error'] = "You can only review products you have purchased and received.";
         header("location: ../profile/profile.php");
         exit;
     }

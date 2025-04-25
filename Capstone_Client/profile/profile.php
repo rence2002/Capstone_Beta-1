@@ -170,6 +170,7 @@ echo "</script>\n";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link rel="stylesheet" href="../static/css-files/Home.css">
+    <link rel="stylesheet" href="../static/css-files/Gallery.css">
     <link rel="stylesheet" href="../static/css-files/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <!-- Ensure FontAwesome 6 for newer icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
@@ -177,104 +178,9 @@ echo "</script>\n";
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" /> --> <!-- Redundant if 6.0.0 is included -->
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> --> <!-- Remove if using FA6 -->
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
     <style>
-        /* Add any specific styles if needed */
-        .progress-image {
-            max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
-        .no-picture {
-            color: #888;
-            margin-top: 10px;
-            font-style: italic;
-        }
-        .stopreason {
-            color: #dc3545; /* Bootstrap danger color */
-            font-weight: bold;
-            margin-top: 10px;
-            background-color: #f8d7da; /* Light red background */
-            border: 1px solid #f5c6cb;
-            padding: 8px;
-            border-radius: 4px;
-        }
-        .tracking-number {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .purchase-image-div {
-            display: flex;
-            gap: 10px; /* Spacing between images */
-            flex-wrap: wrap; /* Allow images to wrap */
-            margin-bottom: 10px;
-        }
-        .purchase-image {
-            max-width: 100px; /* Adjust size as needed */
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .review-btn-container {
-            margin-top: 10px;
-        }
-        .WriteButton, .EditButton {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        .EditButton {
-            background-color: #ffc107; /* Yellow for edit */
-            color: black;
-        }
-        .WriteButton:hover {
-            background-color: #0056b3;
-        }
-        .EditButton:hover {
-             background-color: #e0a800;
-        }
-        .okay-btn {
-             padding: 5px 10px;
-             background-color: #28a745; /* Green */
-             color: white;
-             border: none;
-             border-radius: 4px;
-             cursor: pointer;
-             font-size: 0.9em;
-             margin-top: 5px;
-             transition: background-color 0.2s ease;
-        }
-        .okay-btn:hover {
-            background-color: #218838;
-        }
-        .pending-order-item-note {
-            background-color: #fff3cd; /* Light yellow */
-            border: 1px solid #ffeeba;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            color: #856404; /* Dark yellow text */
-        }
-        .pending-order-item-note ul {
-            margin-left: 20px;
-            margin-top: 10px;
-            list-style: disc;
-        }
-        .pending-order-item-note .linkqr {
-            color: #007bff; /* Blue link */
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .pending-order-item-note .linkqr:hover {
-            color: #0056b3;
-        }
-
+    
     </style>
 </head>
 <body>
@@ -312,7 +218,7 @@ echo "</script>\n";
         <div class="profile-icon-con">
             <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/images/profile-icon.png'; ?>" alt="Profile Icon"> <!-- Corrected default path -->
             <p class="nameofuser"><?= htmlspecialchars($user['First_Name']) . " " . htmlspecialchars($user['Last_Name']) ?></p>
-            <a class="ep--edit" href="edit-profile.php">Edit Profile</a> <!-- Added text for clarity -->
+            <a class="ep--edit" href="edit-profile.php"></a> <!-- Added text for clarity -->
         </div>
     </div>
 
@@ -346,16 +252,16 @@ echo "</script>\n";
         <?php endif; ?>
 
         <?php if (empty($pendingOrdersData)): ?>
-            <p>No pending orders</p>
+            <p class="noav">No pending orders</p>
         <?php else: ?>
             <?php foreach ($pendingOrdersData as $order): ?>
                 <div class="pending-order-item">
-                    <h3><?= htmlspecialchars($order['Product_Name'] ?? 'Custom Order Request') ?></h3>
+                    <h3><?= htmlspecialchars($order['Product_Name'] ?? 'Custom Order Request') ?></h3><br>
                     <p><strong>Order Type:</strong> <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $order['Order_Type']))) ?></p> <!-- Improved display -->
                     <p><strong>Quantity:</strong> <?= htmlspecialchars($order['Quantity']) ?></p>
                     <p><strong>Total Price:</strong> ₱<?= htmlspecialchars(number_format($order['Total_Price'], 2)) ?></p> <!-- Added currency symbol -->
                     <p><strong>Request Date:</strong> <?= htmlspecialchars(date('M d, Y H:i', strtotime($order['Request_Date']))) ?></p> <!-- Nicer date format -->
-                    <p><strong>Payment Status:</strong>z
+                    <p><strong>Payment Status:</strong>
                         <?php
                         switch ($order['Payment_Status']) {
                             case 'downpayment_paid':
@@ -375,7 +281,7 @@ echo "</script>\n";
                     </p>
                     <?php if ($order['Processed'] == 1): ?>
                         <p class="order-status"><strong>Status: </strong><span style="color: orange; font-weight: bold;">Reviewed by Admin</span></p>
-                        <form method="POST" action="delete_order_request.php" onsubmit="return confirm('This will remove the request from your view. Are you sure?');">
+                        <form method="POST" action="delete_order_request.php">
                             <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
                             <button type="submit" class="okay-btn">Okay</button>
                         </form>
@@ -390,7 +296,7 @@ echo "</script>\n";
     <!-- Product Status -->
 <div id="product-status-tab" class="tab-content">
     <?php if (empty($progressData)): ?>
-        <p>No available data</p>
+        <p class="noav" >No available data</p>
     <?php else: ?>
         <?php foreach ($progressData as $progress): ?>
             <div class="progress-item">
@@ -428,7 +334,7 @@ echo "</script>\n";
     <!-- Purchase History -->
     <div id="purchase-history-tab" class="tab-content">
         <?php if (empty($purchaseHistoryData)): ?>
-            <p>No purchase history available.</p>
+            <p class="noav">No purchase history available.</p>
         <?php else: ?>
             <?php foreach ($purchaseHistoryData as $purchase): ?>
                 <div class="purchase-item">
@@ -635,7 +541,7 @@ $(document).ready(function() {
         };
         if (stopReason && stopReason.trim() !== "") {
             var message = reasonMessages[stopReason.toLowerCase()] || stopReason;
-            stopReasonHtml = `<div class="alert alert-danger" role="alert"><strong>Stop Reason:</strong> ${message}</div>`; // Use Bootstrap alert
+            stopReasonHtml = `<div class="alert alert-danger" role="alert"><strong>Reason for Delay:</strong> ${message}</div>`; // Use Bootstrap alert
         }
 
         // --- Tracking Number Handling ---

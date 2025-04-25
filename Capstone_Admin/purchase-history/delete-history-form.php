@@ -44,67 +44,20 @@ if (!$recordId || !filter_var($recordId, FILTER_VALIDATE_INT) || !$orderType) {
     exit();
 }
 
-// Validate order type and set table/column names
-$tableName = '';
-$idColumn = '';
-$productNameColumn = ''; // To display product name
-$userJoinTable = 'tbl_user_info';
-$userJoinCondition = '';
-$productJoinTable = 'tbl_prod_info';
-$productJoinCondition = '';
-$tableNameAlias = ''; // Explicitly define alias
-
-switch ($orderType) {
-    case 'custom':
-        $tableName = 'tbl_customizations';
-        $idColumn = 'Customization_ID';
-        $productNameColumn = 'c.Furniture_Type AS Product_Name'; // Use Furniture_Type for custom
-        $userJoinCondition = 'c.User_ID = u.User_ID';
-        $productJoinCondition = 'c.Product_ID = p.Product_ID'; // LEFT JOIN in case Product_ID is NULL
-        $tableNameAlias = 'c'; // Alias for main table
-        break;
-    case 'pre_order':
-        $tableName = 'tbl_preorder';
-        $idColumn = 'Preorder_ID';
-        $productNameColumn = 'p.Product_Name';
-        $userJoinCondition = 'po.User_ID = u.User_ID';
-        $productJoinCondition = 'po.Product_ID = p.Product_ID'; // JOIN should be safe here
-        $tableNameAlias = 'po'; // Alias for main table
-        break;
-    case 'ready_made':
-        $tableName = 'tbl_ready_made_orders';
-        $idColumn = 'ReadyMadeOrder_ID';
-        $productNameColumn = 'p.Product_Name';
-        $userJoinCondition = 'rmo.User_ID = u.User_ID';
-        $productJoinCondition = 'rmo.Product_ID = p.Product_ID'; // JOIN should be safe here
-        $tableNameAlias = 'rmo'; // Alias for main table
-        break;
-    default:
-        $_SESSION['error_message'] = "Invalid order type specified.";
-        header("Location: read-all-history-form.php");
-        exit();
-}
-
 // Fetch record details for confirmation display
 try {
-    // Use alias defined in the switch statement
-    $alias = $tableNameAlias;
-
-    // Construct the query carefully
     $query = "SELECT
-                {$alias}.*,
-                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-                {$productNameColumn}
-              FROM {$tableName} {$alias}
-              JOIN {$userJoinTable} u ON {$userJoinCondition}
-              LEFT JOIN {$productJoinTable} p ON {$productJoinCondition} -- Use LEFT JOIN for safety, especially with custom orders
-              WHERE {$alias}.{$idColumn} = :record_id";
-
-    // Add condition to ensure we only fetch *completed* history records (Product_Status = 100)
-    $query .= " AND {$alias}.Product_Status = 100";
+                ph.*,
+                CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name
+              FROM tbl_purchase_history ph
+              JOIN tbl_user_info u ON ph.User_ID = u.User_ID
+              WHERE ph.Purchase_ID = :record_id
+              AND ph.Order_Type = :order_type
+              AND ph.Product_Status = 100";
 
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':record_id', $recordId, PDO::PARAM_INT);
+    $stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
     $stmt->execute();
     $record = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -119,6 +72,35 @@ try {
     $_SESSION['error_message'] = "Database error fetching record details. Please try again.";
     header("Location: read-all-history-form.php");
     exit();
+}
+
+// Handle form submission for deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $deleteQuery = "DELETE FROM tbl_purchase_history 
+                       WHERE Purchase_ID = :record_id 
+                       AND Order_Type = :order_type 
+                       AND Product_Status = 100";
+        
+        $stmt = $pdo->prepare($deleteQuery);
+        $stmt->bindParam(':record_id', $recordId, PDO::PARAM_INT);
+        $stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['success_message'] = "Purchase record successfully deleted.";
+        } else {
+            $_SESSION['error_message'] = "No record was deleted. The record may have already been deleted or does not exist.";
+        }
+        
+        header("Location: read-all-history-form.php");
+        exit();
+    } catch (PDOException $e) {
+        error_log("Database error during deletion: " . $e->getMessage());
+        $_SESSION['error_message'] = "Error deleting the record. Please try again.";
+        header("Location: read-all-history-form.php");
+        exit();
+    }
 }
 
 ?>
@@ -166,24 +148,6 @@ try {
             cursor: pointer;
             font-size: 1em;
             margin-right: 10px;
-        }
-        .buttonConfirmDelete:hover {
-            background-color: #c82333;
-        }
-        .buttonCancel {
-             background-color: #6c757d; /* Gray */
-             color: white;
-             padding: 10px 20px;
-             border: none;
-             border-radius: 4px;
-             text-decoration: none;
-             cursor: pointer;
-             font-size: 1em;
-        }
-        .buttonCancel:hover {
-            background-color: #5a6268;
-            color: white;
-            text-decoration: none;
         }
         .record-details th {
             text-align: right;
@@ -276,10 +240,9 @@ try {
 
             <h5>Record Details:</h5>
             <table class="record-details">
-                 <tr><th>Record ID:</th><td><?php echo htmlspecialchars($record[$idColumn]); ?></td></tr>
+                 <tr><th>Record ID:</th><td><?php echo htmlspecialchars($record['Purchase_ID']); ?></td></tr>
                  <tr><th>Order Type:</th><td><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $orderType))); ?></td></tr>
                  <tr><th>User:</th><td><?php echo htmlspecialchars($record['User_Name']); ?> (ID: <?php echo htmlspecialchars($record['User_ID']); ?>)</td></tr>
-                 <tr><th>Product:</th><td><?php echo htmlspecialchars($record['Product_Name'] ?? 'N/A'); // Handle potential NULL product name ?></td></tr>
                  <!-- Display Date -->
                  <?php
                     $dateLabel = "Date";
@@ -305,10 +268,11 @@ try {
 
 
             <form action="delete-history-rec.php" method="POST" class="button-group">
-                <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($recordId); ?>">
+                <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['Purchase_ID']); ?>">
                 <input type="hidden" name="order_type" value="<?php echo htmlspecialchars($orderType); ?>">
-                <button type="submit" class="buttonConfirmDelete">Confirm Delete</button>
-                <a href="read-all-history-form.php" class="buttonCancel">Cancel</a>
+                <a href="read-all-history-form.php" class="buttonBack">Cancel</a>
+                <button type="submit" class="buttonDelete">Confirm Delete</button>
+              
             </form>
         </div>
     </section>

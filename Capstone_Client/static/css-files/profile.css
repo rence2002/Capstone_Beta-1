@@ -253,6 +253,11 @@ margin: 10px;
 padding: 10px;
 }
 
+.pending-order-item p{
+    margin-bottom: 10px;
+    }
+    
+
 .pending-order-item-note {
     background-color: #fffec8;
     border-left: 5px solid #f7c948;
@@ -298,6 +303,7 @@ padding: 10px;
     font-weight: 500;
     margin-top: 20px;
     transition: color 0.3s ease, text-decoration 0.3s ease;
+    cursor: pointer;
 }
 
 .linkqr:hover {
@@ -948,8 +954,20 @@ span .close {
     overflow-y: auto;
     padding-right: 10px; /* optional: avoid scrollbar overlap */
 }
+
+.noav {
+   text-align: center;
+   font-style: italic;
+    color: #666;
+    padding: 20px;  
+}
 .tab-content.active {
     display: block;
+}
+
+.alert-danger{
+    color: red;
+    font-style: italic;
 }
 @media (max-width: 600px) {
     .stepper {
