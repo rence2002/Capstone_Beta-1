@@ -51,7 +51,7 @@ if ($pass !== $confirmPass) {
 // HANDLE FILE UPLOAD
 $picPath = '';
 if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
-    $targetDir = $_SERVER['DOCUMENT_ROOT'] . "/Capstone_Beta/Capstone_Beta/uploads/admin/"; // Adjusted to be relative to the web root
+    $targetDir = $_SERVER['DOCUMENT_ROOT'] . "/uploads/admin/"; // Updated path to use the new uploads directory
     if (!is_dir($targetDir)) {
         mkdir($targetDir, 0777, true);
     }
@@ -69,7 +69,7 @@ if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
     }
 
     if (move_uploaded_file($_FILES["filePic"]["tmp_name"], $targetFilePath)) {
-        $picPath = "../uploads/admin/" . $fileName; // Save the relative path
+        $picPath = "/uploads/admin/" . $fileName; // Changed to absolute path from web root
     } else {
         die("Error: Failed to upload file.");
     }

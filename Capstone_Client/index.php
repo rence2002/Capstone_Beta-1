@@ -13,6 +13,11 @@ $stmt = $pdo->prepare($query);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch product images for the about section
+$imageQuery = "SELECT ImageURL FROM tbl_prod_info WHERE ImageURL IS NOT NULL AND product_type = 'readymade' LIMIT 5";
+$imageStmt = $pdo->prepare($imageQuery);
+$imageStmt->execute();
+$productImages = $imageStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch reviews from the database
 $reviewQuery = "
@@ -28,7 +33,7 @@ $reviewStmt->execute();
 $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Define the base path for 3D files
-$base3DPath = "http://localhost/Capstone_Beta/Capstone_Client/uploads/product/3d/";
+$base3DPath = "http://localhost/uploads/product/3d/";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,11 +120,12 @@ model-viewer {
   <!-- About AR Section with Rotating Images -->
   <section id="about">
     <div class="about-images">
-      <img src="static/images/bedwhite1.jpg" alt="AR Furniture 1" class="active">
-      <img src="static/images/Designer.jpeg" alt="AR Furniture 2">
-      <img src="static/images/Designer1.jpg" alt="AR Furniture 3">
-      <img src="static/images/Designer2.jpeg" alt="AR Furniture 4">
-      <img src="static/images/Designer3.jpeg" alt="AR Furniture 5">
+      <?php foreach ($productImages as $index => $image): 
+        $imageUrls = explode(',', $image['ImageURL']);
+        $firstImage = trim($imageUrls[0]);
+      ?>
+        <img src="<?= $firstImage ?>" alt="Product Image <?= $index + 1 ?>" <?= $index === 0 ? 'class="active"' : '' ?>>
+      <?php endforeach; ?>
     </div>
 
     <div class="about-text">
@@ -200,7 +206,7 @@ model-viewer {
 
 
   <section id="products">
-    <h2 class="sampleAr">Our Sample Products</h2>
+    <h2 class="sampleAr">Sample 3D Models</h2>
     <div class="products">
       <?php foreach ($products as $product): ?>
         <a href="login/signup.php" class="product-link">
