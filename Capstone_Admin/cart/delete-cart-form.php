@@ -116,30 +116,25 @@ $userMobile = htmlspecialchars($cart["Mobile_Number"]);
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-         
-
-
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
-<!-- Link to External JS -->
-<script src="../static/js/dashboard.js"></script>
+        </nav>
 
-
- </nav>
 
         <br><br><br>
         <div class="container_boxes">

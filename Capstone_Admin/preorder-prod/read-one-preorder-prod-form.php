@@ -186,10 +186,11 @@ $productStatusText = $productStatusLabels[$productStatusValue] ?? 'Unknown Statu
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Pre-Order Details</span> <!-- Updated title -->
             </div>
-            <div class="profile-details" id="profile-details-container"> <!-- Added ID -->
+            <div class="profile-details" onclick="toggleDropdown()">
                 <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <i class="bx bx-chevron-down dropdown-button"></i>
+
                 <div class="dropdown" id="profileDropdown">
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
@@ -252,9 +253,9 @@ $productStatusText = $productStatusLabels[$productStatusValue] ?? 'Unknown Statu
         }
 
         // Profile Dropdown Toggle (Consistent version)
-        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDetailsContainer = document.querySelector('.profile-details');
         const profileDropdown = document.getElementById('profileDropdown');
-        const dropdownIcon = document.getElementById('dropdown-icon');
+        const dropdownIcon = document.querySelector('.dropdown-button');
 
         if (profileDetailsContainer && profileDropdown && dropdownIcon) {
             profileDetailsContainer.addEventListener('click', function(event) {

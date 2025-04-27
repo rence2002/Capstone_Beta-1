@@ -86,7 +86,7 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

@@ -161,10 +161,11 @@ $productStatusLabels = [
                 <span class="dashboard">Progress Details</span> <!-- Updated title -->
             </div>
             <!-- Removed search box as it's not typical for a 'read one' page -->
-            <div class="profile-details" id="profile-details-container"> <!-- Added ID for JS -->
+            <div class="profile-details" onclick="toggleDropdown()">
                 <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
-                <i class="bx bx-chevron-down dropdown-button" id="dropdown-icon"></i> <!-- Added ID -->
+                <i class="bx bx-chevron-down dropdown-button"></i>
+
                 <div class="dropdown" id="profileDropdown">
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
@@ -264,9 +265,9 @@ $productStatusLabels = [
         }
 
         // Profile Dropdown Toggle
-        const profileDetailsContainer = document.getElementById('profile-details-container');
+        const profileDetailsContainer = document.querySelector('.profile-details');
         const profileDropdown = document.getElementById('profileDropdown');
-        const dropdownIcon = document.getElementById('dropdown-icon');
+        const dropdownIcon = document.querySelector('.dropdown-button');
 
         if (profileDetailsContainer && profileDropdown && dropdownIcon) {
             profileDetailsContainer.addEventListener('click', function(event) {

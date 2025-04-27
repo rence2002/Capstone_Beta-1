@@ -172,11 +172,13 @@ function calculatePercentage($status) {
                     <input type="text" id="search-input" name="search" placeholder="Search User or Product..." value="<?php echo htmlspecialchars($search); ?>" />
                 </form>
             </div>
-            <div class="profile-details">
+            <div class="profile-details" onclick="toggleDropdown()">
                 <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
-                <div class="dropdown">
+
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
                 </div>

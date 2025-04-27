@@ -127,8 +127,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="../static/css-files/dashboard.css" rel="stylesheet">
     <link href="../static/css-files/button.css" rel="stylesheet">
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
-    <!-- <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" /> -->
-
+    <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <link href="../static/js/admin_home.js" rel="">
 </head>
 
 <body>
@@ -175,9 +175,9 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
     <div class="profile-details" onclick="toggleDropdown()">
-        <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-        <span class="admin_name"><?php echo $adminName; ?></span>
-        <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
         <div class="dropdown" id="profileDropdown">
             <a href="../admin/read-one-admin-form.php">Settings</a>
             <a href="../admin/logout.php">Logout</a>

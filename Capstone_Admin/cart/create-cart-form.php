@@ -90,95 +90,86 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <section class="home-section">
-    <nav>
+        <nav>
             <div class="sidebar-button">
                 <i class="bx bx-menu sidebarBtn"></i>
                 <span class="dashboard">Dashboard</span>
             </div>
-        
-
-
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <!-- Modified link here -->
+                    <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
-<!-- Link to External JS -->
-<script src="../static/js/dashboard.js"></script>
-
-
- </nav>
+        </nav>
 
         <br><br><br>
-        <h2>Add to Cart</h2>
-        <form name="frmCart" method="POST" action="create-cart-rec.php">
-            <table>
-                <tr>
-                    <td><label for="userId">User:</label></td>
-                    <td>
-                        <select name="txtUserId" id="userId" required>
-                            <option value="" disabled selected>Select User</option>
-                            <?php foreach ($users as $user) { ?>
-                                <option value="<?php echo $user['User_ID']; ?>"><?php echo $user['Full_Name']; ?></option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="productId">Product:</label></td>
-                    <td>
-                        <select name="txtProductId" id="productId" required>
-                            <option value="" disabled selected>Select Product</option>
-                            <?php foreach ($products as $product) { ?>
-                                <option value="<?php echo $product['Product_ID']; ?>" data-price="<?php echo $product['Price']; ?>" data-glb="<?php echo $product['GLB_File_URL']; ?>">
-                                    <?php echo $product['Product_Name']; ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>3D Model:</td>
-                    <td>
-                        <model-viewer id="modelViewer" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="quantity">Quantity:</label></td>
-                    <td><input type="number" name="txtQuantity" id="quantity" value="1" required></td>
-                </tr>
-                <tr>
-                    <td><label for="price">Price:</label></td>
-                    <td><input type="number" step="0.01" name="txtPrice" id="price" value="" readonly required></td>
-                </tr>
-                <tr>
-                    <td><label for="totalPrice">Total Price:</label></td>
-                    <td><input type="number" step="0.01" name="txtTotalPrice" id="totalPrice" value="" readonly required></td>
-                </tr>
-                <tr>
-                    <td><label for="orderType">Order Type:</label></td>
-                    <td>
-                        <select name="txtOrderType" id="orderType" required>
-                            <option value="ready_made" selected>Ready Made</option>
-                            <option value="pre_order">Pre Order</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <input type="submit" value="Submit">
-                        <input type="reset" value="Reset">
-                        <a href="../cart/read-all-cart-form.php" target="_parent">Back to Cart List</a>
-                    </td>
-                </tr>
-            </table>
-        </form>
+        <div class="container_boxes">
+            <h4>Add to Cart</h4>
+            <form name="frmCart" method="POST" action="create-cart-rec.php" class="form-container">
+                <div class="form-group">
+                    <label for="userId">User:</label>
+                    <select name="txtUserId" id="userId" class="form-control" required>
+                        <option value="" disabled selected>Select User</option>
+                        <?php foreach ($users as $user) { ?>
+                            <option value="<?php echo $user['User_ID']; ?>"><?php echo $user['Full_Name']; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productId">Product:</label>
+                    <select name="txtProductId" id="productId" class="form-control" required>
+                        <option value="" disabled selected>Select Product</option>
+                        <?php foreach ($products as $product) { ?>
+                            <option value="<?php echo $product['Product_ID']; ?>" data-price="<?php echo $product['Price']; ?>" data-glb="<?php echo $product['GLB_File_URL']; ?>">
+                                <?php echo $product['Product_Name']; ?>
+                            </option>
+                        <?php } ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>3D Model:</label>
+                    <model-viewer id="modelViewer" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" name="txtQuantity" id="quantity" class="form-control" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price:</label>
+                    <input type="number" step="0.01" name="txtPrice" id="price" class="form-control" value="" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <label for="totalPrice">Total Price:</label>
+                    <input type="number" step="0.01" name="txtTotalPrice" id="totalPrice" class="form-control" value="" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderType">Order Type:</label>
+                    <select name="txtOrderType" id="orderType" class="form-control" required>
+                        <option value="ready_made" selected>Ready Made</option>
+                        <option value="pre_order">Pre Order</option>
+                    </select>
+                </div>
+
+                <div class="button-container">
+                    <input type="submit" value="Submit" class="buttonUpdate">
+                    <input type="reset" value="Reset" class="buttonDelete">
+                    <a href="../cart/read-all-cart-form.php" class="buttonBack">Back to Cart List</a>
+                </div>
+            </form>
+
 
         <script>
             const productSelect = document.getElementById('productId');
@@ -210,26 +201,16 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
 
             window.onload = calculateTotalPrice;
 
-            document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
-                toggle.addEventListener('click', function () {
-                    const parent = this.parentElement; // Get the parent <li> of the toggle
-                    const dropdownMenu = parent.querySelector('.dropdown-menu'); // Get the <ul> of the dropdown menu
-                    parent.classList.toggle('active'); // Toggle the 'active' class on the parent <li>
-
-                    // Toggle the chevron icon rotation
-                    const chevron = this.querySelector('i'); // Find the chevron icon inside the toggle
-                    if (parent.classList.contains('active')) {
-                        chevron.classList.remove('bx-chevron-down');
-                        chevron.classList.add('bx-chevron-up'); // Change to up when menu is open
-                    } else {
-                        chevron.classList.remove('bx-chevron-up');
-                        chevron.classList.add('bx-chevron-down'); // Change to down when menu is closed
-                    }
-
-                    // Toggle the display of the dropdown menu
-                    dropdownMenu.style.display = parent.classList.contains('active') ? 'block' : 'none';
-                });
-            });
+            let sidebar = document.querySelector(".sidebar");
+            let sidebarBtn = document.querySelector(".sidebarBtn");
+            sidebarBtn.onclick = function() {
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebarBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+                } else {
+                    sidebarBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+                }
+            };
         </script>
     </section>
 </body>

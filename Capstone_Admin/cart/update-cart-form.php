@@ -131,9 +131,9 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
         
 
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
     <div class="dropdown" id="profileDropdown">
         <a href="../admin/read-one-admin-form.php">Settings</a>

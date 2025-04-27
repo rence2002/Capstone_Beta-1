@@ -105,9 +105,10 @@ $validIDPath = htmlspecialchars($user["Valid_ID_Path"]); // Fetch the user's val
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
+
                 <div class="dropdown" id="profileDropdown">
                     <a href="../admin/read-one-admin-form.php?id=<?php echo urlencode($adminId); ?>">Settings</a>
                     <a href="../admin/logout.php">Logout</a>
