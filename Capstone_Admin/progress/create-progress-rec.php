@@ -120,4 +120,32 @@ try {
     echo '<br><a href="create-progress-form.php">Go Back</a>';
 }
 
+// Handle progress image uploads
+$progressPics = [];
+$progressPicsFields = [
+    'Progress_Pic_10', 'Progress_Pic_20', 'Progress_Pic_30', 'Progress_Pic_40',
+    'Progress_Pic_50', 'Progress_Pic_60', 'Progress_Pic_70', 'Progress_Pic_80',
+    'Progress_Pic_90', 'Progress_Pic_100'
+];
+
+$uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/progress/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+foreach ($progressPicsFields as $field) {
+    if (!empty($_FILES[$field]['name'])) {
+        $fileName = basename($_FILES[$field]['name']);
+        $targetPath = $uploadDir . $fileName;
+        
+        if (move_uploaded_file($_FILES[$field]['tmp_name'], $targetPath)) {
+            // Store relative path for database
+            $relativePath = 'uploads/progress/' . $fileName;
+            $progressPics[$field] = $relativePath;
+        } else {
+            echo "Failed to upload progress image: " . $fileName . "<br>";
+        }
+    }
+}
+
 ?>

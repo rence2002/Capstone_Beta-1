@@ -309,7 +309,7 @@ body.dark-mode {
 
 #profilePicPreview {
     max-width: 200px;
-    max-height: 200px;
+    max-height: 125px;
     margin-top: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -656,4 +656,71 @@ img {
 
 .hidden {
     display: none;
+}
+
+/* Upload button and preview container styles */
+.upload-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.upload-btn-wrapper .btn {
+    border: 1px solid #ccc;
+    color: #333;
+    background-color: white;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.preview-image {
+    max-width: 150px;
+    max-height: 125px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    object-fit: cover;
+    display: none;
+}
+
+/* Landscape orientation styles */
+@media (orientation: landscape) {
+    .upload-preview-container {
+        flex-direction: row;
+    }
+    
+    .preview-image {
+        max-width: 120px;
+        max-height: 125px;
+    }
+}
+
+/* Portrait orientation styles */
+@media (orientation: portrait) {
+    .upload-preview-container {
+        flex-direction: column;
+    }
+    
+    .preview-image {
+        max-width: 150px;
+        max-height: 125px;
+    }
 }

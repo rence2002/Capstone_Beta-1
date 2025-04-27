@@ -161,18 +161,35 @@ try {
             throw new Exception("Order request (ID: $requestID) is missing Product ID for non-custom order.");
         }
 
-        // Fetch the product name
-        $nameStmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = :prodID");
-        $nameStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
-        $nameStmt->execute();
-        $productResult = $nameStmt->fetch(PDO::FETCH_ASSOC);
+        // Fetch the product details and current stock
+        $prodStmt = $pdo->prepare("SELECT Product_Name, Stock FROM tbl_prod_info WHERE Product_ID = :prodID FOR UPDATE");
+        $prodStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
+        $prodStmt->execute();
+        $productResult = $prodStmt->fetch(PDO::FETCH_ASSOC);
+        
         if (!$productResult) {
-             throw new Exception("Product details not found for Product ID: $productIDForProgress (Request ID: $requestID).");
+            throw new Exception("Product details not found for Product ID: $productIDForProgress (Request ID: $requestID).");
         }
+
+        $currentStock = (int)$productResult['Stock'];
         $productNameForProgress = $productResult['Product_Name'];
 
+        // Check if there's enough stock
+        if ($currentStock < $quantity) {
+            throw new Exception("Insufficient stock for Product ID: $productIDForProgress. Available: $currentStock, Requested: $quantity");
+        }
+
+        // Update the product stock
+        $newStock = $currentStock - $quantity;
+        $updateStockStmt = $pdo->prepare("UPDATE tbl_prod_info SET Stock = :newStock WHERE Product_ID = :prodID");
+        $updateStockStmt->bindParam(':newStock', $newStock, PDO::PARAM_INT);
+        $updateStockStmt->bindParam(':prodID', $productIDForProgress, PDO::PARAM_INT);
+        
+        if (!$updateStockStmt->execute()) {
+            throw new Exception("Failed to update product stock. Error: " . implode(", ", $updateStockStmt->errorInfo()));
+        }
+
         // Insert into the dedicated table for ready-made orders
-        // ** REMOVED Request_ID column as it does not exist in the table based on the error **
         $readyMadeStmt = $pdo->prepare("
             INSERT INTO tbl_ready_made_orders
             (User_ID, Product_ID, Quantity, Total_Price, Payment_Status, Order_Date)

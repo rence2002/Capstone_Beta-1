@@ -25,7 +25,11 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $admin['PicPath'];
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
+$profilePicPath = htmlspecialchars($profilePicPath);
 ?>
 
 <!DOCTYPE html>
@@ -89,7 +93,7 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="../<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -167,14 +171,14 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                     <tr><td>Images:</td>
                         <td>
                             <?php foreach ($imageURLs as $imageURL): ?>
-                                <img src="<?php echo $imageURL; ?>" alt="Product Image" style="width:100px;height:auto;">
+                                <img src="/Capstone_Beta/<?php echo $imageURL; ?>" alt="Product Image" style="width:100px;height:auto;">
                             <?php endforeach; ?>
                         </td>
                     </tr>
                     <tr><td>3D Model:</td>
                         <td>
                             <?php if ($glbFileURL): ?>
-                                <model-viewer src="<?php echo $glbFileURL; ?>" alt="3D Model" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                                <model-viewer src="/Capstone_Beta/<?php echo $glbFileURL; ?>" alt="3D Model" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
                             <?php else: ?>
                                 No 3D model available.
                             <?php endif; ?>

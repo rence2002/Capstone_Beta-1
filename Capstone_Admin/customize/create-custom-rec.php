@@ -47,13 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             if (move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFilePath)) {
-                return $targetFilePath;
+                // Return relative path for database
+                return 'uploads/customizations/' . $filename;
             }
         }
         return null;
     }
 
-    $uploadDir = '../uploads/customizations/';
+    $uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/customizations/';
     $colorImage = handleFileUpload('fileColorImage', $uploadDir);
     $textureImage = handleFileUpload('fileTextureImage', $uploadDir);
     $woodImage = handleFileUpload('fileWoodImage', $uploadDir);

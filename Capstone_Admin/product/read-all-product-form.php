@@ -25,7 +25,11 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $admin['PicPath'];
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
+$profilePicPath = htmlspecialchars($profilePicPath);
 
 // Check if the request is an AJAX search request
 if (isset($_GET['search'])) {
@@ -80,9 +84,9 @@ if (isset($_GET['search'])) {
             <td>'.$price.'</td>
             <td>';
         if (!empty($firstImageURL)) {
-            echo '<img src="' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
+            echo '<img src="/Capstone_Beta/' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
         } else {
-            echo '<img src="../static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
+            echo '<img src="/Capstone_Beta/static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
         }
         echo '</td>
             <td>';
@@ -196,7 +200,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -252,9 +256,9 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php
                         // Check if the first image URL is not empty or null
                         if (!empty($firstImageURL)) {
-                            echo '<img src="' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
+                            echo '<img src="/Capstone_Beta/' . $firstImageURL . '" alt="Product Image" style="width:50px;height:50px;">';
                         } else {
-                            echo '<img src="../static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
+                            echo '<img src="/Capstone_Beta/static/images/placeholder.jpg" alt="Placeholder Image" style="width:50px;height:50px;">';
                         }
                         ?>
                     </td>

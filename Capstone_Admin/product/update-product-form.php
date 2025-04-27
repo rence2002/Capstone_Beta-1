@@ -207,7 +207,7 @@ $glbFileURL = htmlspecialchars($product["GLB_File_URL"]);
                     <td>Current Images:</td>
                     <td>
                         <?php foreach ($imageURLs as $imageURL): ?>
-                            <img src="<?php echo $imageURL; ?>" alt="Product Image" style="width:100px;height:auto;">
+                            <img src="/Capstone_Beta/<?php echo $imageURL; ?>" alt="Product Image" style="width:100px;height:auto;">
                         <?php endforeach; ?>
                     </td>
                 </tr>
@@ -216,10 +216,10 @@ $glbFileURL = htmlspecialchars($product["GLB_File_URL"]);
                     <td><input type="file" name="ImageURLs[]" accept="image/*" multiple></td>
                 </tr>
                 <tr>
-                    <td>Current GLB File URL:</td>
+                    <th>3D Model</th>
                     <td>
                         <?php if ($glbFileURL): ?>
-                            <model-viewer src="<?php echo $glbFileURL; ?>" alt="3D Model" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                            <model-viewer src="/Capstone_Beta/<?php echo $glbFileURL; ?>" alt="3D Model" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
                         <?php else: ?>
                             No 3D model available.
                         <?php endif; ?>

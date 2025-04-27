@@ -48,7 +48,8 @@ $query = "
         p.Description,
         p.Category,
         p.Stock,
-        p.GLB_File_URL
+        p.GLB_File_URL,
+        p.Product_Images
     FROM 
         tbl_cart c
     JOIN 
@@ -84,6 +85,7 @@ $productDesc = htmlspecialchars($cart['Description'] ?? "No description availabl
 $productCategory = htmlspecialchars($cart['Category'] ?? "Not specified.");
 $productStock = htmlspecialchars($cart['Stock'] ?? "Not available.");
 $productGLB = htmlspecialchars($cart['GLB_File_URL'] ?? "");
+$productImages = htmlspecialchars($cart['Product_Images'] ?? "");
 
 ?>
 
@@ -146,7 +148,7 @@ $productGLB = htmlspecialchars($cart['GLB_File_URL'] ?? "");
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="http://localhost/Capstone_Beta/<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -181,11 +183,28 @@ $productGLB = htmlspecialchars($cart['GLB_File_URL'] ?? "");
         <tr><td>Stock:</td><td><?php echo $productStock; ?></td></tr>
         <tr><td>3D Model:</td>
             <td>
-                <?php if (!empty($productGLB)) : ?>
-                    <model-viewer src="<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                <?php if ($productGLB): ?>
+                    <model-viewer src="/Capstone_Beta/<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
                 <?php else: ?>
-                    No 3D model available
+                    No 3D model available.
                 <?php endif; ?>
+            </td>
+        </tr>
+        <tr>
+            <td>Product Images:</td>
+            <td>
+                <?php 
+                if (!empty($productImages)) {
+                    $imageURLs = explode(',', $productImages);
+                    foreach ($imageURLs as $imageURL): 
+                ?>
+                    <img src="/Capstone_Beta/<?php echo trim($imageURL); ?>" alt="Product Image" style="width:100px;height:auto; margin-right: 10px;">
+                <?php 
+                    endforeach;
+                } else {
+                    echo "No images available.";
+                }
+                ?>
             </td>
         </tr>
     </table>

@@ -15,7 +15,7 @@ if (!isset($_SESSION['admin_id'])) {
 // Define the base directory for uploads relative to *this* script's location
 // This script is in Capstone_Admin/customize/, uploads are in Capstone_Admin/uploads/
 // We need to go up one level from __DIR__ to reach Capstone_Admin/
-$uploadBaseDirServer = realpath(__DIR__ . '/../uploads/customizations/'); // Base absolute path for file deletion
+$uploadBaseDirServer = 'C:/xampp/htdocs/Capstone_Beta/uploads/customizations/'; // Base absolute path for file deletion
 
 // Check if 'id' parameter is set in the URL
 if (!isset($_GET['id']) || !filter_var($_GET['id'], FILTER_VALIDATE_INT)) {

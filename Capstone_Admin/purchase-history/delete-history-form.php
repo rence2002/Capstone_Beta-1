@@ -24,12 +24,10 @@ if (!$admin) {
     exit();
 }
 $adminName = htmlspecialchars($admin['First_Name']);
-// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/' - CONSISTENT LOGIC
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = $admin['PicPath'];
-if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
-    // Assuming PicPath is relative to the Capstone_Admin directory
-    $profilePicPath = '../' . $profilePicPath;
-}
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
 $profilePicPath = htmlspecialchars($profilePicPath);
 
 

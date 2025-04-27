@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Handle image uploads
     $imageURLs = [];
     if (!empty($_FILES['ImageURLs']['name'][0])) {
-        $uploadDir = '../../uploads/product/images/';
+        $uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/product/images/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -34,7 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $imageTmpName = $_FILES['ImageURLs']['tmp_name'][$key];
             $imagePath = $uploadDir . basename($imageName);
             if (move_uploaded_file($imageTmpName, $imagePath)) {
-                $imageURLs[] = str_replace('../../', '../', $imagePath);
+                // Store relative path for database
+                $relativePath = 'uploads/product/images/' . basename($imageName);
+                $imageURLs[] = $relativePath;
             } else {
                 echo "Failed to upload image: " . $imageName . "<br>";
             }
@@ -45,14 +47,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Handle GLB file upload
     $glbFileURL = NULL;
     if (!empty($_FILES['GLB_File_URL']['name'])) {
-        $glbUploadDir = '../../uploads/product/3d/';
+        $glbUploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/product/3d/';
         if (!is_dir($glbUploadDir)) {
             mkdir($glbUploadDir, 0777, true);
         }
         $glbFileName = basename($_FILES['GLB_File_URL']['name']);
         $glbFilePath = $glbUploadDir . $glbFileName;
         if (move_uploaded_file($_FILES['GLB_File_URL']['tmp_name'], $glbFilePath)) {
-            $glbFileURL = str_replace('../../', '../', $glbFilePath);
+            // Store relative path for database
+            $glbFileURL = 'uploads/product/3d/' . $glbFileName;
         } else {
             echo "Failed to upload GLB file: " . $glbFileName . "<br>";
         }

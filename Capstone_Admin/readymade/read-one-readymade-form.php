@@ -40,7 +40,8 @@ try {
             r.Quantity,
             r.Total_Price,
             pr.Product_Status,
-            r.Order_Date
+            r.Order_Date,
+            p.Image_URLs
         FROM tbl_ready_made_orders r
         JOIN tbl_prod_info p ON r.Product_ID = p.Product_ID
         JOIN tbl_user_info u ON r.User_ID = u.User_ID
@@ -71,6 +72,7 @@ try {
     $totalPrice = $row["Total_Price"];
     $productStatus = $row["Product_Status"] ?? 0;
     $orderDate = $row["Order_Date"];
+    $imageURLs = $row["Image_URLs"];
 
     // Product status labels
     $productStatusLabels = [
@@ -185,7 +187,7 @@ try {
                         <td>3D Model:</td>
                         <td>
                             <?php if ($glbFileURL): ?>
-                                <model-viewer src="<?php echo htmlspecialchars($glbFileURL); ?>" auto-rotate camera-controls style="width: 300px; height: 300px; background-color: #f0f0f0; border-radius: 5px;"></model-viewer>
+                                <model-viewer src="/Capstone_Beta/<?= htmlspecialchars($glbFileURL) ?>" auto-rotate camera-controls style="width: 300px; height: 300px; background-color: #f0f0f0; border-radius: 5px;"></model-viewer>
                             <?php else: ?>
                                 No 3D model available.
                             <?php endif; ?>
@@ -198,6 +200,23 @@ try {
                     <!-- <tr><td>Order Status:</td><td><?php // echo htmlspecialchars($orderStatusText); ?></td></tr> -->
                    
                     <tr><td>Order Date:</td><td><?php echo htmlspecialchars($orderDate); ?></td></tr>
+                    <tr>
+                        <td>Product Images:</td>
+                        <td>
+                            <?php 
+                            if (!empty($imageURLs)) {
+                                $imageURLs = explode(',', $imageURLs);
+                                foreach ($imageURLs as $imageURL): 
+                            ?>
+                                <img src="/Capstone_Beta/<?php echo trim($imageURL); ?>" alt="Product Image" style="width:100px;height:auto; margin-right: 10px;">
+                            <?php 
+                                endforeach;
+                            } else {
+                                echo "No images available.";
+                            }
+                            ?>
+                        </td>
+                    </tr>
                 </table>
                 <div class="button-container">
                     <br>

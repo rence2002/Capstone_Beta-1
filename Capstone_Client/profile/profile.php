@@ -77,8 +77,6 @@ try {
 }
 
 // Fetch progress data from tbl_progress
-// IMPORTANT: This query assumes tbl_progress might have the new Progress_Pic columns (40, 90, 95, 98).
-// If not, those values will be NULL.
 try {
     // Attempt to select all potential progress picture columns
     $stmt = $pdo->prepare("
@@ -86,7 +84,7 @@ try {
                p.Progress_Pic_10, p.Progress_Pic_20, p.Progress_Pic_30,
                p.Progress_Pic_40, p.Progress_Pic_50, p.Progress_Pic_60,
                p.Progress_Pic_70, p.Progress_Pic_80, p.Progress_Pic_90,
-               p.Progress_Pic_95, p.Progress_Pic_98, -- Added 95, 98 (assuming they might exist)
+               p.Progress_Pic_95, p.Progress_Pic_98,
                p.Progress_Pic_100, p.Stop_Reason, p.Tracking_Number
         FROM tbl_progress p
         JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
@@ -97,10 +95,10 @@ try {
     $progressData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Handle potential "column not found" errors gracefully if schema wasn't updated
-     if (strpos($e->getMessage(), 'Unknown column') !== false) {
+    if (strpos($e->getMessage(), 'Unknown column') !== false) {
         // Fallback query without the potentially missing columns
         try {
-             $stmt = $pdo->prepare("
+            $stmt = $pdo->prepare("
                 SELECT p.*, pr.Product_Name,
                        p.Progress_Pic_10, p.Progress_Pic_20, p.Progress_Pic_30,
                        p.Progress_Pic_50, p.Progress_Pic_60,
@@ -113,16 +111,16 @@ try {
             $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
             $stmt->execute();
             $progressData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-             // Add null placeholders for missing pic keys to avoid errors later
-             foreach ($progressData as &$item) {
-                 $item['Progress_Pic_40'] = null;
-                 $item['Progress_Pic_90'] = null;
-                 $item['Progress_Pic_95'] = null;
-                 $item['Progress_Pic_98'] = null;
-             }
-             unset($item); // Unset reference
+            // Add null placeholders for missing pic keys to avoid errors later
+            foreach ($progressData as &$item) {
+                $item['Progress_Pic_40'] = null;
+                $item['Progress_Pic_90'] = null;
+                $item['Progress_Pic_95'] = null;
+                $item['Progress_Pic_98'] = null;
+            }
+            unset($item); // Unset reference
         } catch (PDOException $e2) {
-             die("Database error (fallback query failed): " . $e2->getMessage());
+            die("Database error (fallback query failed): " . $e2->getMessage());
         }
     } else {
         die("Database error: " . $e->getMessage());
@@ -372,9 +370,13 @@ echo "</script>\n";
 <main>
     <div class="container-profile">
         <div class="profile-icon-con">
-            <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/images/profile-icon.png'; ?>" alt="Profile Icon"> <!-- Corrected default path -->
+            <?php
+            $baseUrl = 'http://localhost/Capstone_Beta/';
+            $profileImagePath = !empty($user['PicPath']) ? $baseUrl . $user['PicPath'] : $baseUrl . 'static/images/profile-icon.png';
+            ?>
+            <img class="profile-icon" src="<?= htmlspecialchars($profileImagePath) ?>" alt="Profile Icon">
             <p class="nameofuser"><?= htmlspecialchars($user['First_Name']) . " " . htmlspecialchars($user['Last_Name']) ?></p>
-            <a class="ep--edit" href="edit-profile.php"></a> <!-- Added text for clarity -->
+            <a class="ep--edit" href="edit-profile.php"></a>
         </div>
     </div>
 
@@ -442,13 +444,18 @@ echo "</script>\n";
                     <?php endif; ?>
                     <?php if ($order['Payment_Status'] === 'Pending'): ?>
                         <?php if (!isset($order['Submission_Attempts']) || $order['Submission_Attempts'] < 3): ?>
-                            <form method="POST" action="update_payment_reference.php" class="payment-reference-form">
+                            <form method="POST" action="update_payment_reference.php" class="payment-reference-form" id="paymentForm_<?= htmlspecialchars($order['Request_ID']) ?>" onsubmit="return validateForm(this)">
                                 <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
                                 <div class="reference-input">
                                     <label for="reference_number_<?= htmlspecialchars($order['Request_ID']) ?>"><strong>Payment Reference Number:</strong></label>
                                     <div class="input-group">
-                                        <input type="text" id="reference_number_<?= htmlspecialchars($order['Request_ID']) ?>" 
-                                               name="reference_number" required 
+                                        <input type="text" 
+                                               id="reference_number_<?= htmlspecialchars($order['Request_ID']) ?>" 
+                                               name="reference_number" 
+                                               required 
+                                               minlength="1"
+                                               pattern="[0-9]+"
+                                               title="Please enter only numbers"
                                                placeholder="Enter your payment reference number"
                                                value="<?= htmlspecialchars($order['Payment_Reference_Number'] ?? '') ?>">
                                         <button type="submit" class="submit-reference">Submit Reference Number</button>
@@ -506,11 +513,11 @@ echo "</script>\n";
     <!-- Product Status -->
 <div id="product-status-tab" class="tab-content">
     <?php if (empty($progressData)): ?>
-        <p class="noav" >No available data</p>
+        <p class="noav">No available data</p>
     <?php else: ?>
         <?php foreach ($progressData as $progress): ?>
             <div class="progress-item">
-                <h3><?= $progress['Product_Name'] ?></h3>
+                <h3><?= htmlspecialchars($progress['Product_Name']) ?></h3>
                 <div class="stepper-container">
                     <ol class="stepper">
                         <?php 
@@ -522,6 +529,11 @@ echo "</script>\n";
                             }
                             $statusKey = "Progress_Pic_" . $status;
                             $progressPicUrl = $progress[$statusKey] ?? null;
+                            if ($progressPicUrl) {
+                                // Clean up the path to remove any potential duplicate directories
+                                $progressPicUrl = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $progressPicUrl);
+                                $progressPicUrl = $baseUrl . $progressPicUrl;
+                            }
                             $stepData = [
                                 'context' => 'product',
                                 'data' => $progress,
@@ -531,7 +543,7 @@ echo "</script>\n";
                         ?>
                             <li class="updates_text <?= $stepClass ?>" data-progress="<?= htmlspecialchars(json_encode($stepData), ENT_QUOTES, 'UTF-8') ?>">
                                 <span class="step-icon"><?= $productIcons[$status] ?? "<i class='fas fa-circle'></i>" ?></span>
-                                <span class="step-label"><?= $label ?></span>
+                                <span class="step-label"><?= htmlspecialchars($label) ?></span>
                             </li>
                         <?php endforeach; ?>
                     </ol>
@@ -563,12 +575,10 @@ echo "</script>\n";
                             foreach ($imageUrls as $imageUrl):
                                 $imageUrl = trim($imageUrl);
                                 if (!empty($imageUrl)):
-                                    // Remove '../' from the beginning of the path
-                                    $imageUrl = str_replace('../', '', $imageUrl);
-                                    // Construct the correct path relative to the current file
-                                    $absoluteImageUrl = '../' . $imageUrl;
+                                    // Construct the full URL using the base URL
+                                    $fullImageUrl = $baseUrl . $imageUrl;
                         ?>
-                            <img class="purchase-image" src="<?= htmlspecialchars($absoluteImageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
+                            <img class="purchase-image" src="<?= htmlspecialchars($fullImageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
                         <?php endif; endforeach;
                         } else {
                             echo "<p>No image available</p>";
@@ -584,39 +594,21 @@ echo "</script>\n";
                         $reviewCheck = $pdo->prepare("
                             SELECT Review_ID 
                             FROM tbl_reviews 
-                            WHERE Purchase_ID = :purchase_id 
+                            WHERE (Purchase_ID = :purchase_id OR Purchase_ID IS NULL)
                             AND User_ID = :user_id
+                            AND Product_ID = :product_id
                         ");
                         $reviewCheck->execute([
                             'purchase_id' => $purchase['Purchase_ID'],
-                            'user_id' => $_SESSION['user_id']
+                            'user_id' => $_SESSION['user_id'],
+                            'product_id' => $purchase['Product_ID']
                         ]);
                         $hasReview = $reviewCheck->fetch(PDO::FETCH_ASSOC);
                         
                         if ($hasReview): ?>
                             <a href="../reviews/edit_review.php?review_id=<?= urlencode($hasReview['Review_ID']) ?>" class="EditButton">Edit Review</a>
-                        <?php else: 
-                            // Check if user has reviewed this product in any other purchase
-                            $productReviewCheck = $pdo->prepare("
-                                SELECT r.Review_ID 
-                                FROM tbl_reviews r
-                                WHERE r.User_ID = :user_id 
-                                AND r.Product_ID = :product_id
-                                AND r.Purchase_ID != :purchase_id
-                                LIMIT 1
-                            ");
-                            $productReviewCheck->execute([
-                                'user_id' => $_SESSION['user_id'],
-                                'product_id' => $purchase['Product_ID'],
-                                'purchase_id' => $purchase['Purchase_ID']
-                            ]);
-                            $hasProductReview = $productReviewCheck->fetch(PDO::FETCH_ASSOC);
-                            
-                            if ($hasProductReview): ?>
-                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($hasProductReview['Review_ID']) ?>" class="EditButton">Edit Review</a>
-                            <?php else: ?>
-                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>&purchase_id=<?= urlencode($purchase['Purchase_ID']) ?>" class="WriteButton">Write Review</a>
-                            <?php endif; ?>
+                        <?php else: ?>
+                            <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>&purchase_id=<?= urlencode($purchase['Purchase_ID']) ?>" class="WriteButton">Write Review</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -781,16 +773,12 @@ $(document).ready(function() {
         // --- Picture Handling ---
         var pictureHtml = '';
         if (progressPicUrl && progressPicUrl.trim() !== "") {
-            var basePath = window.location.origin + "/Capstone_Beta/"; // Base path assumption
             var absoluteUrl = progressPicUrl;
-            if (!progressPicUrl.startsWith('http') && !progressPicUrl.startsWith('/')) {
-                 absoluteUrl = basePath + progressPicUrl.replace(/^\.?\.?\//, "");
-            } else if (progressPicUrl.startsWith('/')) {
-                 absoluteUrl = window.location.origin + progressPicUrl;
+            if (!progressPicUrl.startsWith('http')) {
+                absoluteUrl = '<?= $baseUrl ?>' + progressPicUrl.replace(/^\.?\.?\//, "");
             }
-             // Add error handling for image loading
             pictureHtml = `<div class="product-image text-center mb-3">
-                             <img src="${absoluteUrl}" alt="Progress Picture for step ${stepStatus}" class="progress-image img-fluid" onerror="this.onerror=null; this.src='../static/images/placeholder.png'; this.alt='Image not found';">
+                             <img src="${absoluteUrl}" alt="Progress Picture for step ${stepStatus}" class="progress-image img-fluid" onerror="this.onerror=null; this.src='<?= $baseUrl ?>static/images/placeholder.png'; this.alt='Image not found';">
                            </div>`;
         } else {
             pictureHtml = `<p class="no-picture text-center mb-3">No Picture Available for this step</p>`;
@@ -909,6 +897,49 @@ function showNotification(notification) {
             notification.style.display = 'none';
         }, 300);
     }, 5000);
+}
+</script>
+
+<script>
+function validateForm(form) {
+    const referenceInput = form.querySelector('input[name="reference_number"]');
+    const referenceValue = referenceInput.value.trim();
+    const requestId = form.querySelector('input[name="request_id"]').value;
+    
+    console.log('Form submission attempt:', {
+        request_id: requestId,
+        reference_number: referenceValue
+    });
+    
+    if (!referenceValue) {
+        alert('Please enter a payment reference number');
+        return false;
+    }
+    
+    // Create a FormData object to ensure proper encoding
+    const formData = new FormData(form);
+    console.log('FormData contents:', Object.fromEntries(formData));
+    
+    // Submit the form using fetch to see the exact data being sent
+    fetch('update_payment_reference.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            return response.text();
+        }
+    })
+    .then(data => {
+        console.log('Server response:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+    
+    return false; // Prevent default form submission
 }
 </script>
 

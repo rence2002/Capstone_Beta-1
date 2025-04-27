@@ -25,7 +25,11 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $admin['PicPath'];
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
+$profilePicPath = htmlspecialchars($profilePicPath);
 
 // Disable error reporting for development only (optional)
 error_reporting(E_ALL); 
@@ -121,15 +125,15 @@ $sold = isset($row["Sold"]) ? $row["Sold"] : ''; // Use isset to avoid undefined
     
 
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
 <!-- Link to External JS -->
 <script src="dashboard.js"></script>

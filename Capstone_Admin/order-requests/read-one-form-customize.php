@@ -24,12 +24,10 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = $admin['PicPath'];
-if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
-    // Assuming PicPath is relative to the Capstone_Admin directory
-    $profilePicPath = '../' . $profilePicPath;
-}
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
 $profilePicPath = htmlspecialchars($profilePicPath);
 
 
@@ -98,21 +96,26 @@ if (isset($_GET['id'])) {
             $paymentStatus = htmlspecialchars($orderRequest['Payment_Status']);
             $processedStatus = $orderRequest['Processed'] == 0 ? 'Pending Confirmation' : 'Processed'; // Determine processing status text
 
-            $furnitureType = htmlspecialchars($orderRequest['Furniture_Type'] ?? 'N/A');
-            $furnitureTypeAdditionalInfo = htmlspecialchars($orderRequest['Furniture_Type_Additional_Info'] ?? '');
-            $standardSize = htmlspecialchars($orderRequest['Standard_Size'] ?? 'N/A');
-            $desiredSize = htmlspecialchars($orderRequest['Desired_Size'] ?? 'N/A');
-
             // Function to safely get and escape customization details
             function getCustomizationDetail($data, $key, $default = 'N/A') {
                 return htmlspecialchars($data[$key] ?? $default);
             }
             function getCustomizationImage($data, $key) {
-                 return !empty($data[$key]) ? htmlspecialchars($data[$key]) : null;
+                if (!empty($data[$key])) {
+                    // Remove any leading slashes or duplicate directories
+                    $imagePath = preg_replace('/^[\/]*(Capstone_Beta\/)?/', '', $data[$key]);
+                    return htmlspecialchars($imagePath);
+                }
+                return null;
             }
             function getCustomizationInfo($data, $key) {
-                 return !empty($data[$key]) ? htmlspecialchars($data[$key]) : null;
+                return !empty($data[$key]) ? htmlspecialchars($data[$key]) : null;
             }
+
+            $furnitureType = getCustomizationDetail($orderRequest, 'Furniture_Type');
+            $furnitureTypeAdditionalInfo = getCustomizationInfo($orderRequest, 'Furniture_Type_Additional_Info');
+            $standardSize = getCustomizationDetail($orderRequest, 'Standard_Size');
+            $desiredSize = getCustomizationDetail($orderRequest, 'Desired_Size');
 
             $color = getCustomizationDetail($orderRequest, 'Color');
             $colorImageURL = getCustomizationImage($orderRequest, 'Color_Image_URL');
@@ -224,7 +227,7 @@ if (isset($_GET['id'])) {
             </div>
             <!-- Removed search box -->
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -261,7 +264,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $color ?>
                         <?php if ($colorImageURL): ?>
-                            <img src="<?= $colorImageURL ?>" alt="Color Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $colorImageURL; ?>" alt="Color Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($colorAdditionalInfo): ?>
                             <div class="additional-info"><?= $colorAdditionalInfo ?></div>
@@ -273,7 +276,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $texture ?>
                         <?php if ($textureImageURL): ?>
-                            <img src="<?= $textureImageURL ?>" alt="Texture Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $textureImageURL; ?>" alt="Texture Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($textureAdditionalInfo): ?>
                             <div class="additional-info"><?= $textureAdditionalInfo ?></div>
@@ -285,7 +288,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $woodType ?>
                         <?php if ($woodImageURL): ?>
-                            <img src="<?= $woodImageURL ?>" alt="Wood Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $woodImageURL; ?>" alt="Wood Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($woodAdditionalInfo): ?>
                             <div class="additional-info"><?= $woodAdditionalInfo ?></div>
@@ -297,7 +300,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $foamType ?>
                         <?php if ($foamImageURL): ?>
-                            <img src="<?= $foamImageURL ?>" alt="Foam Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $foamImageURL; ?>" alt="Foam Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($foamAdditionalInfo): ?>
                             <div class="additional-info"><?= $foamAdditionalInfo ?></div>
@@ -309,7 +312,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $coverType ?>
                         <?php if ($coverImageURL): ?>
-                            <img src="<?= $coverImageURL ?>" alt="Cover Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $coverImageURL; ?>" alt="Cover Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($coverAdditionalInfo): ?>
                             <div class="additional-info"><?= $coverAdditionalInfo ?></div>
@@ -321,7 +324,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $design ?>
                         <?php if ($designImageURL): ?>
-                            <img src="<?= $designImageURL ?>" alt="Design Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $designImageURL; ?>" alt="Design Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($designAdditionalInfo): ?>
                             <div class="additional-info"><?= $designAdditionalInfo ?></div>
@@ -333,7 +336,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $tileType ?>
                         <?php if ($tileImageURL): ?>
-                            <img src="<?= $tileImageURL ?>" alt="Tile Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $tileImageURL; ?>" alt="Tile Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($tileAdditionalInfo): ?>
                             <div class="additional-info"><?= $tileAdditionalInfo ?></div>
@@ -345,7 +348,7 @@ if (isset($_GET['id'])) {
                     <td>
                         <?= $metalType ?>
                         <?php if ($metalImageURL): ?>
-                            <img src="<?= $metalImageURL ?>" alt="Metal Sample" class="customization-img">
+                            <img src="<?php echo $baseUrl . $metalImageURL; ?>" alt="Metal Sample" class="customization-img">
                         <?php endif; ?>
                         <?php if ($metalAdditionalInfo): ?>
                             <div class="additional-info"><?= $metalAdditionalInfo ?></div>

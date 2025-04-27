@@ -25,13 +25,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
-$profilePicPath = $admin['PicPath'];
-if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
-    // Assuming PicPath is relative to the Capstone_Admin directory
-    $profilePicPath = '../' . $profilePicPath;
-}
-$profilePicPath = htmlspecialchars($profilePicPath);
+$baseUrl = 'http://localhost/Capstone_Beta/';
 
 // Initialize the search variable
 $search = isset($_GET['search']) ? trim($_GET['search']) : ''; // Trim whitespace
@@ -173,7 +167,7 @@ function calculatePercentage($status) {
                 </form>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

@@ -124,7 +124,7 @@ function handleUpload($fileKey, $userId, $type, &$errors) {
     }
 
     // Define paths
-    $baseDir = '../uploads/user/'; // Relative to this script's location
+    $baseDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/user/'; // Absolute path
     $subDir = ($type === 'validid') ? 'validid/' : '';
     $uploadDir = $baseDir . $subDir;
 
@@ -141,7 +141,6 @@ function handleUpload($fileKey, $userId, $type, &$errors) {
          error_log("Upload directory not writable: " . $uploadDir);
          return null;
     }
-
 
     // Generate a unique and safe filename
     $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));

@@ -225,7 +225,7 @@ $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </form>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="http://localhost/Capstone_Beta/<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

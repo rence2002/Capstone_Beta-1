@@ -30,15 +30,12 @@ if ($rating < 1 || $rating > 5) {
 // Handle file uploads
 $uploaded_images = [];
 if (!empty($_FILES['review_image']['name'][0])) {
-    $upload_dir = "../uploads/review_pics/"; // Target directory
+    $upload_dir = 'C:/xampp/htdocs/Capstone_Beta/uploads/reviews/'; // Target directory
 
     // Ensure the directory exists
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0755, true); // Create the directory if it doesn't exist
     }
-
-    // Resolve the absolute path of the upload directory
-    $absolute_upload_dir = realpath($upload_dir);
 
     foreach ($_FILES['review_image']['tmp_name'] as $key => $tmp_name) {
         $file_name = basename($_FILES['review_image']['name'][$key]);
@@ -54,8 +51,8 @@ if (!empty($_FILES['review_image']['name'][0])) {
 
         // Move the uploaded file
         if (move_uploaded_file($_FILES['review_image']['tmp_name'][$key], $target_file)) {
-            // Generate the relative path dynamically
-            $relative_path = str_replace(realpath("../"), "", $target_file);
+            // Store relative path for database
+            $relative_path = 'uploads/reviews/' . basename($target_file);
             $uploaded_images[] = $relative_path;
         } else {
             $errors[] = "Failed to upload image: $file_name.";

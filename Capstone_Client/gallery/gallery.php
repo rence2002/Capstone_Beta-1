@@ -187,12 +187,31 @@ try {
                     <?php
                     $imageURLs = explode(',', $product['ImageURL']);
                     $firstImageUrl = trim($imageURLs[0]);
-                    $imageFilePath = '../uploads/product/' . basename($firstImageUrl);
-                    $glbFilePath = '../uploads/product/3d/' . basename($product['GLB_File_URL']);
+                    
+                    // Define base URL and paths
+                    $baseUrl = 'http://localhost/Capstone_Beta/';
+                    
+                    // Construct the correct paths
+                    $imageFilePath = $baseUrl . 'uploads/product/images/' . basename($firstImageUrl);
+                    $glbFilePath = $baseUrl . 'uploads/product/3d/' . basename($product['GLB_File_URL']);
+                    
+                    // Debug information
+                    error_log("Image Path: " . $imageFilePath);
+                    error_log("GLB Path: " . $glbFilePath);
                     ?>
-                    <?php if (!empty($product['GLB_File_URL']) && file_exists($glbFilePath)): ?>
-                        <model-viewer class="image-card three-d" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate></model-viewer>
-                    <?php elseif (!empty($firstImageUrl) && file_exists($imageFilePath)): ?>
+                    <?php if (!empty($product['GLB_File_URL'])): ?>
+                        <model-viewer 
+                            class="image-card three-d" 
+                            src="<?= $glbFilePath ?>" 
+                            ar 
+                            shadow-intensity="1" 
+                            camera-controls 
+                            auto-rotate
+                            onerror="this.parentElement.querySelector('.fallback-image').style.display='block'; this.style.display='none';"
+                        >
+                            <img class="fallback-image" src="<?= $imageFilePath ?>" alt="<?= $product['Product_Name'] ?>" style="display:none;">
+                        </model-viewer>
+                    <?php elseif (!empty($firstImageUrl)): ?>
                         <img src="<?= $imageFilePath ?>" alt="<?= $product['Product_Name'] ?>" class="image-card">
                     <?php else: ?>
                         <p>No Media Available</p>
@@ -217,12 +236,31 @@ try {
                     <?php
                     $imageURLs = explode(',', $product['ImageURL']);
                     $firstImageUrl = trim($imageURLs[0]);
-                    $imageFilePath = '../uploads/product/' . basename($firstImageUrl);
-                    $glbFilePath = '../uploads/product/3d/' . basename($product['GLB_File_URL']);
+                    
+                    // Define base URL and paths
+                    $baseUrl = 'http://localhost/Capstone_Beta/';
+                    
+                    // Construct the correct paths
+                    $imageFilePath = $baseUrl . 'uploads/product/images/' . basename($firstImageUrl);
+                    $glbFilePath = $baseUrl . 'uploads/product/3d/' . basename($product['GLB_File_URL']);
+                    
+                    // Debug information
+                    error_log("Image Path: " . $imageFilePath);
+                    error_log("GLB Path: " . $glbFilePath);
                     ?>
-                    <?php if (!empty($product['GLB_File_URL']) && file_exists($glbFilePath)): ?>
-                        <model-viewer class="image-card three-d" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate></model-viewer>
-                    <?php elseif (!empty($firstImageUrl) && file_exists($imageFilePath)): ?>
+                    <?php if (!empty($product['GLB_File_URL'])): ?>
+                        <model-viewer 
+                            class="image-card three-d" 
+                            src="<?= $glbFilePath ?>" 
+                            ar 
+                            shadow-intensity="1" 
+                            camera-controls 
+                            auto-rotate
+                            onerror="this.parentElement.querySelector('.fallback-image').style.display='block'; this.style.display='none';"
+                        >
+                            <img class="fallback-image" src="<?= $imageFilePath ?>" alt="<?= $product['Product_Name'] ?>" style="display:none;">
+                        </model-viewer>
+                    <?php elseif (!empty($firstImageUrl)): ?>
                         <img src="<?= $imageFilePath ?>" alt="<?= $product['Product_Name'] ?>" class="image-card">
                     <?php else: ?>
                         <p>No Media Available</p>

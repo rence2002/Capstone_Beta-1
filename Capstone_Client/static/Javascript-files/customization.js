@@ -189,8 +189,6 @@ $(document).ready(function () {
     }
 });
 
-
-
 document.addEventListener('DOMContentLoaded', function () {
     const modalOkButton = document.getElementById('modal-ok-button');
     const printModal = document.getElementById('print-modal');
@@ -231,43 +229,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const submitButton = document.getElementById("submit-button");
-    const submitButtonWrapper = document.getElementById("submit-button-wrapper"); // Wrapper for the button
     const modal = document.getElementById("idVerificationModal");
     const closeModal = document.getElementById("closeModal");
     const closeModalButton = document.getElementById("closeModalButton");
     const modalContent = modal.querySelector(".modal-content p");
 
-    console.log("ID Verification Status:", idVerificationStatus);
+    // Debug logs
+    console.log("ID Verification Status:", window.idVerificationStatus);
+    console.log("Submit Button:", submitButton);
+    console.log("Modal:", modal);
 
     // Enable the submit button only if the ID verification status is "Valid"
-    if (idVerificationStatus === "Valid") {
-        submitButton.disabled = false;
+    if (window.idVerificationStatus === "Valid") {
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
     } else {
         // Update the modal message dynamically
-        modalContent.innerHTML = `
-            Your ID verification status is either <strong>${idVerificationStatus}</strong>. 
-            Please verify your ID to proceed with customization. 
-            Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.
-        `;
+        if (modalContent) {
+            modalContent.innerHTML = `
+                Your ID verification status is either <strong>${window.idVerificationStatus}</strong>. 
+                Please verify your ID to proceed with customization. 
+                Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.
+            `;
+        }
     }
 
-    console.log("Submit Button Disabled:", submitButton.disabled);
-
-    // Listen for the click event on the wrapper instead of the button
-    submitButtonWrapper.addEventListener("click", function (e) {
-        if (submitButton.disabled) {
-            e.preventDefault(); // Prevent any default action
-            console.log("Showing Modal...");
-            modal.style.display = "flex"; // Show the modal
-        }
-    });
+    // Add click event listener to the submit button
+    if (submitButton) {
+        submitButton.addEventListener("click", function (e) {
+            if (window.idVerificationStatus !== "Valid") {
+                e.preventDefault();
+                console.log("Showing Modal...");
+                if (modal) {
+                    modal.style.display = "flex";
+                }
+            }
+        });
+    }
 
     // Close the modal when the close button is clicked
-    closeModal.addEventListener("click", function () {
-        modal.style.display = "none"; // Hide the modal
-    });
+    if (closeModal) {
+        closeModal.addEventListener("click", function () {
+            if (modal) {
+                modal.style.display = "none";
+            }
+        });
+    }
 
-    closeModalButton.addEventListener("click", function () {
-        modal.style.display = "none"; // Hide the modal
+    if (closeModalButton) {
+        closeModalButton.addEventListener("click", function () {
+            if (modal) {
+                modal.style.display = "none";
+            }
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
     });
 });

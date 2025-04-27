@@ -65,11 +65,14 @@ try {
 
     // Function to display image or "N/A" if empty
     function displayImage($imageURL) {
-        if (!empty($imageURL) && file_exists($imageURL)) {
-            return "<img src='" . htmlspecialchars($imageURL) . "' alt='Image' width='100'>";
-        } else {
-            return 'N/A';
+        if (!empty($imageURL)) {
+            // Construct absolute path for file existence check
+            $absolutePath = 'C:/xampp/htdocs/Capstone_Beta/' . $imageURL;
+            if (file_exists($absolutePath)) {
+                return "<img src='/" . htmlspecialchars($imageURL) . "' alt='Image' width='100'>";
+            }
         }
+        return 'N/A';
     }
 
     // Extract data and use displayData function
@@ -181,7 +184,7 @@ try {
                 <span class="dashboard">Dashboard</span>
             </div>
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="http://localhost/Capstone_Beta/<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

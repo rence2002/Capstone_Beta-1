@@ -26,7 +26,8 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $baseUrl . $admin['PicPath'];
 
 // Use the session admin ID
 $adminIDToUpdate = $adminId; // Use $adminId from the session
@@ -164,7 +165,7 @@ if (!$adminToUpdate) {
                     <td>Profile Picture:</td>
                     <td>
                         <input type="file" name="filePic">
-                        <img src="../<?php echo htmlspecialchars($adminToUpdate['PicPath']); ?>" alt="Profile Picture" style="width:100px;height:100px;">
+                        <img src="<?php echo $baseUrl . htmlspecialchars($adminToUpdate['PicPath']); ?>" alt="Profile Picture" style="width:100px;height:100px;">
                     </td>
                 </tr>
             </table>

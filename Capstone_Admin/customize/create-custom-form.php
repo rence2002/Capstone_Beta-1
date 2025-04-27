@@ -93,7 +93,7 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
         
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="http://localhost/Capstone_Beta/<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -130,13 +130,15 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                 <td>Furniture Type:</td>
                         <td>
-                            <select id="furniture" name="txtFurnitureType" onchange="updateSizes()">
-                                <option value="" disabled selected>Select one</option>
-                                <option value="chair">Chair</option>
-                                <option value="table">Table</option>
-                                <option value="salaset">Sala Set</option>
-                                <option value="bedframe">Bed Frame</option>
-                                <option value="sofa">Sofa</option>
+                            <select name="txtCategory" id="categorySelect">
+                                <option value="">Select Category</option>
+                                <option value="Sofa">Sofa</option>
+                                <option value="Table">Table</option>
+                                <option value="Chair">Chair</option>
+                                <option value="Bed">Bed</option>
+                                <option value="Cabinet">Cabinet</option>
+                                <option value="Shelf">Shelf</option>
+                                <option value="dining">Dining Set</option>
                             </select>
                         </td>
                 </tr>
@@ -413,35 +415,45 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
             const furniture = document.getElementById('furniture').value;
             const sizes = document.getElementById('sizes');
 
-            const options = {
-                chair: [
-                    { value: 'chair-stan', text: 'Chair - 20x21 in. // B-T-F: 37 in. // S-F: 18 in.' }
+            const categoryOptions = {
+                sofa: [
+                    { value: 'sofa1', text: 'Sofa 2 Seater' },
+                    { value: 'sofa2', text: 'Sofa 3 Seater' },
+                    { value: 'sofa3', text: 'Sofa 4 Seater' },
+                    { value: 'sofa4', text: 'Sofa 5 Seater' }
                 ],
                 table: [
-                    { value: 'table1', text: 'Table 10 seater - L: 9 ft. // W: 41 in. // H: 30 in.' },
-                    { value: 'table2', text: 'Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.' },
-                    { value: 'table3', text: 'Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.' }
+                    { value: 'table1', text: 'Table 2x4 ft.' },
+                    { value: 'table2', text: 'Table 3x5 ft.' },
+                    { value: 'table3', text: 'Table 4x6 ft.' },
+                    { value: 'table4', text: 'Table 5x7 ft.' }
                 ],
-                salaset: [
-                    { value: 'salaset1', text: 'Sala Set 8x8 ft.' },
-                    { value: 'salaset2', text: 'Sala Set 9x9 ft.' },
-                    { value: 'salaset3', text: 'Sala Set 10x10 ft.' },
-                    { value: 'salaset4', text: 'Sala Set 10x11 ft.' }
+                chair: [
+                    { value: 'chair1', text: 'Chair 1x1 ft.' },
+                    { value: 'chair2', text: 'Chair 1.5x1.5 ft.' },
+                    { value: 'chair3', text: 'Chair 2x2 ft.' }
                 ],
-                bedframe: [
-                    { value: 'bedframe1', text: 'Bed Frame - California King  72x84 in.' },
-                    { value: 'bedframe2', text: 'Bed Frame -  King  76x80 in.' },
-                    { value: 'bedframe3', text: 'Bed Frame - Queen  60x80 in.' },
-                    { value: 'bedframe4', text: 'Bed Frame - Full XL  54x80 in.' },
-                    { value: 'bedframe5', text: 'Bed Frame - Full   54x75 in.' },
-                    { value: 'bedframe6', text: 'Bed Frame - Twin XL   38x80 in.' },
-                    { value: 'bedframe7', text: 'Bed Frame - Twin   38x75 in.' }
+                bed: [
+                    { value: 'bed1', text: 'Bed 3x6 ft.' },
+                    { value: 'bed2', text: 'Bed 4x6 ft.' },
+                    { value: 'bed3', text: 'Bed 5x6 ft.' },
+                    { value: 'bed4', text: 'Bed 6x6 ft.' }
                 ],
-                sofa: [
-                    { value: 'sofa1', text: 'Sofa 3 seater - L: 7 ft // W: 3 ft // H: 3.5 ft' },
-                    { value: 'sofa2', text: 'Sofa 2 seater - L: 5 ft // W: 3 ft // H: 3.5 ft' },
-                    { value: 'sofa3', text: 'Sofa 1 seater - L: 3 ft // W: 3 ft // H: 3.5 ft' },
-                    { value: 'sofa4', text: 'L Shape Sofa 6-7 seater  - L: 9 ft // W: 3 ft // H: 3.5 ft' }
+                cabinet: [
+                    { value: 'cabinet1', text: 'Cabinet 2x4 ft.' },
+                    { value: 'cabinet2', text: 'Cabinet 3x5 ft.' },
+                    { value: 'cabinet3', text: 'Cabinet 4x6 ft.' }
+                ],
+                shelf: [
+                    { value: 'shelf1', text: 'Shelf 2x4 ft.' },
+                    { value: 'shelf2', text: 'Shelf 3x5 ft.' },
+                    { value: 'shelf3', text: 'Shelf 4x6 ft.' }
+                ],
+                dining: [
+                    { value: 'dining1', text: 'Dining Set 8x8 ft.' },
+                    { value: 'dining2', text: 'Dining Set 9x9 ft.' },
+                    { value: 'dining3', text: 'Dining Set 10x10 ft.' },
+                    { value: 'dining4', text: 'Dining Set 10x11 ft.' }
                 ]
             };
 
@@ -449,8 +461,8 @@ $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
             sizes.innerHTML = '<option value="" disabled selected>Select one</option>';
 
             // Add new options based on selected furniture
-            if (options[furniture]) {
-                options[furniture].forEach(option => {
+            if (categoryOptions[furniture]) {
+                categoryOptions[furniture].forEach(option => {
                     const opt = document.createElement('option');
                     opt.value = option.value;
                     opt.textContent = option.text;

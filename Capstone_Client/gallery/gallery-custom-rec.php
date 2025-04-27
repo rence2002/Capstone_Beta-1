@@ -31,7 +31,7 @@ foreach ($requiredFields as $field => $label) {
 }
 
 // File upload handler
-function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
+function handleFileUpload($fileKey, $uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/custom/') {
     if (empty($_FILES[$fileKey]['name'])) return null;
 
     $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -62,7 +62,7 @@ function handleFileUpload($fileKey, $uploadDir = '../uploads/custom/') {
     }
 
     // Return the web-accessible path
-    return '/Capstone_Beta/Capstone_Client/uploads/custom/' . $filename;
+    return '/Capstone_Beta/uploads/custom/' . $filename;
 }
 
 // Collect form data

@@ -88,55 +88,66 @@ if ($Product_Status === null || !is_numeric($Product_Status)) { // Check for nul
 // Removed Order_Status validation as it's no longer received
 
 // --- Handle file uploads for progress pictures ---
-$uploadDir = "../uploads/progress_pics/"; // Relative path from this script's location
-$allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // Added GIF just in case
-$maxFileSize = 5 * 1024 * 1024; // 5MB
-$progressPicsUpdates = []; // Array to hold SQL update parts for pictures
-$progressPicsValues = []; // Array to hold values for binding picture paths
+$progressPics = [];
+$progressPicsFields = [
+    'Progress_Pic_20', 'Progress_Pic_30', 'Progress_Pic_40',
+    'Progress_Pic_50', 'Progress_Pic_60', 'Progress_Pic_70', 
+    'Progress_Pic_80', 'Progress_Pic_90', 'Progress_Pic_100'
+];
 
-// Create upload directory if it doesn't exist
+// Define the upload directory
+$uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/progress/';
 if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
+    if (!mkdir($uploadDir, 0777, true)) {
+        error_log("Failed to create upload directory: " . $uploadDir);
+        $_SESSION['error'] = "Failed to create upload directory. Please check server permissions.";
+        header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+        exit();
+    }
 }
 
-foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage) {
-    $fileInputName = "Progress_Pic_$percentage";
-    if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === UPLOAD_ERR_OK) {
-        $fileTmpPath = $_FILES[$fileInputName]['tmp_name'];
-        $fileName = $_FILES[$fileInputName]['name'];
-        $fileSize = $_FILES[$fileInputName]['size'];
-        $fileType = mime_content_type($fileTmpPath); // More reliable type check
-        $fileNameCmps = explode(".", $fileName);
-        $fileExtension = strtolower(end($fileNameCmps));
+// First, fetch existing progress pictures
+$stmt = $pdo->prepare("SELECT * FROM tbl_progress WHERE Progress_ID = ?");
+$stmt->execute([$_POST['Progress_ID']]);
+$existingProgress = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Validate file type and size
+foreach ($progressPicsFields as $field) {
+    if (!empty($_FILES[$field]['name'])) {
+        $fileName = basename($_FILES[$field]['name']);
+        $targetPath = $uploadDir . $fileName;
+        
+        // Validate file type
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $fileType = mime_content_type($_FILES[$field]['tmp_name']);
+        
         if (!in_array($fileType, $allowedTypes)) {
-            // Consider logging this error instead of dying immediately in production
-            die("Error: Invalid file type for $percentage% ($fileType). Only JPEG, PNG, GIF are allowed.");
+            error_log("Invalid file type: " . $fileType);
+            $_SESSION['error'] = "Invalid file type. Only JPG, PNG, and GIF images are allowed.";
+            header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+            exit();
         }
-        if ($fileSize > $maxFileSize) {
-             die("Error: File size exceeds the maximum limit of 5MB for $percentage%.");
-        }
+        
+        if (move_uploaded_file($_FILES[$field]['tmp_name'], $targetPath)) {
+            // Store relative path for database
+            $relativePath = 'uploads/progress/' . $fileName;
+            $progressPics[$field] = $relativePath;
 
-        // Generate unique file name and define paths
-        $newFileName = uniqid("progress_{$percentage}_", true) . '.' . $fileExtension;
-        $destPath = $uploadDir . $newFileName;
-        // Store the path relative to the web root's perspective for DB (adjust if needed)
-        // Assuming 'uploads' is directly under Capstone_Beta
-        $dbPath = "../uploads/progress_pics/" . $newFileName; // Path to store in DB
-
-        if (move_uploaded_file($fileTmpPath, $destPath)) {
-            $columnName = "Progress_Pic_$percentage";
-            $paramName = ":Progress_Pic_$percentage";
-            $progressPicsUpdates[] = "$columnName = $paramName"; // e.g., "Progress_Pic_10 = :Progress_Pic_10"
-            $progressPicsValues[$paramName] = $dbPath; // e.g., [":Progress_Pic_10" => "../uploads/progress_pics/unique_name.jpg"]
+            // Delete old image if it exists
+            if (!empty($existingProgress[$field])) {
+                $oldImagePath = 'C:/xampp/htdocs/Capstone_Beta/' . $existingProgress[$field];
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
         } else {
-            // Consider logging this error
-            die("Error: Failed to move uploaded file for $percentage%. Check permissions for $uploadDir");
+            error_log("Failed to upload file: " . $fileName);
+            $_SESSION['error'] = "Failed to upload file: " . $fileName;
+            header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+            exit();
         }
-    } elseif (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] !== UPLOAD_ERR_NO_FILE) {
-        // Handle other upload errors
-        die("Error uploading file for $percentage%: Error code " . $_FILES[$fileInputName]['error']);
+    } else {
+        // Keep existing image if no new upload
+        $progressPics[$field] = $existingProgress[$field];
     }
 }
 
@@ -169,16 +180,44 @@ try {
             Stop_Reason = ?,
             Quantity = ?,
             Total_Price = ?,
+            Tracking_Number = ?,
+            Progress_Pic_20 = ?,
+            Progress_Pic_30 = ?,
+            Progress_Pic_40 = ?,
+            Progress_Pic_50 = ?,
+            Progress_Pic_60 = ?,
+            Progress_Pic_70 = ?,
+            Progress_Pic_80 = ?,
+            Progress_Pic_90 = ?,
+            Progress_Pic_100 = ?,
             LastUpdate = NOW()
         WHERE Progress_ID = ?
     ");
 
+    // Ensure all parameters are properly set
+    $productStatus = $_POST['Product_Status'] ?? 0;
+    $stopReason = $_POST['Stop_Reason'] ?? null;
+    $quantity = (int)($_POST['Quantity'] ?? 1);
+    $progressId = (int)($_POST['Progress_ID'] ?? 0);
+    $trackingNumber = $_POST['Tracking_Number'] ?? null;
+
+    // Use the calculated total price
     $updateParams = [
-        $_POST['Product_Status'],
-        $_POST['Stop_Reason'] ?? null,
+        $productStatus,
+        $stopReason,
         $quantity,
         $totalPrice,
-        $_POST['Progress_ID']
+        $trackingNumber,
+        $progressPics['Progress_Pic_20'] ?? null,
+        $progressPics['Progress_Pic_30'] ?? null,
+        $progressPics['Progress_Pic_40'] ?? null,
+        $progressPics['Progress_Pic_50'] ?? null,
+        $progressPics['Progress_Pic_60'] ?? null,
+        $progressPics['Progress_Pic_70'] ?? null,
+        $progressPics['Progress_Pic_80'] ?? null,
+        $progressPics['Progress_Pic_90'] ?? null,
+        $progressPics['Progress_Pic_100'] ?? null,
+        $progressId
     ];
 
     error_log("Updating tbl_progress with params: " . print_r($updateParams, true));

@@ -33,7 +33,7 @@ if (isset($_POST['txtReviewID'])) {
     for ($i = 1; $i <= 3; $i++) {
         $fileKey = "reviewPic$i";
         if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] == UPLOAD_ERR_OK) {
-            $uploadDir = '../uploads/review_pics/';
+            $uploadDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/reviews/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -44,7 +44,9 @@ if (isset($_POST['txtReviewID'])) {
             $newFileName = 'review_' . $reviewID . '_' . $uniqueIdentifier . '.' . $fileExtension;
             $filePath = $uploadDir . $newFileName;
             if (move_uploaded_file($fileTmpPath, $filePath)) {
-                $newPicPaths[$i - 1] = $filePath;
+                // Store relative path for database
+                $relative_path = 'uploads/reviews/' . $newFileName;
+                $newPicPaths[$i - 1] = $relative_path;
             }
         }
     }

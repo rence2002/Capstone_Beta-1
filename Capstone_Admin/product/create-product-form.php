@@ -25,7 +25,11 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $admin['PicPath'];
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
+$profilePicPath = htmlspecialchars($profilePicPath);
 ?>
 
 <!DOCTYPE html>
@@ -88,15 +92,15 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
           
 
             <div class="profile-details" onclick="toggleDropdown()">
-    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
-    <span class="admin_name"><?php echo $adminName; ?></span>
-    <i class="bx bx-chevron-down dropdown-button"></i>
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
+                <span class="admin_name"><?php echo $adminName; ?></span>
+                <i class="bx bx-chevron-down dropdown-button"></i>
 
-    <div class="dropdown" id="profileDropdown">
-        <a href="../admin/read-one-admin-form.php">Settings</a>
-        <a href="../admin/logout.php">Logout</a>
-    </div>
-</div>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="../admin/read-one-admin-form.php">Settings</a>
+                    <a href="../admin/logout.php">Logout</a>
+                </div>
+            </div>
 
 <!-- Link to External JS -->
 <script src="dashboard.js"></script>
@@ -123,7 +127,7 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                             <option value="" disabled selected>Select one</option>
                             <option value="chair">Chair</option>
                             <option value="table">Table</option>
-                            <option value="salaset">Sala Set</option>
+                            <option value="diningset">Dining Set</option>
                             <option value="bedframe">Bed Frame</option>
                             <option value="sofa">Sofa</option>
                         </select>
@@ -245,11 +249,11 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                     { value: 'table2', text: 'Table 8 seater - L: 8 ft. // W: 41 in. // H: 30 in.' },
                     { value: 'table3', text: 'Table 6.5 seater - L: 6.5 ft. // W: 41 in. // H: 30 in.' }
                 ],
-                salaset: [
-                    { value: 'salaset1', text: 'Sala Set 8x8 ft.' },
-                    { value: 'salaset2', text: 'Sala Set 9x9 ft.' },
-                    { value: 'salaset3', text: 'Sala Set 10x10 ft.' },
-                    { value: 'salaset4', text: 'Sala Set 10x11 ft.' }
+                diningset: [
+                    { value: 'diningset1', text: 'Dining Set 4 seater - L: 4 ft // W: 3 ft // H: 30 in.' },
+                    { value: 'diningset2', text: 'Dining Set 6 seater - L: 6 ft // W: 3.5 ft // H: 30 in.' },
+                    { value: 'diningset3', text: 'Dining Set 8 seater - L: 8 ft // W: 4 ft // H: 30 in.' },
+                    { value: 'diningset4', text: 'Dining Set 10 seater - L: 10 ft // W: 4 ft // H: 30 in.' }
                 ],
                 bedframe: [
                     { value: 'bedframe1', text: 'Bed Frame - California King  72x84 in.' },

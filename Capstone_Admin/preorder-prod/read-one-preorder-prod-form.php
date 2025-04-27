@@ -210,7 +210,7 @@ $productStatusText = $productStatusLabels[$productStatusValue] ?? 'Unknown Statu
                     <th>3D Model:</th>
                     <td>
                         <?php if ($glbFileURL): ?>
-                            <model-viewer src="<?= $glbFileURL ?>" alt="3D model of <?= $productName ?>" auto-rotate camera-controls></model-viewer>
+                            <model-viewer src="/Capstone_Beta/<?= $glbFileURL ?>" alt="3D model of <?= $productName ?>" auto-rotate camera-controls></model-viewer>
                         <?php else: ?>
                             No 3D model available.
                         <?php endif; ?>

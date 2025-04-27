@@ -36,7 +36,8 @@ $stmt = $pdo->prepare("
         r.Quantity, 
         r.Total_Price, 
         pr.Product_Status, 
-        r.Order_Date 
+        r.Order_Date,
+        p.Image_URLs
     FROM tbl_ready_made_orders r
     JOIN tbl_prod_info p ON r.Product_ID = p.Product_ID
     JOIN tbl_user_info u ON r.User_ID = u.User_ID
@@ -63,6 +64,7 @@ $quantity = $order["Quantity"];
 $totalPrice = $order["Total_Price"];
 $productStatus = $order["Product_Status"] ?? 0; // Default to 0 if no progress record exists
 $orderDate = $order["Order_Date"];
+$imageURLs = $order["Image_URLs"];
 
 // Product status mapping
 $productStatusLabels = [
@@ -185,7 +187,7 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                         <td>3D Model:</td>
                         <td>
                             <?php if ($glbFileURL): ?>
-                                <model-viewer src="<?php echo $glbFileURL; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                                <model-viewer src="/Capstone_Beta/<?php echo $glbFileURL; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
                             <?php else: ?>
                                 No 3D model available.
                             <?php endif; ?>
@@ -203,7 +205,23 @@ $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
                         <td>Total Price:</td>
                         <td><input type="text" id="totalPrice" name="txtTotalPrice" value="<?php echo htmlspecialchars($totalPrice); ?>" readonly></td>
                     </tr>
-                   
+                    <tr>
+                        <td>Product Images:</td>
+                        <td>
+                            <?php 
+                            if (!empty($imageURLs)) {
+                                $imageURLs = explode(',', $imageURLs);
+                                foreach ($imageURLs as $imageURL): 
+                            ?>
+                                <img src="/Capstone_Beta/<?php echo trim($imageURL); ?>" alt="Product Image" style="width:100px;height:auto; margin-right: 10px;">
+                            <?php 
+                                endforeach;
+                            } else {
+                                echo "No images available.";
+                            }
+                            ?>
+                        </td>
+                    </tr>
                 </table>
                 <div class="button-container">
                     <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>

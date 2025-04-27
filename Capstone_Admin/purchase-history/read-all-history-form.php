@@ -23,12 +23,10 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = $admin['PicPath'];
-if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
-    // Assuming PicPath is relative to the Capstone_Admin directory
-    $profilePicPath = '../' . $profilePicPath;
-}
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
 $profilePicPath = htmlspecialchars($profilePicPath);
 
 
@@ -249,7 +247,7 @@ if (isset($_GET['ajax_search'])) {
 
             <!-- Profile Details Container -->
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

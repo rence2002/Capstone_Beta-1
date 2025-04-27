@@ -68,12 +68,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Handle file upload for profile picture
     $picPath = $profilePicPath;
     if (isset($_FILES['filePic']) && $_FILES['filePic']['error'] == 0) {
-        $targetDir = "../uploads/admin/";
+        $targetDir = "C:/xampp/htdocs/Capstone_Beta/uploads/admin/";
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+        
         $fileName = basename($_FILES["filePic"]["name"]);
         $targetFilePath = $targetDir . $fileName;
-
+        
+        // Move the uploaded file to the target directory
         if (move_uploaded_file($_FILES["filePic"]["tmp_name"], $targetFilePath)) {
-            $picPath = $targetFilePath;
+            // Store the relative path in the database
+            $picPath = "uploads/admin/" . $fileName;
         }
     }
 

@@ -23,7 +23,19 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+$profilePicPath = $admin['PicPath'];
+
+// Clean up the path and ensure it's properly formatted
+if (!empty($profilePicPath)) {
+    // Remove any leading slashes or duplicate directories
+    $profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
+    // Construct the full URL
+    $profilePicPath = $baseUrl . $profilePicPath;
+} else {
+    // Fallback to default profile picture if none is set
+    $profilePicPath = $baseUrl . 'static/images/profile-icon.png';
+}
 
 // Fetch reviews with user names and product names
 $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -135,7 +147,7 @@ if (isset($_GET['search'])) {
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo htmlspecialchars($profilePicPath); ?>" alt="Profile Picture" onerror="this.onerror=null; this.src='<?php echo $baseUrl; ?>static/images/profile-icon.png';" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

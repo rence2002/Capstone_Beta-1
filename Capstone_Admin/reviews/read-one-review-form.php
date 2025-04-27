@@ -24,6 +24,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Check if the review ID is present in the URL
@@ -135,7 +136,7 @@ $reviewPicPaths = json_decode($review['PicPath'], true) ?? [];
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

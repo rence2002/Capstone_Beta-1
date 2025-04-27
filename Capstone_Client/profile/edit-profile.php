@@ -22,9 +22,17 @@ try {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Define the absolute path for uploads
+        $absoluteUploadPath = 'C:/xampp/htdocs/Capstone_Beta/uploads/user/';
+        
         // Handle file upload for a new valid ID if provided
         if (isset($_FILES['valid_id']) && $_FILES['valid_id']['error'] === 0) {
-            $uploadDir = '../uploads/user/validid/';
+            $uploadDir = $absoluteUploadPath . 'validid/';
+            // Create directory if it doesn't exist
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
             $fileExtension = pathinfo($_FILES['valid_id']['name'], PATHINFO_EXTENSION);
             $fileName = $userId . '_validid.' . $fileExtension;
             $uploadFile = $uploadDir . $fileName;
@@ -47,7 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Handle file upload if a new profile picture is selected
         if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === 0) {
-            $uploadDir = '../uploads/user/';
+            $uploadDir = $absoluteUploadPath;
+            // Create directory if it doesn't exist
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
             $fileExtension = pathinfo($_FILES['profile_picture']['name'], PATHINFO_EXTENSION);
             $fileName = $userId . '_profile.' . $fileExtension;
             $uploadFile = $uploadDir . $fileName;
@@ -183,13 +196,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </nav>
 </header>
     <main>
-
-    
+    <?php
+    $baseUrl = 'http://localhost/Capstone_Beta/';
+    ?>
     <div class="container-profile">
             <div class="profile-icon-con">
-                <img class="profile-icon" src="<?php echo ($user['PicPath']) ? '../uploads/user/' . basename($user['PicPath']) : '../static/profile-icon.png'; ?>" alt="Profile Icon">
-                <p class="nameofuser"><?= $user['First_Name'] . " " . $user['Last_Name'] ?></p>
-                <!-- <a class="ep--edit" href="edit-profile.php"></a> -->
+                <?php
+                $profileImagePath = !empty($user['PicPath']) ? $baseUrl . $user['PicPath'] : $baseUrl . 'static/images/profile-icon.png';
+                ?>
+                <img class="profile-icon" src="<?= htmlspecialchars($profileImagePath) ?>" alt="Profile Icon">
+                <p class="nameofuser"><?= htmlspecialchars($user['First_Name']) . " " . htmlspecialchars($user['Last_Name']) ?></p>
             </div>
              <!-- Logout Button for Responsive Mode -->
         <a href="../logout/logout.php" class="logout-btn responsive-logout ">

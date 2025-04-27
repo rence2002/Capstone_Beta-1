@@ -24,6 +24,7 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // DISABLE ERROR DETECTION
@@ -178,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 

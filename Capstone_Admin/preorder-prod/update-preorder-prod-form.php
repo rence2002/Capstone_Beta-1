@@ -169,7 +169,7 @@ $productStatusLabels = [
                         <th>3D Model</th>
                         <td>
                             <?php if ($progressRecord['GLB_File_URL']): ?>
-                                <model-viewer src="<?= htmlspecialchars($progressRecord['GLB_File_URL']) ?>" auto-rotate camera-controls></model-viewer>
+                                <model-viewer src="/Capstone_Beta/<?= htmlspecialchars($progressRecord['GLB_File_URL']) ?>" auto-rotate camera-controls></model-viewer>
                             <?php else: ?>
                                 No 3D model available.
                             <?php endif; ?>

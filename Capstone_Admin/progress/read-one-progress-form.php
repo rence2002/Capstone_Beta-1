@@ -21,12 +21,10 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-// Construct the correct path relative to the web root if PicPath doesn't start with '../' or '/'
+$baseUrl = 'http://localhost/Capstone_Beta/';
 $profilePicPath = $admin['PicPath'];
-if (!preg_match('/^(\.\.\/|\/)/', $profilePicPath)) {
-    // Assuming PicPath is relative to the Capstone_Admin directory
-    $profilePicPath = '../' . $profilePicPath;
-}
+// Remove any leading slashes or duplicate directories
+$profilePicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $profilePicPath);
 $profilePicPath = htmlspecialchars($profilePicPath);
 
 
@@ -162,7 +160,7 @@ $productStatusLabels = [
             </div>
             <!-- Removed search box as it's not typical for a 'read one' page -->
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?php echo $baseUrl . $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -217,17 +215,19 @@ $productStatusLabels = [
                             <?php $picKey = "Progress_Pic_$percentage"; ?>
                             <?php if (!empty($row[$picKey])): ?>
                                 <?php
-                                    // Construct the correct image path relative to the web root
+                                    // Clean up the path to remove any potential duplicate directories
                                     $imagePath = $row[$picKey];
-                                    // Assuming paths are stored like '../uploads/progress_pics/...'
-                                    // If the script is in Capstone_Admin/progress/, then '../' goes up to Capstone_Admin/
-                                    // So the path should be correct relative to the script location.
-                                    // If paths are stored differently (e.g., absolute from web root), adjust here.
-                                    $imageDisplayPath = htmlspecialchars($imagePath);
+                                    $imageDisplayPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $imagePath);
+                                    $imageDisplayPath = $baseUrl . $imageDisplayPath;
                                 ?>
                                 <tr>
                                     <td><strong><?= $percentage ?>%</strong></td>
-                                    <td><img src="<?= $imageDisplayPath ?>" alt="Progress <?= $percentage ?>%" class="progress-img img-thumbnail"></td> <!-- Added img-thumbnail -->
+                                    <td>
+                                        <img src="<?= htmlspecialchars($imageDisplayPath) ?>" 
+                                             alt="Progress <?= $percentage ?>%" 
+                                             class="progress-img img-thumbnail"
+                                             style="max-width: 300px; height: auto;">
+                                    </td>
                                 </tr>
                             <?php endif; ?>
                         <?php endforeach; ?>

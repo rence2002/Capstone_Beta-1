@@ -16,10 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // --- Configuration ---
-// Define the base directory for uploads relative to *this* script's location
-// This script is in Capstone_Admin/customize/, uploads are in Capstone_Admin/uploads/
-$uploadBaseDir = __DIR__ . "/../uploads/customizations/"; // Absolute server path for file operations
-$dbPathPrefix = "../uploads/customizations/"; // Relative path to store in DB (relative to Capstone_Admin/)
+// Define the base directory for uploads
+$uploadBaseDir = 'C:/xampp/htdocs/Capstone_Beta/uploads/customizations/'; // Absolute server path for file operations
+$dbPathPrefix = 'uploads/customizations/'; // Relative path to store in DB
 
 // Create upload directory if it doesn't exist
 if (!is_dir($uploadBaseDir)) {
@@ -78,15 +77,12 @@ try {
             $imageRemoved = true;
 
             // Construct absolute server path for deletion
-            // Need to adjust the DB path ('../uploads/...') to a server path
-            // Assuming $existingDbPath is like '../uploads/customizations/image.jpg'
-            // and this script is in 'customize/', the server path is correct relative to the script's parent dir
-            $existingServerPath = realpath(__DIR__ . '/../' . substr($existingDbPath, 3)); // Go up one level from __DIR__ then follow path
-
-            if (!empty($existingDbPath) && $existingServerPath && file_exists($existingServerPath)) {
-                if (!unlink($existingServerPath)) {
-                    // Log error or notify admin, but continue script execution
-                    error_log("Failed to delete image: " . $existingServerPath);
+            if (!empty($existingDbPath)) {
+                $existingServerPath = $uploadBaseDir . basename($existingDbPath);
+                if (file_exists($existingServerPath)) {
+                    if (!unlink($existingServerPath)) {
+                        error_log("Failed to delete image: " . $existingServerPath);
+                    }
                 }
             }
         }
@@ -94,7 +90,7 @@ try {
         // 2. Check for New Upload (only if not removed)
         if (!$imageRemoved && isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] == UPLOAD_ERR_OK) {
             $fileTmp = $_FILES[$inputName]['tmp_name'];
-            // Sanitize filename (optional but recommended)
+            // Sanitize filename
             $fileName = preg_replace("/[^a-zA-Z0-9.\-_]/", "_", basename($_FILES[$inputName]['name']));
             $uniqueFileName = time() . "_" . $fileName;
             $targetServerPath = $uploadBaseDir . $uniqueFileName; // Absolute path for move_uploaded_file
@@ -105,22 +101,20 @@ try {
                 $updateFields[] = "`" . $dbFieldName . "` = " . $placeholder;
                 $bindParams[$placeholder] = $targetDbPath; // Store relative path in DB
 
-                // Delete the *old* image if a new one was successfully uploaded *and* remove wasn't checked
-                 $existingServerPath = realpath(__DIR__ . '/../' . substr($existingDbPath, 3));
-                if (!empty($existingDbPath) && $existingServerPath && file_exists($existingServerPath)) {
-                     if (!unlink($existingServerPath)) {
-                         error_log("Failed to delete old image after new upload: " . $existingServerPath);
-                     }
+                // Delete the old image if a new one was successfully uploaded
+                if (!empty($existingDbPath)) {
+                    $existingServerPath = $uploadBaseDir . basename($existingDbPath);
+                    if (file_exists($existingServerPath)) {
+                        if (!unlink($existingServerPath)) {
+                            error_log("Failed to delete old image after new upload: " . $existingServerPath);
+                        }
+                    }
                 }
             } else {
-                // Handle upload failure (e.g., log error, notify user)
                 error_log("Failed to move uploaded file to: " . $targetServerPath);
-                // Decide if you want to stop the script or just skip this image update
                 echo "Error uploading " . htmlspecialchars($inputName) . ". Changes might not be fully saved.";
-                // exit(); // Optional: stop if image upload is critical
             }
         }
-        // If no removal and no new upload, do nothing for this image field.
     }
 
 

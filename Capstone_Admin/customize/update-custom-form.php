@@ -139,20 +139,16 @@ try {
     exit();
 }
 
-// Helper function to display image preview
-function displayImagePreview($rawImagePath, $altText) {
-    // Construct the server file path relative to the current script's directory
-    $serverFilePath = __DIR__ . '/' . $rawImagePath;
-    // The web path is the raw path itself (relative to the script's parent dir)
-    $webPath = htmlspecialchars($rawImagePath);
-
-    if (!empty($rawImagePath) && file_exists($serverFilePath)) {
-        return "<img src='{$webPath}' alt='{$altText}' width='100' class='img-thumbnail mt-2'>";
-    } else if (!empty($rawImagePath)) {
-        return "<small class='text-danger mt-2 d-block'>Image not found at: {$webPath}</small>";
-    } else {
-        return "<small class='text-muted mt-2 d-block'>No image uploaded.</small>";
+// Function to display image preview
+function displayImagePreview($imageURL, $altText) {
+    if (!empty($imageURL)) {
+        // Construct absolute path for file existence check
+        $absolutePath = 'C:/xampp/htdocs/Capstone_Beta/' . $imageURL;
+        if (file_exists($absolutePath)) {
+            return "<img src='/" . htmlspecialchars($imageURL) . "' alt='" . htmlspecialchars($altText) . "' width='100'>";
+        }
     }
+    return 'No image available';
 }
 
 ?>

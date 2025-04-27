@@ -144,7 +144,11 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="review-card">
             <div class="review-header">
                 <!-- Profile Picture -->
-                <img src="<?php echo !empty($review['Profile_Pic']) ? '../' . htmlspecialchars($review['Profile_Pic']) : '../static/images/default-profile.png'; ?>" 
+                <?php
+                $baseUrl = 'http://localhost/Capstone_Beta/';
+                $profilePicPath = !empty($review['Profile_Pic']) ? $baseUrl . $review['Profile_Pic'] : $baseUrl . 'static/images/default-profile.png';
+                ?>
+                <img src="<?= htmlspecialchars($profilePicPath) ?>" 
                      alt="Profile picture" width="50" height="50"/>
                 <div class="info">
                     <h3><?php echo htmlspecialchars($review['First_Name'] . ' ' . $review['Last_Name']); ?></h3>
@@ -165,7 +169,8 @@ $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
                     $images = json_decode($review['PicPath'], true);
                     if (is_array($images)) {
                         foreach ($images as $image) {
-                            echo '<img src="' . htmlspecialchars($image) . '" alt="Review Image" class="review-image" onclick="openModal(\'' . htmlspecialchars($image) . '\')">';
+                            $fullImagePath = $baseUrl . $image;
+                            echo '<img src="' . htmlspecialchars($fullImagePath) . '" alt="Review Image" class="review-image" onclick="openModal(\'' . htmlspecialchars($fullImagePath) . '\')">';
                         }
                     }
                 }

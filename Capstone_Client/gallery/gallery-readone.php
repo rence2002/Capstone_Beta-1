@@ -32,6 +32,9 @@ if (!$product) {
     header("location: gallery.php"); // Redirect to gallery if no product
     exit;
 }
+
+$baseUrl = 'http://localhost/Capstone_Beta/'; // Base URL for the application
+$uploadsPath = '../uploads/'; // Relative path to uploads directory
 ?>
 
 <!DOCTYPE html>
@@ -111,14 +114,22 @@ if (!$product) {
                     <?php foreach ($imageURLs as $key => $imageUrl) : $itemCounter++;?>
                         <?php
                         $imageUrl = trim($imageUrl);
-                        if (!empty($imageUrl) && file_exists(dirname(__FILE__) . '/../uploads/product/' . basename($imageUrl))) : ?>
-                            <img src="../uploads/product/<?= basename($imageUrl) ?>" alt="<?= $product['Product_Name'] ?>" class="product-image <?= $itemCounter === 1 ? 'active' : '' ?>">
+                        if (!empty($imageUrl)) : ?>
+                            <img src="<?= $baseUrl . $imageUrl ?>" alt="<?= $product['Product_Name'] ?>" class="product-image <?= $itemCounter === 1 ? 'active' : '' ?>">
                         <?php endif; ?>
                     <?php endforeach; ?>
-                    <?php if (!empty($product['GLB_File_URL']) && file_exists(dirname(__FILE__) . '/../uploads/product/3d/' . basename($product['GLB_File_URL']))) :  $itemCounter++;?>
-                        <?php // Construct correct paths
-                        $glbFilePath =  '../uploads/product/3d/' . basename($product['GLB_File_URL']); ?>
-                        <model-viewer class="three-d-model product-image <?= $itemCounter === 1 ? 'active' : '' ?>" src="<?= $glbFilePath ?>" ar shadow-intensity="1" camera-controls auto-rotate auto-rotate-delay="2000"></model-viewer>
+                    <?php if (!empty($product['GLB_File_URL'])) : 
+                        $itemCounter++; ?>
+                        <model-viewer 
+                            class="three-d-model product-image <?= $itemCounter === 1 ? 'active' : '' ?>" 
+                            src="<?= $baseUrl . $product['GLB_File_URL'] ?>" 
+                            ar 
+                            shadow-intensity="1" 
+                            camera-controls 
+                            auto-rotate 
+                            auto-rotate-delay="2000"
+                            style="width: 100%; height: 100%;"
+                        ></model-viewer>
                     <?php endif; ?>
                     <button class="slider-btn next-btn"><i class="fas fa-chevron-right"></i></button>
                 <?php else : ?>

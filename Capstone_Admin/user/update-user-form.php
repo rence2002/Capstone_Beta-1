@@ -24,7 +24,12 @@ if (!$admin) {
 }
 
 $adminName = htmlspecialchars($admin['First_Name']);
-$profilePicPath = htmlspecialchars($admin['PicPath']);
+$baseUrl = 'http://localhost/Capstone_Beta/';
+// Clean up the path to remove any potential duplicate directories
+$adminPicPath = $admin['PicPath'];
+// Remove any leading slashes or duplicate directories
+$adminPicPath = preg_replace('/^[\/]*(Capstone_Beta\/)?(Capstone_Admin\/)?(admin\/)?/', '', $adminPicPath);
+$profilePicPath = !empty($adminPicPath) ? $baseUrl . $adminPicPath : $baseUrl . 'static/images/profile-icon.png';
 
 // Fetch user record
 if (isset($_GET['id'])) {
@@ -121,7 +126,7 @@ if (isset($_GET['id'])) {
        
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="<?= htmlspecialchars($profilePicPath) ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -190,7 +195,10 @@ if (isset($_GET['id'])) {
                     <tr>
                         <td>Current Profile Picture:</td>
                         <td>
-                            <img src="../<?php echo $picPath; ?>" alt="User Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
+                            <?php
+                            $userProfilePicPath = !empty($picPath) ? $baseUrl . $picPath : $baseUrl . 'static/images/profile-icon.png';
+                            ?>
+                            <img src="<?= htmlspecialchars($userProfilePicPath) ?>" alt="User Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
                         </td>
                     </tr>
                     <tr>
@@ -201,7 +209,10 @@ if (isset($_GET['id'])) {
                     <tr>
                     <td>Valid ID:</td>
                     <td>
-                        <img src="../<?php echo $validIDPath; ?>" alt="Valid ID" class="img-fluid border" style="width: 400px; height: 250px; object-fit: cover;">
+                        <?php
+                        $validIDImagePath = !empty($validIDPath) ? $baseUrl . $validIDPath : $baseUrl . 'static/images/placeholder.png';
+                        ?>
+                        <img src="<?= htmlspecialchars($validIDImagePath) ?>" alt="Valid ID" class="img-fluid border" style="width: 400px; height: 250px; object-fit: cover;">
                         <br>
                         <div class="form-check">
                             <input type="radio" class="form-check-input" name="idVerificationStatus" value="Valid" <?php echo ($user['ID_Verification_Status'] === 'Valid') ? 'checked' : ''; ?>>

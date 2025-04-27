@@ -34,7 +34,7 @@ if (!isset($_GET['id']) || !filter_var($_GET['id'], FILTER_VALIDATE_INT)) {
 // Fetch cart details
 $cartID = $_GET['id'];
 $stmt = $pdo->prepare("
-    SELECT c.*, p.Product_Name, p.GLB_File_URL, p.Price, p.product_type
+    SELECT c.*, p.Product_Name, p.GLB_File_URL, p.Price, p.product_type, p.product_images
     FROM tbl_cart c
     JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
     WHERE c.Cart_ID = :cart_id
@@ -58,6 +58,7 @@ $price = htmlspecialchars($cart['Price']);
 $totalPrice = number_format((float)$cart['Total_Price'], 2);
 $orderType = htmlspecialchars($cart['Order_Type']);
 $productType = htmlspecialchars($cart['product_type']);
+$productImages = htmlspecialchars($cart['product_images']);
 
 
 // Fetch users
@@ -131,7 +132,7 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
         
 
             <div class="profile-details" onclick="toggleDropdown()">
-                <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" />
+                <img src="http://localhost/Capstone_Beta/<?php echo $profilePicPath; ?>" alt="Profile Picture" />
                 <span class="admin_name"><?php echo $adminName; ?></span>
                 <i class="bx bx-chevron-down dropdown-button"></i>
 
@@ -173,7 +174,11 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
                     <tr>
                         <td>3D Model:</td>
                         <td>
-                            <model-viewer src="<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                            <?php if ($productGLB): ?>
+                                <model-viewer src="/Capstone_Beta/<?php echo $productGLB; ?>" auto-rotate camera-controls style="width: 300px; height: 300px;"></model-viewer>
+                            <?php else: ?>
+                                No 3D model available.
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
@@ -196,6 +201,23 @@ $products = $productStmt->fetchAll(PDO::FETCH_ASSOC);
                     <tr>
                         <td>Total Price:</td>
                         <td><input type="text" id="totalPrice" name="txtTotalPrice" value="<?php echo $totalPrice; ?>" readonly></td>
+                    </tr>
+                    <tr>
+                        <td>Product Images:</td>
+                        <td>
+                            <?php 
+                            if (!empty($productImages)) {
+                                $imageURLs = explode(',', $productImages);
+                                foreach ($imageURLs as $imageURL): 
+                            ?>
+                                <img src="/Capstone_Beta/<?php echo trim($imageURL); ?>" alt="Product Image" style="width:100px;height:auto; margin-right: 10px;">
+                            <?php 
+                                endforeach;
+                            } else {
+                                echo "No images available.";
+                            }
+                            ?>
+                        </td>
                     </tr>
                 </table>
                 <div class="button-container">

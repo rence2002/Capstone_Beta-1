@@ -8,13 +8,13 @@ if (!$pdo) {
 }
 
 // Fetch products from the database using PDO
-$query = "SELECT Product_Name, GLB_File_URL, ImageURL, Price FROM tbl_prod_info WHERE product_type = 'readymade'";
+$query = "SELECT Product_Name, GLB_File_URL, ImageURL, Price FROM tbl_prod_info WHERE product_type != 'custom' AND GLB_File_URL IS NOT NULL AND GLB_File_URL != ''";
 $stmt = $pdo->prepare($query);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch product images for the about section
-$imageQuery = "SELECT ImageURL FROM tbl_prod_info WHERE ImageURL IS NOT NULL AND product_type = 'readymade' LIMIT 5";
+$imageQuery = "SELECT ImageURL FROM tbl_prod_info WHERE ImageURL IS NOT NULL AND product_type != 'custom'";
 $imageStmt = $pdo->prepare($imageQuery);
 $imageStmt->execute();
 $productImages = $imageStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -33,7 +33,8 @@ $reviewStmt->execute();
 $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Define the base path for 3D files
-$base3DPath = "http://localhost/uploads/product/3d/";
+$base3DPath = "/Capstone_Beta/uploads/product/3d/";
+$baseImagePath = "/Capstone_Beta/uploads/product/images/";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -123,8 +124,9 @@ model-viewer {
       <?php foreach ($productImages as $index => $image): 
         $imageUrls = explode(',', $image['ImageURL']);
         $firstImage = trim($imageUrls[0]);
+        $imagePath = $baseImagePath . basename($firstImage);
       ?>
-        <img src="<?= $firstImage ?>" alt="Product Image <?= $index + 1 ?>" <?= $index === 0 ? 'class="active"' : '' ?>>
+        <img src="<?= $imagePath ?>" alt="Product Image <?= $index + 1 ?>" <?= $index === 0 ? 'class="active"' : '' ?>>
       <?php endforeach; ?>
     </div>
 
@@ -211,15 +213,20 @@ model-viewer {
       <?php foreach ($products as $product): ?>
         <a href="login/signup.php" class="product-link">
           <div class="product">
-            <model-viewer 
-              src="<?= $base3DPath . basename($product['GLB_File_URL']) ?>" 
-              alt="<?= htmlspecialchars($product['Product_Name']) ?>" 
-              ar ar-modes="scene-viewer webxr quick-look" 
-              auto-rotate 
-              camera-controls>
-            </model-viewer>
-            <h3><?= htmlspecialchars($product['Product_Name']) ?></h3>
-            <p>₱ <?= number_format($product['Price'], 2) ?></p>
+            <?php
+            $glbFilePath = $base3DPath . basename($product['GLB_File_URL']);
+            ?>
+            <?php if (file_exists('C:/xampp/htdocs' . $glbFilePath)): ?>
+              <model-viewer 
+                src="<?= $glbFilePath ?>" 
+                alt="<?= htmlspecialchars($product['Product_Name']) ?>" 
+                ar ar-modes="scene-viewer webxr quick-look" 
+                auto-rotate 
+                camera-controls>
+              </model-viewer>
+              <h3><?= htmlspecialchars($product['Product_Name']) ?></h3>
+              <p>₱ <?= number_format($product['Price'], 2) ?></p>
+            <?php endif; ?>
           </div>
         </a>
       <?php endforeach; ?>

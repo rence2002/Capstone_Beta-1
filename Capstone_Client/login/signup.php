@@ -219,21 +219,25 @@ function old_value($field, $data, $default = '') {
                          <h2>Step 3: Verification Documents</h2>
                         <div class="form-group">
                             <label for="profilePic">Profile Picture (Optional)</label>
-                            <div class="upload-btn-wrapper">
-                                <button type="button" class="btn">Choose Profile Picture</button>
-                                <input type="file" name="profilePic" id="profilePic" accept="image/jpeg, image/png, image/gif" />
+                            <div class="upload-preview-container">
+                                <div class="upload-btn-wrapper">
+                                    <button type="button" class="btn">Choose Profile Picture</button>
+                                    <input type="file" name="profilePic" id="profilePic" accept="image/jpeg, image/png, image/gif" />
+                                </div>
+                                <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="preview-image">
                             </div>
-                            <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="preview-image">
                             <?php display_error('profilePic', $signup_errors); ?>
                         </div>
                         <div class="form-group">
                             <label for="validID">Upload Valid ID (Required) <span class="required">*</span></label>
-                            <div class="upload-btn-wrapper">
-                                <button type="button" class="btn">Choose Valid ID</button>
-                                <input type="file" name="validID" id="validID" accept="image/jpeg, image/png, image/gif" required>
+                            <div class="upload-preview-container">
+                                <div class="upload-btn-wrapper">
+                                    <button type="button" class="btn">Choose Valid ID</button>
+                                    <input type="file" name="validID" id="validID" accept="image/jpeg, image/png, image/gif" required>
+                                </div>
+                                <img id="validIDPreview" src="#" alt="Valid ID Preview" class="preview-image">
                             </div>
-                             <img id="validIDPreview" src="#" alt="Valid ID Preview" class="preview-image">
-                             <?php display_error('validID', $signup_errors); ?>
+                            <?php display_error('validID', $signup_errors); ?>
                         </div>
                     </div>
 

@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_review'])) {
             $images = json_decode($review['PicPath'], true);
             if (is_array($images)) {
                 foreach ($images as $image) {
-                    $file_path = str_replace("../", "C:/xampp/htdocs/", $image); // Convert relative path to absolute path
+                    $file_path = 'C:/xampp/htdocs/Capstone_Beta/' . $image; // Convert relative path to absolute path
                     if (file_exists($file_path)) {
                         unlink($file_path); // Delete the file
                     }
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_review'])) {
     // Handle file uploads
     $uploaded_images = [];
     if (!empty($_FILES['review_image']['name'][0])) {
-        $upload_dir = "../uploads/review_pics/"; // Target directory
+        $upload_dir = 'C:/xampp/htdocs/Capstone_Beta/uploads/reviews/'; // Target directory
 
         // Ensure the directory exists
         if (!is_dir($upload_dir)) {
@@ -97,7 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_review'])) {
             }
 
             if (move_uploaded_file($_FILES['review_image']['tmp_name'][$key], $target_file)) {
-                $uploaded_images[] = str_replace("C:/xampp/htdocs/", "../", $target_file);
+                // Store relative path for database
+                $relative_path = 'uploads/reviews/' . basename($target_file);
+                $uploaded_images[] = $relative_path;
             } else {
                 $errors[] = "Failed to upload image: $file_name.";
             }
