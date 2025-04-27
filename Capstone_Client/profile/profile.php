@@ -180,7 +180,163 @@ echo "</script>\n";
     <!-- Bootstrap CSS -->
     
     <style>
-    
+        .cancel-btn,  .btn-success {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn-success{
+            background-color:rgb(49, 162, 64);
+        }
+
+        .cancel-btn:hover {
+            background-color: #c82333;
+        }
+
+        .btn-success:hover {
+            background-color: rgb(59, 124, 54);
+        }
+
+
+        .pending-order-item {
+            position: relative;
+        }
+
+        .pending-order-item .cancel-btn{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .order-received-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 70px;
+            transition: background-color 0.3s;
+            float: right;
+        }
+
+        .order-received-btn:hover {
+            background-color: #218838;
+        }
+
+        /* New styles for payment reference form */
+        .reference-input {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .reference-input .input-group {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+        }
+
+        .reference-input input {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: border-color 0.3s;
+            flex: 1;
+        }
+
+        .reference-input input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .submit-reference {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+
+        .submit-reference:hover {
+            background-color: #0056b3;
+        }
+
+        .submit-reference:active {
+            background-color: #004085;
+        }
+
+        /* Update notification styles */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            margin: 0;
+            border-radius: 4px;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 350px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .notification.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .attempts-counter {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Add this new style */
+        .max-attempts-message {
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -280,13 +436,67 @@ echo "</script>\n";
                         ?>
                     </p>
                     <?php if ($order['Processed'] == 1): ?>
-                        <p class="order-status"><strong>Status: </strong><span style="color: orange; font-weight: bold;">Reviewed by Admin</span></p>
+                        <p class="order-status"><strong>Order Status: </strong><span style="color: orange; font-weight: bold;">Reviewed by Admin</span></p>
+                    <?php else: ?>
+                        <p class="order-status"><strong>Order Status: </strong><span style="color: #17a2b8; font-weight: bold;">Pending Review</span></p>
+                    <?php endif; ?>
+                    <?php if ($order['Payment_Status'] === 'Pending'): ?>
+                        <?php if (!isset($order['Submission_Attempts']) || $order['Submission_Attempts'] < 3): ?>
+                            <form method="POST" action="update_payment_reference.php" class="payment-reference-form">
+                                <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
+                                <div class="reference-input">
+                                    <label for="reference_number_<?= htmlspecialchars($order['Request_ID']) ?>"><strong>Payment Reference Number:</strong></label>
+                                    <div class="input-group">
+                                        <input type="text" id="reference_number_<?= htmlspecialchars($order['Request_ID']) ?>" 
+                                               name="reference_number" required 
+                                               placeholder="Enter your payment reference number"
+                                               value="<?= htmlspecialchars($order['Payment_Reference_Number'] ?? '') ?>">
+                                        <button type="submit" class="submit-reference">Submit Reference Number</button>
+                                    </div>
+                                    <?php if (isset($order['Submission_Attempts']) && $order['Submission_Attempts'] > 0): ?>
+                                        <div class="attempts-counter">
+                                            Submission attempts: <?= $order['Submission_Attempts'] ?>/3
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php 
+                                    // Show notification only for this specific product if it matches the request_id in URL
+                                    if (isset($_GET['request_id']) && $_GET['request_id'] == $order['Request_ID']):
+                                        if (isset($_GET['success']) && $_GET['success'] === 'reference_updated'): ?>
+                                            <div class="notification success">
+                                                Reference number has been submitted successfully for <?= htmlspecialchars($order['Product_Name']) ?>.
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (isset($_GET['error'])): ?>
+                                            <?php if ($_GET['error'] === 'max_attempts_reached'): ?>
+                                                <div class="notification error">
+                                                    Maximum submission attempts (3) reached for <?= htmlspecialchars($order['Product_Name']) ?>. Please contact support for assistance.
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="notification error">
+                                                    <?= htmlspecialchars(urldecode($_GET['error'])) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </form>
+                        <?php else: ?>
+                            <div class="max-attempts-message">
+                                <p>Maximum submission attempts reached. Please contact support for assistance.</p>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <?php if ($order['Processed'] == 1): ?>
                         <form method="POST" action="delete_order_request.php">
                             <input type="hidden" name="request_id" value="<?= htmlspecialchars($order['Request_ID']) ?>">
                             <button type="submit" class="okay-btn">Okay</button>
                         </form>
                     <?php else: ?>
-                        <p class="order-status"><strong>Status: </strong><span style="color: #17a2b8; font-weight: bold;">Pending Review</span></p> <!-- Bootstrap info color -->
+                        <button type="button" class="cancel-btn" data-toggle="modal" data-target="#cancelOrderModal" data-request-id="<?= htmlspecialchars($order['Request_ID']) ?>">
+                            Cancel Order
+                        </button>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
@@ -326,6 +536,12 @@ echo "</script>\n";
                         <?php endforeach; ?>
                     </ol>
                 </div>
+                <?php if ($progress['Product_Status'] == 100 && !$progress['Order_Received']): ?>
+                    <form method="POST" action="mark_order_received.php" class="order-received-form">
+                        <input type="hidden" name="progress_id" value="<?= $progress['Progress_ID'] ?>">
+                        <button type="submit" class="order-received-btn">Order Received</button>
+                    </form>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
@@ -347,17 +563,10 @@ echo "</script>\n";
                             foreach ($imageUrls as $imageUrl):
                                 $imageUrl = trim($imageUrl);
                                 if (!empty($imageUrl)):
-                                    $absoluteImageUrl = $imageUrl;
-                                    // Basic check for relative path - adjust logic if needed
-                                    if (strpos($imageUrl, '../') === 0) {
-                                         // Construct URL relative to the *web root* if possible
-                                         $absoluteImageUrl = '/Capstone_Beta/' . substr($imageUrl, 3); // Assumes Capstone_Beta is directly under htdocs
-                                         // Or use a more robust base URL definition if available
-                                    } elseif (!preg_match('/^https?:\/\//', $imageUrl) && !preg_match('/^\//', $imageUrl)) {
-                                        // If not absolute and not root-relative, assume it's relative to some base path
-                                        // This might need adjustment based on where images are stored vs script location
-                                        $absoluteImageUrl = '/Capstone_Beta/uploads/product/' . $imageUrl; // Example assumption
-                                    }
+                                    // Remove '../' from the beginning of the path
+                                    $imageUrl = str_replace('../', '', $imageUrl);
+                                    // Construct the correct path relative to the current file
+                                    $absoluteImageUrl = '../' . $imageUrl;
                         ?>
                             <img class="purchase-image" src="<?= htmlspecialchars($absoluteImageUrl) ?>" alt="<?= htmlspecialchars($purchase['Product_Name']) ?>">
                         <?php endif; endforeach;
@@ -370,10 +579,44 @@ echo "</script>\n";
                     <p><strong>Total Price:</strong> ₱<?= htmlspecialchars(number_format($purchase['Total_Price'], 2)) ?></p>
                     <p><strong>Order Type:</strong> <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $purchase['Order_Type']))) ?></p>
                     <div class="review-btn-container">
-                        <?php if (isset($purchase['Review_ID'])): ?>
-                            <a href="../reviews/edit_review.php?review_id=<?= urlencode($purchase['Review_ID']) ?>" class="EditButton">Edit Review</a>
-                        <?php else: ?>
-                            <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>" class="WriteButton">Write Review</a>
+                        <?php 
+                        // First check if this specific purchase has been reviewed
+                        $reviewCheck = $pdo->prepare("
+                            SELECT Review_ID 
+                            FROM tbl_reviews 
+                            WHERE Purchase_ID = :purchase_id 
+                            AND User_ID = :user_id
+                        ");
+                        $reviewCheck->execute([
+                            'purchase_id' => $purchase['Purchase_ID'],
+                            'user_id' => $_SESSION['user_id']
+                        ]);
+                        $hasReview = $reviewCheck->fetch(PDO::FETCH_ASSOC);
+                        
+                        if ($hasReview): ?>
+                            <a href="../reviews/edit_review.php?review_id=<?= urlencode($hasReview['Review_ID']) ?>" class="EditButton">Edit Review</a>
+                        <?php else: 
+                            // Check if user has reviewed this product in any other purchase
+                            $productReviewCheck = $pdo->prepare("
+                                SELECT r.Review_ID 
+                                FROM tbl_reviews r
+                                WHERE r.User_ID = :user_id 
+                                AND r.Product_ID = :product_id
+                                AND r.Purchase_ID != :purchase_id
+                                LIMIT 1
+                            ");
+                            $productReviewCheck->execute([
+                                'user_id' => $_SESSION['user_id'],
+                                'product_id' => $purchase['Product_ID'],
+                                'purchase_id' => $purchase['Purchase_ID']
+                            ]);
+                            $hasProductReview = $productReviewCheck->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($hasProductReview): ?>
+                                <a href="../reviews/edit_review.php?review_id=<?= urlencode($hasProductReview['Review_ID']) ?>" class="EditButton">Edit Review</a>
+                            <?php else: ?>
+                                <a href="../reviews/review.php?product_id=<?= urlencode($purchase['Product_ID']) ?>&purchase_id=<?= urlencode($purchase['Purchase_ID']) ?>" class="WriteButton">Write Review</a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -465,6 +708,28 @@ echo "</script>\n";
       </div>
     </div>
   </div>
+</div>
+
+<!-- Cancel Order Confirmation Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">Confirm Cancellation</h5>
+               
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">No, Keep Order</button>
+                <form method="POST" action="cancel_order.php" id="cancelOrderForm">
+                    <input type="hidden" name="request_id" id="cancelRequestId">
+                    <button type="submit" class="cancel-btn">Yes, Cancel Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Scripts -->
@@ -586,7 +851,65 @@ $(document).ready(function() {
         modalBody.html(productDetails);
     });
 
+    // Handle cancel order modal
+    $('#cancelOrderModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var requestId = button.data('request-id');
+        var modal = $(this);
+        modal.find('#cancelRequestId').val(requestId);
+    });
+
 });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show notifications only if there are URL parameters indicating success
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('request_id');
+    const success = urlParams.get('success');
+    
+    if (requestId && success === 'reference_updated') {
+        const notifications = document.querySelectorAll('.notification');
+        notifications.forEach(notification => {
+            if (notification.textContent.trim() && notification.closest(`[data-request-id="${requestId}"]`)) {
+                showNotification(notification);
+            }
+        });
+    }
+
+    // Clear input field immediately upon submission
+    const forms = document.querySelectorAll('.payment-reference-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const input = this.querySelector('input[type="text"]');
+            if (input) {
+                input.value = ''; // Clear the input immediately
+            }
+            
+            // Show success notification if the form submission was successful
+            const successNotification = this.querySelector('.notification.success');
+            if (successNotification) {
+                showNotification(successNotification);
+            }
+        });
+    });
+});
+
+// Function to show notification with animation
+function showNotification(notification) {
+    notification.style.display = 'block';
+    notification.style.opacity = '1';
+    notification.style.transition = 'opacity 0.3s ease-out';
+    
+    // Auto-hide after 5 seconds with fade out animation
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 300);
+    }, 5000);
+}
 </script>
 
 </body>

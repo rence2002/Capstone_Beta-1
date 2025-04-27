@@ -43,9 +43,10 @@ $progressID = null; // Initialize progress ID
 try {
     // Fetch customization details
     $query = "
-        SELECT c.*, u.First_Name, u.Last_Name
+        SELECT c.*, u.First_Name, u.Last_Name, pr.Product_Status
         FROM tbl_customizations c
         JOIN tbl_user_info u ON c.User_ID = u.User_ID
+        LEFT JOIN tbl_progress pr ON c.Product_ID = pr.Product_ID AND pr.Order_Type = 'custom'
         WHERE c.Customization_ID = :customizationID
     ";
     $stmt = $pdo->prepare($query);
@@ -98,7 +99,7 @@ try {
     $tileAdditionalInfo = displayInputData($customization['Tile_Additional_Info']);
     $metalType = displayInputData($customization['Metal_Type']);
     $metalAdditionalInfo = displayInputData($customization['Metal_Additional_Info']);
-    $productStatus = htmlspecialchars($customization['Product_Status']); // Keep this for status display/logic if needed elsewhere
+    $productStatus = $customization['Product_Status'] ?? 0; // Default to 0 if no progress record exists
     $requestDate = displayInputData($customization['Request_Date']);
     $lastUpdate = displayInputData($customization['Last_Update']);
     $productID = displayInputData($customization['Product_ID']);
@@ -113,16 +114,25 @@ try {
     $rawTileImageURL = $customization['Tile_Image_URL'];
     $rawMetalImageURL = $customization['Metal_Image_URL'];
 
-    // Product Status Labels (Not directly used in the form inputs, but kept for context)
+    // Product status mapping
     $productStatusLabels = [
-        0   => 'Request Approved', 10  => 'Design Approved', 20  => 'Material Sourcing',
-        30  => 'Cutting & Shaping', 40  => 'Structural Assembly', 50  => 'Detailing & Refinements',
-        60  => 'Sanding & Pre-Finishing', 70  => 'Varnishing/Painting', 80  => 'Drying & Curing',
-        90  => 'Final Inspection & Packaging', 95  => 'Ready for Shipment', 98  => 'Order Delivered',
-        100 => 'Order Recieved',
+        0   => 'Request Approved', // 0% - Order placed by the customer
+        10  => 'Design Approved', // 10% - Finalized by customer
+        20  => 'Material Sourcing', // 20% - Materials being gathered
+        30  => 'Cutting & Shaping', // 30% - Preparing materials
+        40  => 'Structural Assembly', // 40% - Base framework built
+        50  => 'Detailing & Refinements', // 50% - Carvings, elements added
+        60  => 'Sanding & Pre-Finishing', // 60% - Smoothening
+        70  => 'Varnishing/Painting', // 70% - Applying the final finish
+        80  => 'Drying & Curing', // 80% - Final coating sets in
+        90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+        95  => 'Ready for Shipment', // 95% - Ready for handover/shipment
+        98  => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
+        100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
     ];
-    $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 
+    // Convert product status to text
+    $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
@@ -365,18 +375,7 @@ function displayImagePreview($rawImagePath, $altText) {
                     </tr>
                      <!-- Product Status - Consider if this should be editable here or only via progress update -->
                      <!-- If editable here, use a dropdown -->
-                    <tr>
-                        <td>Product Status:</td>
-                        <td>
-                            <select name="txtProductStatus" class="form-select">
-                                <?php foreach ($productStatusLabels as $value => $label): ?>
-                                    <option value="<?= $value ?>" <?= ($value == $customization['Product_Status']) ? 'selected' : '' ?>>
-                                        <?= $value ?>% - <?= htmlspecialchars($label) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
+                  
                     <tr><td>Request Date:</td><td><input type="text" class="form-control" value="<?= $requestDate ?>" readonly></td></tr>
                     <tr><td>Last Update:</td><td><input type="text" class="form-control" value="<?= $lastUpdate ?>" readonly></td></tr>
                     <tr><td>Associated Product ID:</td><td><input type="text" class="form-control" value="<?= $productID ?>" readonly></td></tr>

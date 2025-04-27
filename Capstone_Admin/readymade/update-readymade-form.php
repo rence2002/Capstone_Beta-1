@@ -35,11 +35,12 @@ $stmt = $pdo->prepare("
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
         r.Quantity, 
         r.Total_Price, 
-        r.Product_Status, 
+        pr.Product_Status, 
         r.Order_Date 
     FROM tbl_ready_made_orders r
     JOIN tbl_prod_info p ON r.Product_ID = p.Product_ID
     JOIN tbl_user_info u ON r.User_ID = u.User_ID
+    LEFT JOIN tbl_progress pr ON r.Product_ID = pr.Product_ID AND pr.Order_Type = 'ready_made'
     WHERE r.ReadyMadeOrder_ID = ?
 ");
 $stmt->bindValue(1, $orderId);
@@ -60,18 +61,18 @@ $userID = $order["User_ID"];
 $userName = $order["User_Name"];
 $quantity = $order["Quantity"];
 $totalPrice = $order["Total_Price"];
-$productStatus = $order["Product_Status"];
+$productStatus = $order["Product_Status"] ?? 0; // Default to 0 if no progress record exists
 $orderDate = $order["Order_Date"];
 
-// Product status mapping for Ready-Made Orders
+// Product status mapping
 $productStatusLabels = [
     0   => 'Request Approved', // 0% - Order placed by the customer
-    10  => 'Design Approved', // 10% - Finalized by customer (Note: This might be more relevant for Custom/PreOrder, but included for consistency if used)
+    10  => 'Design Approved', // 10% - Finalized by customer
     20  => 'Payment Processing', // 20% - Or Material Sourcing if applicable
-    30  => 'Order Confirmed / Cutting & Shaping', // 30% - Preparing materials / Confirmed
+    30  => 'Cutting & Shaping', // 30% - Preparing materials
     40  => 'Structural Assembly / Preparing for Shipment', // 40% - Base framework built / Prep for ship
-    50  => 'Shipped / Detailing & Refinements',// 50% - Carvings, elements added / Shipped
-    60  => 'Out for Delivery / Sanding & Pre-Finishing',// 60% - Smoothening / Out for delivery
+    50  => 'Shipped / Detailing & Refinements', // 50% - Carvings, elements added / Shipped
+    60  => 'Out for Delivery / Sanding & Pre-Finishing', // 60% - Smoothening / Out for delivery
     70  => 'Delivered / Varnishing/Painting', // 70% - Applying the final finish / Delivered
     80  => 'Installed / Drying & Curing', // 80% - Final coating sets in / Installed
     90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
@@ -79,6 +80,9 @@ $productStatusLabels = [
     98  => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
     100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
 ];
+
+// Convert product status to text
+$productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -198,7 +202,7 @@ $productStatusLabels = [
                         <td>Total Price:</td>
                         <td><input type="text" id="totalPrice" name="txtTotalPrice" value="<?php echo htmlspecialchars($totalPrice); ?>" readonly></td>
                     </tr>
-                  
+                   
                 </table>
                 <div class="button-container">
                     <a href="read-all-readymade-form.php" class="buttonBack">Back to List</a>

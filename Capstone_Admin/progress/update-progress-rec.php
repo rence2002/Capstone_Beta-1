@@ -14,6 +14,55 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+// Debug: Log POST data
+error_log("POST Data: " . print_r($_POST, true));
+
+// Validate required fields
+if (empty($_POST['Progress_ID']) || empty($_POST['Product_Status']) || empty($_POST['Quantity'])) {
+    $_SESSION['error'] = "Progress ID, Product Status, and Quantity are required fields.";
+    header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+    exit();
+}
+
+// Validate quantity
+$quantity = (int)$_POST['Quantity'];
+if ($quantity < 1) {
+    $_SESSION['error'] = "Quantity must be at least 1.";
+    header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+    exit();
+}
+
+// Get total price
+$totalPrice = null;
+if (!empty($_POST['Total_Price'])) {
+    $totalPrice = (float)$_POST['Total_Price'];
+    if ($totalPrice < 0) {
+        $_SESSION['error'] = "Total price cannot be negative.";
+        header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+        exit();
+    }
+} else {
+    // For non-custom products, calculate price based on product info
+    if ($_POST['Order_Type'] !== 'custom') {
+        $stmt = $pdo->prepare("
+            SELECT pi.Price 
+            FROM tbl_prod_info pi 
+            JOIN tbl_progress p ON pi.Product_ID = p.Product_ID 
+            WHERE p.Progress_ID = ?
+        ");
+        $stmt->execute([$_POST['Progress_ID']]);
+        $basePrice = $stmt->fetchColumn();
+        $totalPrice = $quantity * $basePrice;
+    } else {
+        $_SESSION['error'] = "Total price is required for custom products.";
+        header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+        exit();
+    }
+}
+
+// Debug: Log calculated values
+error_log("Calculated Values - Quantity: $quantity, Total Price: $totalPrice");
+
 // --- Retrieve form data ---
 // Get required fields
 $Progress_ID = $_POST['Progress_ID'] ?? null; // Use null coalescing for safety
@@ -93,136 +142,99 @@ foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as $percentage) {
 
 // --- Database Update Logic ---
 try {
-    // Start a transaction
+    // Start a transaction to ensure both tables are updated
     $pdo->beginTransaction();
 
-    // *** SIMPLIFIED: Update ONLY tbl_progress ***
+    // First, verify the progress record exists and get its details
+    $stmt = $pdo->prepare("
+        SELECT p.*, c.Customization_ID 
+        FROM tbl_progress p
+        LEFT JOIN tbl_customizations c ON p.Product_ID = c.Product_ID
+        WHERE p.Progress_ID = ?
+    ");
+    $stmt->execute([$_POST['Progress_ID']]);
+    $progressRecord = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$progressRecord) {
+        throw new Exception("Progress record not found");
+    }
+    
+    error_log("Existing Progress Record: " . print_r($progressRecord, true));
 
-    // Build the base update query for tbl_progress
-    $updateFields = [
-        "Product_Status = :Product_Status",
-        "Stop_Reason = :Stop_Reason"
-        // LastUpdate is handled by DB trigger/default
+    // Update tbl_progress
+    $stmt = $pdo->prepare("
+        UPDATE tbl_progress 
+        SET 
+            Product_Status = ?,
+            Stop_Reason = ?,
+            Quantity = ?,
+            Total_Price = ?,
+            LastUpdate = NOW()
+        WHERE Progress_ID = ?
+    ");
+
+    $updateParams = [
+        $_POST['Product_Status'],
+        $_POST['Stop_Reason'] ?? null,
+        $quantity,
+        $totalPrice,
+        $_POST['Progress_ID']
     ];
 
-    // Add Tracking_Number to the update if it's provided
-    if ($Tracking_Number !== null) {
-        $updateFields[] = "Tracking_Number = :Tracking_Number";
+    error_log("Updating tbl_progress with params: " . print_r($updateParams, true));
+    $stmt->execute($updateParams);
+    
+    if ($stmt->rowCount() === 0) {
+        throw new Exception("No rows were updated in tbl_progress");
     }
 
-    // Add progress picture fields to the update query if any were uploaded
-    if (!empty($progressPicsUpdates)) {
-        $updateFields = array_merge($updateFields, $progressPicsUpdates);
-    }
+    // If it's a custom product, also update tbl_customizations
+    if ($_POST['Order_Type'] === 'custom') {
+        // First try to find the customization record
+        $stmt = $pdo->prepare("
+            SELECT Customization_ID 
+            FROM tbl_customizations 
+            WHERE Product_ID = ?
+        ");
+        $stmt->execute([$_POST['Product_ID']]);
+        $customizationId = $stmt->fetchColumn();
+        
+        error_log("Found Customization_ID: " . ($customizationId ?: 'not found'));
 
-    // Construct the final SQL query
-    $sql = "UPDATE tbl_progress SET " . implode(", ", $updateFields) . " WHERE Progress_ID = :Progress_ID";
-
-    // Prepare the statement
-    $stmt = $pdo->prepare($sql);
-
-    // Bind core parameters
-    $stmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT);
-    $stmt->bindParam(':Stop_Reason', $Stop_Reason, PDO::PARAM_STR);
-    $stmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
-
-    // Bind Tracking_Number if it exists
-    if ($Tracking_Number !== null) {
-        $stmt->bindParam(':Tracking_Number', $Tracking_Number, PDO::PARAM_STR);
-    }
-
-    // Bind progress picture parameters if they exist
-    foreach ($progressPicsValues as $paramName => $value) {
-        $stmt->bindValue($paramName, $value, PDO::PARAM_STR);
-    }
-
-    // Execute the update query for tbl_progress
-    $stmt->execute();
-
-    // Optional: Check if rows were actually affected (useful for debugging)
-    $rowCount = $stmt->rowCount();
-    // error_log("Updated tbl_progress for Progress_ID: $Progress_ID. Rows affected: $rowCount");
-    // if ($rowCount === 0) {
-    //     // This might happen if the submitted data is identical to the existing data.
-    //     // Decide if this is an error or just informational.
-    //     // error_log("Warning: No rows updated for Progress_ID: $Progress_ID. Data might be unchanged.");
-    // }
-
-
-    // --- History Transfer Logic (Based ONLY on Product_Status) ---
-    if ($Product_Status == 100) {
-        // 1. Fetch the completed record from tbl_progress
-        $fetchQuery = "SELECT * FROM tbl_progress WHERE Progress_ID = :Progress_ID";
-        $fetchStmt = $pdo->prepare($fetchQuery);
-        $fetchStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
-        $fetchStmt->execute();
-        $progressRecord = $fetchStmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($progressRecord) {
-            // 2. Insert the record into tbl_purchase_history (Removed Order_Status)
-            $insertQuery = "
-                INSERT INTO tbl_purchase_history (
-                    User_ID, Product_ID, Product_Name, Quantity, Total_Price,
-                    Order_Type, Purchase_Date, Product_Status -- Removed Order_Status
-                ) VALUES (
-                    :User_ID, :Product_ID, :Product_Name, :Quantity, :Total_Price,
-                    :Order_Type, NOW(), :Product_Status -- Removed :Order_Status
-                )
-            ";
-            $insertStmt = $pdo->prepare($insertQuery);
-
-            // Bind parameters for tbl_purchase_history
-            $insertStmt->bindParam(':User_ID', $progressRecord['User_ID']);
-            $insertStmt->bindParam(':Product_ID', $progressRecord['Product_ID']);
-            $insertStmt->bindParam(':Product_Name', $progressRecord['Product_Name']);
-            $insertStmt->bindParam(':Quantity', $progressRecord['Quantity']);
-            $insertStmt->bindParam(':Total_Price', $progressRecord['Total_Price']);
-            $insertStmt->bindParam(':Order_Type', $progressRecord['Order_Type']);
-            // Bind the Product_Status that triggered the completion
-            $insertStmt->bindParam(':Product_Status', $Product_Status, PDO::PARAM_INT); // Use the variable from POST
-
-            if (!$insertStmt->execute()) {
-                throw new Exception("Failed to transfer record to tbl_purchase_history. Error: " . implode(", ", $insertStmt->errorInfo()));
+        if ($customizationId) {
+            // Update tbl_customizations using Customization_ID
+            $stmt = $pdo->prepare("
+                UPDATE tbl_customizations 
+                SET Total_Price = ?,
+                    Last_Update = NOW()
+                WHERE Customization_ID = ?
+            ");
+            $stmt->execute([$totalPrice, $customizationId]);
+            
+            if ($stmt->rowCount() === 0) {
+                error_log("Warning: No rows were updated in tbl_customizations for Customization_ID: " . $customizationId);
+            } else {
+                error_log("Successfully updated tbl_customizations");
             }
-
-            // 3. Delete the record from tbl_progress
-            $deleteQuery = "DELETE FROM tbl_progress WHERE Progress_ID = :Progress_ID";
-            $deleteStmt = $pdo->prepare($deleteQuery);
-            $deleteStmt->bindParam(':Progress_ID', $Progress_ID, PDO::PARAM_INT);
-
-            if (!$deleteStmt->execute()) {
-                throw new Exception("Failed to delete record from tbl_progress after history transfer. Error: " . implode(", ", $deleteStmt->errorInfo()));
-            }
-             // error_log("Transferred and deleted Progress_ID: $Progress_ID");
-
         } else {
-             // This shouldn't happen if the update succeeded, but good to log
-             error_log("Warning: Could not find Progress_ID $Progress_ID to transfer to history after update.");
+            error_log("Warning: No customization record found for Product_ID: " . $_POST['Product_ID']);
         }
     }
 
     // Commit the transaction
     $pdo->commit();
+    error_log("Transaction committed successfully");
 
-    // Redirect on success
-    header("Location: ../progress/read-all-progress-form.php?success=1&id=" . $Progress_ID); // Optionally pass ID back
+    $_SESSION['success'] = "Progress updated successfully.";
+    header("Location: read-all-progress-form.php");
     exit();
 
-} catch (PDOException $e) {
-    // Rollback the transaction in case of database error
-    $pdo->rollBack();
-    // Log the detailed error
-    error_log("Database Error in update-progress-rec.php: " . $e->getMessage());
-    echo "Database Error: Failed to update progress. Please check logs or contact support."; // User-friendly message
-    // echo "Error: " . $e->getMessage(); // Show detailed error during development
-
 } catch (Exception $e) {
-    // Rollback the transaction for other errors (like file upload issues handled earlier)
-    if ($pdo->inTransaction()) { // Check if transaction started before rolling back
-       $pdo->rollBack();
-    }
-    // Log the error
-    error_log("General Error in update-progress-rec.php: " . $e->getMessage());
-    echo "Error: " . $e->getMessage(); // Show specific error message
+    // Rollback the transaction on error
+    $pdo->rollBack();
+    error_log("Error updating progress: " . $e->getMessage());
+    $_SESSION['error'] = "Error updating progress: " . $e->getMessage();
+    header("Location: update-progress-form.php?id=" . $_POST['Progress_ID']);
+    exit();
 }
 ?>

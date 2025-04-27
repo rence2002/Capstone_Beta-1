@@ -148,7 +148,7 @@ if (isset($_GET['search'])) {
                             <th>FIRST NAME</th>
                             <th>MOBILE NUMBER</th>
                             <th>STATUS</th>
-                            <th colspan="3">ACTIONS</th>
+                            <th colspan="3" style="text-align: center;">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>

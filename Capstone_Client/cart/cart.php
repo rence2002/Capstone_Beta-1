@@ -149,9 +149,7 @@ $total = array_sum(array_column($cartItems, 'Total_Price'));
 
             <div id="cart-footer">
                 <div class="cart-totals">
-                    <p>Subtotal: <span id="subtotal">₱<?= number_format($total, 2) ?></span></p>
-                    <p>Tax (8%): <span id="tax">₱<?= number_format($total * 0.08, 2) ?></span></p>
-                    <p>Total: <span id="total">₱<?= number_format($total * 1.08, 2) ?></span></p>
+                    <p>Total: <span id="total">₱<?= number_format($total, 2) ?></span></p>
                 </div>
                 <button id="checkout" 
                         class="btn btn-primary checkout-btn" 

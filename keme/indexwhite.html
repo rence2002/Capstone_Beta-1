@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Measure</title>
+
+  <!-- Add Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.125.0/three.min.js"></script>
+
+  <!-- Correct path for main.css -->
+  <link rel="stylesheet" href="./main.css">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- External JS -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+
+    }
+
+    .back-button {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+    }
+
+    .back-button a {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #f0f0f0;
+      color: black;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .back-button a:hover {
+      background-color: #e0e0e0;
+    }
+
+    .container {
+      max-width: 800px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container h1,
+    .container p,
+    .container ol,
+    .container li {
+      color: black;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    ol {
+      text-align: left;
+      display: inline-block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="back-button">
+    <a href="http://localhost/Capstone_Beta-main/Capstone_Client/gallery/gallery.php">Back to Gallery</a>
+  </div>
+  
+  <div class="container">
+    <h1>How to Use the Measurement Tool</h1>
+    <p>Follow these steps after pressing the <b>START AR</b> button:</p>
+    <ol>
+      <li>Move your phone around until a marker appears on your screen.</li>
+      <li>Position the marker at the first measurement point.</li>
+      <li>Tap the screen to begin the measurement.</li>
+      <li>Move the marker to the second measurement point.</li>
+      <li>Tap the screen again to complete the measurement.</li>
+      <li>The measured distance will be displayed at the center of the line connecting the two points.</li>
+      <li>Repeat steps 2 to 5 for additional measurements.</li>
+    </ol>
+  </div>
+
+  <!-- Correct path for main.bundle.js -->
+  <script src="./main.bundle.js"></script>
+  <script src="http://localhost/Capstone_Beta-main/src/script.js"></script>
+</body>
+</html>

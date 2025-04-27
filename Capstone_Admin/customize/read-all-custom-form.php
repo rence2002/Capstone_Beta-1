@@ -101,13 +101,12 @@ if (isset($_GET['search'])) {
             <td>'.$userName.'</td>
             <td>'.$furnitureType.'</td>
             <td>
-                <div class="progress" style="width: 150px;">
-                    <div class="progress-bar" role="progressbar" 
-                         style="width: '.$productStatus.'%; background-color: '.getColorForStatus($productStatus).';" 
-                         aria-valuenow="'.$productStatus.'" aria-valuemin="0" aria-valuemax="100">
-                        '.$statusLabel.'
+                <div class="status-bar">
+                    <div class="status-bar-fill product-status-bar" style="width: '.$productStatus.'%;">
+                        '.$productStatus.'%
                     </div>
                 </div>
+                <div class="status-text">'.htmlspecialchars($productStatusLabels[$productStatus] ?? 'Unknown Status').'</div>
             </td>
             <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>
             <td style="text-align: center;"><a class="buttonEdit" href="update-custom-form.php?id='.$customizationID.'" target="_parent">Edit</a></td>
@@ -118,20 +117,27 @@ if (isset($_GET['search'])) {
     exit; // Stop further execution for AJAX requests
 }
 
-// Fetch customization records from the database
+// Fetch customization records from the database with progress data
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
     SELECT 
         c.Customization_ID, 
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name, 
         c.Furniture_Type, 
-        c.Product_Status 
+        p.Product_Status,
+        p.Progress_ID,
+        p.Order_Type,
+        p.Product_Name,
+        c.Product_ID
     FROM tbl_customizations c
     JOIN tbl_user_info u ON c.User_ID = u.User_ID
+    LEFT JOIN tbl_progress p ON c.Product_ID = p.Product_ID 
+        AND p.Order_Type = 'custom'
     WHERE u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR c.Furniture_Type LIKE :search
-    OR c.Product_Status LIKE :search
+    OR p.Product_Status LIKE :search
+    ORDER BY p.LastUpdate DESC
 ";
 $stmt = $pdo->prepare($query);
 $searchParam = '%' . $search . '%';
@@ -152,6 +158,32 @@ $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="../static/css-files/button.css" rel="stylesheet">
     <link href="../static/css-files/admin_homev2.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <style>
+        /* Minor adjustments for table readability */
+        .table th, .table td { vertical-align: middle; text-align: center; }
+        .table .progress { margin: auto; } /* Center progress bar */
+        /* Add specific styles if needed */
+        .status-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px; /* Adjust height as needed */
+            position: relative; /* Needed for text overlay */
+        }
+        .status-bar-fill {
+            background-color: #4CAF50; /* Green for progress */
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 20px; /* Match height */
+            font-size: 12px;
+            transition: width 0.5s ease-in-out;
+            white-space: nowrap;
+        }
+        .product-status-bar { background-color: #2196F3; } /* Blue for product status */
+        /* Optional: Style for completed status */
+        td.completed-action { color: #777; font-style: italic; }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -212,10 +244,10 @@ $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div id="customization-list">
                     <table>
                         <tr>
-                            <th>Customization ID</th>
-                            <th>User Name</th>
-                            <th>Furniture Type</th>
-                            <th>Product Status</th>
+                            <th>CUSTOM ID</th>
+                            <th>USER NAE</th>
+                            <th>TYPE</th>
+                            <th>STATUS</th>
                             <th colspan="3" style="text-align: center;">ACTIONS</th>
                         </tr>
                         <?php
@@ -231,13 +263,12 @@ $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td>'.$userName.'</td>
                                 <td>'.$furnitureType.'</td>
                                 <td>
-                                    <div class="progress" style="width: 150px;">
-                                        <div class="progress-bar" role="progressbar" 
-                                             style="width: '.$productStatus.'%; background-color: '.getColorForStatus($productStatus).';" 
-                                             aria-valuenow="'.$productStatus.'" aria-valuemin="0" aria-valuemax="100">
-                                            '.$statusLabel.'
+                                    <div class="status-bar">
+                                        <div class="status-bar-fill product-status-bar" style="width: '.$productStatus.'%;">
+                                            '.$productStatus.'%
                                         </div>
                                     </div>
+                                    <div class="status-text"><small>'.htmlspecialchars($productStatusLabels[$productStatus] ?? 'Unknown Status').'</small></div>
                                 </td>
                                 <td style="text-align: center;"><a class="buttonView" href="read-one-custom-form.php?id='.$customizationID.'" target="_parent">View</a></td>
                                 <td style="text-align: center;"><a class="buttonEdit" href="update-custom-form.php?id='.$customizationID.'" target="_parent">Edit</a></td>
@@ -292,3 +323,11 @@ $customizations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
 </body>
 </html>
+
+// Add this function before the HTML section
+function calculatePercentage($status) {
+    // Ensure status is treated as a number
+    $status = (int) $status;
+    // Basic percentage calculation, assuming status is already 0-100
+    return max(0, min(100, $status));
+}

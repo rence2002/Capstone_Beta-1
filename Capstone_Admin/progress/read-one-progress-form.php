@@ -46,7 +46,6 @@ $query = "
         p.Product_Name, -- Fetched directly from tbl_progress
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
         p.Order_Type,
-        -- p.Order_Status, -- REMOVED
         p.Product_Status,
         p.Quantity, -- Added Quantity
         p.Total_Price,
@@ -63,10 +62,11 @@ $query = "
         p.Progress_Pic_90,
         p.Progress_Pic_100,
         p.Stop_Reason,
-        p.Tracking_Number
+        p.Tracking_Number,
+        orq.Payment_Reference_Number
     FROM tbl_progress p
     JOIN tbl_user_info u ON p.User_ID = u.User_ID
-    -- JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID -- REMOVED JOIN
+    LEFT JOIN tbl_order_request orq ON p.User_ID = orq.User_ID AND p.Product_ID = orq.Product_ID
     WHERE p.Progress_ID = :id
 ";
 
@@ -180,15 +180,15 @@ $productStatusLabels = [
                 <tr><th>User Name</th><td><?= htmlspecialchars($row['User_Name']) ?></td></tr>
                 <tr><th>Product Name</th><td><?= htmlspecialchars($row['Product_Name']) ?></td></tr>
                 <tr><th>Order Type</th><td><?= htmlspecialchars($row['Order_Type']) ?></td></tr>
-                <tr><th>Quantity</th><td><?= htmlspecialchars($row['Quantity']) ?></td></tr> <!-- Display Quantity -->
-                <!-- <tr><th>Order Status</th><td><?= $row['Order_Status'] ?>% - <?= $orderStatusLabels[$row['Order_Status']] ?? 'Unknown Status' ?></td></tr> --> <!-- REMOVED Order Status Row -->
+                <tr><th>Quantity</th><td><?= htmlspecialchars($row['Quantity']) ?></td></tr>
                 <?php if (!empty($row['Tracking_Number'])): ?>
                     <tr><th>Tracking Number</th><td><?= htmlspecialchars($row['Tracking_Number']) ?></td></tr>
                 <?php endif; ?>
-                <tr><th>Product Status</th><td><?= $row['Product_Status'] ?>% - <?= $productStatusLabels[$row['Product_Status']] ?? 'Unknown Status' ?></td></tr> <!-- Uses NEW labels -->
-                <tr><th>Total Price</th><td>₱ <?= number_format((float)$row['Total_Price'], 2, '.', ',') ?></td></tr> <!-- Formatted Price -->
-                <tr><th>Request Date</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Request_Date']))) ?></td></tr> <!-- Formatted Date -->
-                <tr><th>Last Update</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Last_Update']))) ?></td></tr> <!-- Formatted Date -->
+                <tr><th>Product Status</th><td><?= $row['Product_Status'] ?>% - <?= $productStatusLabels[$row['Product_Status']] ?? 'Unknown Status' ?></td></tr>
+                <tr><th>Total Price</th><td>₱ <?= number_format((float)$row['Total_Price'], 2, '.', ',') ?></td></tr>
+                <tr><th>Payment Reference Number</th><td><?= htmlspecialchars($row['Payment_Reference_Number'] ?? 'Not provided') ?></td></tr>
+                <tr><th>Request Date</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Request_Date']))) ?></td></tr>
+                <tr><th>Last Update</th><td><?= htmlspecialchars(date('F j, Y, g:i a', strtotime($row['Last_Update']))) ?></td></tr>
                 <tr><th>Stop Reason</th><td><?= htmlspecialchars($row['Stop_Reason'] ?? 'N/A') ?></td></tr>
             </table>
 

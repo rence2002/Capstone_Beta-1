@@ -531,6 +531,13 @@ padding: 10px;
     
 }
 
+.progress-item h3{
+    padding: 10px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    
+}
+
 /* .section-content {
     display: none;
     padding: 20px;

@@ -3,6 +3,9 @@ session_start();
 
 include '../config/database.php';
 
+// Initialize search variable
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../login.php");
@@ -32,25 +35,27 @@ $profilePicPath = htmlspecialchars($profilePicPath);
 
 
 // Check if the request is an AJAX search request
-if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is not empty
+if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = $_GET['search'];
-    // Updated AJAX Query: Removed Order_Status
+    // Updated AJAX Query: Fixed typo and improved search
     $query = "
         SELECT
-            Progress_ID AS ID,
-            Product_Name,
+            p.Progress_ID AS ID,
+            p.Product_Name,
             CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-            Order_Type,
-            -- Order_Status, -- REMOVED
-            Product_Status,
-            Total_Price,
-            LastUpdate
+            p.Order_Type,
+            p.Product_Status,
+            p.Total_Price,
+            p.LastUpdate,
+            p.Product_ID,
+            u.First_Name,
+            u.Last_Name
         FROM tbl_progress p
         JOIN tbl_user_info u ON p.User_ID = u.User_ID
         WHERE (u.First_Name LIKE :search
         OR u.Last_Name LIKE :search
         OR p.Product_Name LIKE :search)
-        ORDER BY LastUpdate DESC
+        ORDER BY p.LastUpdate DESC
     ";
     $stmt = $pdo->prepare($query);
     $searchParam = '%' . $search . '%';
@@ -59,17 +64,14 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Return the table rows for AJAX requests
-    // Updated AJAX Table: Removed Order Status column, adjusted colspan, updated Edit condition
-    // *** FIX: Removed PHP code accessing Order_Status within the comment ***
     echo '<table width="100%" border="1" cellspacing="5">
         <tr>
             <th>ORDER TYPE</th>
             <th>USER NAME</th>
             <th>PRODUCT NAME</th>
-            <!-- <th>ORDER STATUS</th> --> <!-- REMOVED -->
             <th>PRODUCT STATUS</th>
             <th>TOTAL PRICE</th>
-            <th colspan="2" style="text-align: center;">ACTIONS</th> <!-- Adjusted colspan -->
+            <th colspan="2" style="text-align: center;">ACTIONS</th>
         </tr>';
     if (count($rows) > 0) {
         foreach ($rows as $row) {
@@ -79,13 +81,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
                 <td>' . htmlspecialchars($row['Order_Type']) . '</td>
                 <td>' . htmlspecialchars($row['User_Name']) . '</td>
                 <td>' . htmlspecialchars($row['Product_Name']) . '</td>
-                <!--<td>
-                    <div class="status-bar">
-                        <div class="status-bar-fill order-status-bar" style="width: ... %;"> // PHP code removed
-                            ... % // PHP code removed
-                        </div>
-                    </div>
-                </td>--> <!-- REMOVED -->
                 <td>
                     <div class="status-bar">
                         <div class="status-bar-fill product-status-bar" style="width: ' . $productStatusPercentage . '%;">
@@ -93,62 +88,41 @@ if (isset($_GET['search']) && !empty($_GET['search'])) { // Check if search is n
                         </div>
                     </div>
                 </td>
-                <td>₱ ' . number_format((float) $row['Total_Price'], 2, '.', ',') . '</td> <!-- Added currency format -->
-                <td style="text-align: center;"><a class="buttonView" href="read-one-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a></td>';
-            // Updated Edit condition to use Product_Status
+                <td>₱ ' . number_format((float) $row['Total_Price'], 2, '.', ',') . '</td>
+                <td style="text-align: center;">
+                    <a class="buttonView" href="read-one-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">View</a>
+                </td>';
             if ($row['Product_Status'] != 100) {
-                echo '<td style="text-align: center;"><a class="buttonEdit" href="update-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">Edit</a></td>';
+                echo '<td style="text-align: center;">
+                    <a class="buttonEdit" href="update-progress-form.php?id=' . htmlspecialchars($row['ID']) . '&order_type=' . htmlspecialchars($row['Order_Type']) . '" target="_parent">Edit</a>
+                </td>';
             } else {
-                echo '<td style="text-align: center;">Completed</td>'; // Indicate completed instead of empty cell
+                echo '<td style="text-align: center;">Completed</td>';
             }
             echo '</tr>';
         }
     } else {
-        echo '<tr><td colspan="6" style="text-align: center;">No progress records found matching your search.</td></tr>'; // Adjusted colspan
+        echo '<tr><td colspan="7" style="text-align: center;">No progress records found matching your search.</td></tr>';
     }
     echo '</table>';
-    exit; // Stop further execution for AJAX requests
+    exit;
 }
 
-// Fetch all progress records from tbl_progress (or filtered if search term exists)
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-// Updated Main Query: Removed Order_Status
-$query = "
-    SELECT
-        p.Progress_ID AS ID,
-        p.Product_Name,
-        CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        p.Order_Type,
-        -- p.Order_Status, -- REMOVED
-        p.Product_Status,
-        p.Total_Price,
-        p.LastUpdate,
-        p.Product_ID -- Keep Product_ID in case Product_Name is missing
-    FROM tbl_progress p
-    JOIN tbl_user_info u ON p.User_ID = u.User_ID
-";
-
-// Add WHERE clause only if search term is provided
-if (!empty($search)) {
-    $query .= "
-        WHERE (u.First_Name LIKE :search
-        OR u.Last_Name LIKE :search
-        OR p.Product_Name LIKE :search)
-    ";
+// Fetch all progress records
+try {
+    $stmt = $pdo->prepare("
+        SELECT p.*, pr.Product_Name, u.First_Name, u.Last_Name
+        FROM tbl_progress p
+        JOIN tbl_prod_info pr ON p.Product_ID = pr.Product_ID
+        JOIN tbl_user_info u ON p.User_ID = u.User_ID
+        WHERE (p.Product_Status < 100 OR (p.Product_Status = 100 AND p.Order_Received = 0))
+        ORDER BY p.Date_Added DESC
+    ");
+    $stmt->execute();
+    $progressRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
 }
-
-$query .= " ORDER BY p.LastUpdate DESC"; // Use alias p for LastUpdate
-
-$stmt = $pdo->prepare($query);
-
-// Bind search parameter only if it exists
-if (!empty($search)) {
-    $searchParam = '%' . $search . '%';
-    $stmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
-}
-
-$stmt->execute();
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // REMOVED Order Status Map - Not needed as column doesn't exist
 // $orderStatusLabels = [ ... ];
@@ -297,8 +271,8 @@ function calculatePercentage($status) {
                 <th colspan="2" style="text-align: center;">ACTIONS</th>
             </tr>
 
-            <?php if (count($rows) > 0): ?>
-                <?php foreach ($rows as $row): ?>
+            <?php if (count($progressRecords) > 0): ?>
+                <?php foreach ($progressRecords as $row): ?>
                     <?php
                     if (empty($row['Product_Name']) && !empty($row['Product_ID'])) {
                         $prodStmt = $pdo->prepare("SELECT Product_Name FROM tbl_prod_info WHERE Product_ID = ?");
@@ -313,7 +287,7 @@ function calculatePercentage($status) {
                     ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['Order_Type']); ?></td>
-                        <td><?php echo htmlspecialchars($row['User_Name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['First_Name'] . ' ' . $row['Last_Name']); ?></td>
                         <td><?php echo htmlspecialchars($row['Product_Name']); ?></td>
                         <td>
                             <div class="status-bar">
@@ -324,11 +298,11 @@ function calculatePercentage($status) {
                         </td>
                         <td>₱ <?php echo number_format((float) $row['Total_Price'], 2, '.', ','); ?></td>
                         <td style="text-align: center;">
-                            <a class="buttonView" href="read-one-progress-form.php?id=<?php echo htmlspecialchars($row['ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">View</a>
+                            <a class="buttonView" href="read-one-progress-form.php?id=<?php echo htmlspecialchars($row['Progress_ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">View</a>
                         </td>
                         <td style="text-align: center;">
                             <?php if ((int)$row['Product_Status'] !== 100): ?>
-                                <a class="buttonEdit" href="update-progress-form.php?id=<?php echo htmlspecialchars($row['ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">Edit</a>
+                                <a class="buttonEdit" href="update-progress-form.php?id=<?php echo htmlspecialchars($row['Progress_ID']); ?>&order_type=<?php echo htmlspecialchars($row['Order_Type']); ?>" target="_parent">Edit</a>
                             <?php else: ?>
                                 <span class="completed-action">Completed</span>
                             <?php endif; ?>
@@ -378,58 +352,73 @@ document.getElementById('dropdown-icon').addEventListener('click', function() {
 
         if (profileDetailsContainer && profileDropdown && dropdownIcon) {
             profileDetailsContainer.addEventListener('click', function(event) {
-                // Prevent dropdown from closing if click is inside dropdown
                 if (!profileDropdown.contains(event.target)) {
-                     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-                     dropdownIcon.classList.toggle('bx-chevron-up'); // Toggle icon class
+                    profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+                    dropdownIcon.classList.toggle('bx-chevron-up');
                 }
             });
 
-            // Close dropdown if clicked outside
             document.addEventListener('click', function(event) {
                 if (!profileDetailsContainer.contains(event.target)) {
                     profileDropdown.style.display = 'none';
-                    dropdownIcon.classList.remove('bx-chevron-up'); // Ensure icon is down
+                    dropdownIcon.classList.remove('bx-chevron-up');
                 }
             });
         }
 
-        // AJAX Search Implementation (Live Search)
+        // Improved AJAX Search Implementation
         const searchInput = document.getElementById('search-input');
         const progressListDiv = document.getElementById('progress-list');
-        let searchTimeout; // To debounce requests
+        let searchTimeout;
 
         if (searchInput && progressListDiv) {
             searchInput.addEventListener('input', function () {
-                clearTimeout(searchTimeout); // Clear previous timeout
-                const searchValue = this.value;
+                clearTimeout(searchTimeout);
+                const searchValue = this.value.trim();
 
-                // Set a timeout to wait briefly after user stops typing
+                // Set a timeout to wait after user stops typing
                 searchTimeout = setTimeout(() => {
-                    // Show loading indicator (optional)
-                    progressListDiv.innerHTML = '<p style="text-align:center;">Searching...</p>';
+                    if (searchValue.length === 0) {
+                        // If search is empty, reload the original content
+                        window.location.reload();
+                        return;
+                    }
 
                     // Send an AJAX request
-                    fetch(`read-all-progress-form.php?search=${encodeURIComponent(searchValue)}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            // Update the progress list with the filtered results
-                            progressListDiv.innerHTML = data;
-                        })
-                        .catch(error => {
-                            console.error('Error fetching search results:', error);
-                            progressListDiv.innerHTML = '<p style="text-align:center; color:red;">Error loading results.</p>';
-                        });
-                }, 300); // Wait 300ms after typing stops
+                    fetch(`read-all-progress-form.php?search=${encodeURIComponent(searchValue)}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        progressListDiv.innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching search results:', error);
+                        progressListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:red;">Error loading results. Please try again.</div>';
+                    });
+                }, 500); // Increased debounce time to 500ms
             });
-        }
 
-        // Removed old dropdown toggle JS as it wasn't needed
+            // Handle form submission to prevent page reload
+            const searchForm = document.getElementById('search-form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const searchValue = searchInput.value.trim();
+                    if (searchValue.length > 0) {
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+        }
     </script>
 </body>
 </html>

@@ -385,7 +385,22 @@
   max-width: 500px; /* Maximum width */
   position: relative;
 }
+.modal-confirm-button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border-radius: 4px;
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
 
+.modal-confirm-button:hover {
+  background-color: #45a049; /* Darker green */
+  cursor: pointer; /* Changes cursor to pointer on hover */
+}
 .close-modal {
   color: #aaa;
   float: right;

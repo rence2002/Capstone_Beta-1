@@ -106,26 +106,20 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
 
         <br><br><br><br>
 
-        <h2>Create New Product</h2>
-        <form name="frmProduct" method="POST" enctype="multipart/form-data" action="create-product-rec.php">
-            <table>
-                <!-- Product Name -->
-                <tr>
-                    <td><label for="productName">Product Name:</label></td>
-                    <td><input type="text" name="Product_Name" id="productName" required></td>
-                </tr>
-
-                <!-- Description -->
-                <tr>
-                    <td><label for="description">Description:</label></td>
-                    <td><textarea name="Description" id="description"></textarea></td>
-                </tr>
-
-                <!-- Furniture Type -->
-                <tr>
-                    <td>Furniture Type:</td>
-                    <td>
-                        <select id="furniture" name="Category" onchange="updateSizes()">
+        <div class="container_boxes">
+            <h4>CREATE NEW PRODUCT</h4>
+            <div class="button-container">
+                <a href="read-all-product-form.php" class="buttonBack">Back to List</a>
+            </div>
+            <form name="frmProduct" method="POST" enctype="multipart/form-data" action="create-product-rec.php" class="mt-4">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="productName" class="form-label">Product Name:</label>
+                        <input type="text" name="Product_Name" id="productName" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="furniture" class="form-label">Furniture Type:</label>
+                        <select id="furniture" name="Category" class="form-select" onchange="updateSizes()">
                             <option value="" disabled selected>Select one</option>
                             <option value="chair">Chair</option>
                             <option value="table">Table</option>
@@ -133,81 +127,76 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
                             <option value="bedframe">Bed Frame</option>
                             <option value="sofa">Sofa</option>
                         </select>
-                    </td>
-                </tr>
+                    </div>
+                </div>
 
-                <!-- Standard Sizes -->
-                <tr>
-                    <td>Standard Sizes:</td>
-                    <td>
-                        <select id="sizes" name="Sizes">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="description" class="form-label">Description:</label>
+                        <textarea name="Description" id="description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="sizes" class="form-label">Standard Sizes:</label>
+                        <select id="sizes" name="Sizes" class="form-select">
                             <option value="" disabled selected>Select one</option>
                         </select>
                         <input type="hidden" id="sizesText" name="SizesText">
-                    </td>
-                </tr>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="color" class="form-label">Color:</label>
+                        <input type="text" name="Color" id="color" class="form-control">
+                    </div>
+                </div>
 
-                <!-- Color -->
-                <tr>
-                    <td><label for="color">Color:</label></td>
-                    <td><input type="text" name="Color" id="color"></td>
-                </tr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="stock" class="form-label">Stock:</label>
+                        <input type="number" name="Stock" id="stock" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="price" class="form-label">Price:</label>
+                        <input type="number" name="Price" id="price" class="form-control" required>
+                    </div>
+                </div>
 
-                <!-- Stock -->
-                <tr>
-                    <td><label for="stock">Stock:</label></td>
-                    <td><input type="text" name="Stock" id="stock"></td>
-                </tr>
-
-                <!-- Assembly Required -->
-                <tr>
-                    <td><label for="assemblyRequired">Assembly Required:</label></td>
-                    <td>
-                        <select name="Assembly_Required" id="assemblyRequired">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="assemblyRequired" class="form-label">Assembly Required:</label>
+                        <select name="Assembly_Required" id="assemblyRequired" class="form-select">
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </select>
-                    </td>
-                </tr>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="sold" class="form-label">Sold:</label>
+                        <input type="number" name="Sold" id="sold" class="form-control">
+                    </div>
+                </div>
 
-                <!-- Price -->
-                <tr>
-                    <td><label for="price">Price:</label></td>
-                    <td><input type="text" name="Price" id="price" required></td>
-                </tr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="fileImage" class="form-label">Upload Product Images (You can upload 3 images):</label>
+                        <input type="file" name="ImageURLs[]" id="fileImage" class="form-control" accept="image/*" multiple>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="fileGLB" class="form-label">Upload 3D Model (.glb):</label>
+                        <input type="file" name="GLB_File_URL" id="fileGLB" class="form-control" accept=".glb">
+                    </div>
+                </div>
 
-                <!-- Sold (Optional Field) -->
-                <tr>
-                    <td><label for="sold">Sold:</label></td>
-                    <td><input type="text" name="Sold" id="sold"></td>
-                </tr>
-
-                <!-- Image Upload (3 Images) -->
-                <tr>
-                    <td><label for="fileImage">Upload Product Images (You can upload 3 images):</label></td>
-                    <td>
-                        <input type="file" name="ImageURLs[]" id="fileImage" accept="image/*" multiple>
-                    </td>
-                </tr>
-
-                <!-- GLB File Upload -->
-                <tr>
-                    <td><label for="fileGLB">Upload 3D Model (.glb):</label></td>
-                    <td>
-                        <input type="file" name="GLB_File_URL" id="fileGLB" accept=".glb">
-                    </td>
-                </tr>
-
-                <!-- Submit and Reset Buttons -->
-                <tr>
-                    <td colspan="2">
-                        <input type="submit" value="Submit">
-                        <input type="reset" value="Reset">
-                        <a href="read-all-product-form.php" target="_parent">Back to List</a>
-                    </td>
-                </tr>
-            </table>
-        </form>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-save"></i> Submit
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="bx bx-reset"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
 
     </section>
 

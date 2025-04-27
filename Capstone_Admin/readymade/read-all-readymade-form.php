@@ -29,23 +29,23 @@ $profilePicPath = htmlspecialchars($admin['PicPath']);
 
 // Updated Product Status Map (using the new one from the prompt)
 $productStatusLabels = [
-    0 => 'Request Approved', // 0% - Order placed by the customer
-    10 => 'Design Approved', // 10% - Finalized by customer (Note: This might be more relevant for Custom/PreOrder, but included for consistency if used)
-    20 => 'Payment Processing', // 20% - Or Material Sourcing if applicable
-    30 => 'Order Confirmed / Cutting & Shaping', // 30% - Preparing materials / Confirmed
-    40 => 'Structural Assembly / Preparing for Shipment', // 40% - Base framework built / Prep for ship
-    50 => 'Shipped / Detailing & Refinements',// 50% - Carvings, elements added / Shipped
-    60 => 'Out for Delivery / Sanding & Pre-Finishing',// 60% - Smoothening / Out for delivery
-    70 => 'Delivered / Varnishing/Painting', // 70% - Applying the final finish / Delivered
-    80 => 'Installed / Drying & Curing', // 80% - Final coating sets in / Installed
-    90 => 'Final Inspection & Packaging', // 90% - Quality control before handover
-    95 => 'Ready for Shipment', // 95% - Ready for handover/shipment
-    98 => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
-    100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
+    0   => 'Request Approved',         // 0% - Order placed by the customer
+    10  => 'Design Approved',        // 10% - Finalized by customer
+    20  => 'Material Sourcing',      // 20% - Gathering necessary materials
+    30  => 'Cutting & Shaping',      // 30% - Preparing materials
+    40  => 'Structural Assembly',    // 40% - Base framework built
+    50  => 'Detailing & Refinements',// 50% - Carvings, upholstery, elements added
+    60  => 'Sanding & Pre-Finishing',// 60% - Smoothening, preparing for final coat
+    70  => 'Varnishing/Painting',    // 70% - Applying the final finish
+    80  => 'Drying & Curing',        // 80% - Final coating sets in
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    95  => 'Ready for Shipment',
+    98  => 'Order Delivered',
+    100 => 'Order Recieved', // Note: Typo 'Recieved' in provided map, kept as is. Should likely be 'Received'
 ];
 
 
-// Fetch ready-made order records from the database
+// Fetch ready-made order records from the database with progress data
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $query = "
     SELECT 
@@ -54,15 +54,19 @@ $query = "
         p.Product_Name,
         rmo.Quantity,
         rmo.Total_Price,
-        rmo.Product_Status, -- Corrected column name
-        rmo.Order_Date
+        pr.Product_Status,
+        pr.Progress_ID,
+        pr.Order_Type
     FROM tbl_ready_made_orders rmo
     JOIN tbl_user_info u ON rmo.User_ID = u.User_ID
     JOIN tbl_prod_info p ON rmo.Product_ID = p.Product_ID
+    LEFT JOIN tbl_progress pr ON rmo.User_ID = pr.User_ID 
+        AND pr.Order_Type = 'ready_made'
+        AND pr.Product_ID = rmo.Product_ID
     WHERE u.First_Name LIKE :search 
     OR u.Last_Name LIKE :search 
     OR p.Product_Name LIKE :search
-    OR rmo.Product_Status LIKE :search -- Corrected column name
+    OR pr.Product_Status LIKE :search
 ";
 $stmt = $pdo->prepare($query);
 $searchParam = '%' . $search . '%';
@@ -80,7 +84,7 @@ if (isset($_GET['search'])) {
                 <th>USER NAME</th>
                 <th>PRODUCT NAME</th>
                 <th>TOTAL PRICE</th>
-                <th>ORDER STATUS</th>
+                <th>STATUS</th>
                 <th colspan="3" style="text-align: center;">ACTIONS</th>
             </tr>
         </thead>
@@ -102,12 +106,12 @@ if (isset($_GET['search'])) {
                 <td>' . $productName . '</td>
                 <td>' . $totalPrice . '</td>
                 <td>
-                    <div class="progress" style="width: 150px;" title="' . $productStatusLabel . '">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: ' . $progressPercent . '%;" aria-valuenow="' . $progressPercent . '" aria-valuemin="0" aria-valuemax="100">
+                    <div class="status-bar">
+                        <div class="status-bar-fill product-status-bar" style="width: ' . $progressPercent . '%;" title="' . htmlspecialchars($productStatusLabels[$productStatusValue] ?? 'Unknown Status') . '">
                             ' . $progressPercent . '%
                         </div>
                     </div>
-                    <!-- Removed the <small> tag that displayed the label text -->
+                    <small>' . htmlspecialchars($productStatusLabels[$productStatusValue] ?? 'Unknown Status') . '</small>
                 </td>
                 <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=' . $orderID . '" target="_parent">View</a></td>
                 <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=' . $orderID . '" target="_parent">Edit</a></td>
@@ -119,6 +123,14 @@ if (isset($_GET['search'])) {
     }
     echo '</tbody></table>';
     exit; // Stop further execution for AJAX requests
+}
+
+// Add this function before the HTML section
+function calculatePercentage($status) {
+    // Ensure status is treated as a number
+    $status = (int) $status;
+    // Basic percentage calculation, assuming status is already 0-100
+    return max(0, min(100, $status));
 }
 ?>
 
@@ -153,6 +165,26 @@ if (isset($_GET['search'])) {
             margin-left: 10px; /* Adjust as needed */
         }
         /* Removed the td small style as the element is gone */
+        /* Add specific styles if needed */
+        .status-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px; /* Adjust height as needed */
+            position: relative; /* Needed for text overlay */
+        }
+        .status-bar-fill {
+            background-color: #4CAF50; /* Green for progress */
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 20px; /* Match height */
+            font-size: 12px;
+            transition: width 0.5s ease-in-out;
+        }
+        .product-status-bar { background-color: #2196F3; } /* Blue for product status */
+        /* Optional: Style for completed status */
+        td.completed-action { color: #777; font-style: italic; }
     </style>
 </head>
 
@@ -245,12 +277,12 @@ if (isset($_GET['search'])) {
                                     <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
                                     <td><?= number_format((float)$row["Total_Price"], 2, '.', '') ?></td>
                                     <td>
-                                        <div class="progress" style="width: 150px;" title="<?= $productStatusLabel ?>"> <!-- Add title for tooltip -->
-                                            <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $progressPercent ?>%;" aria-valuenow="<?= $progressPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                                <?= $progressPercent ?>%
+                                        <div class="status-bar">
+                                            <div class="status-bar-fill product-status-bar" style="width: <?php echo calculatePercentage($row['Product_Status'] ?? 0); ?>%;" title="<?php echo htmlspecialchars($productStatusLabels[$row['Product_Status'] ?? 0] ?? 'Unknown Status'); ?>">
+                                                <?php echo calculatePercentage($row['Product_Status'] ?? 0); ?>%
                                             </div>
                                         </div>
-                                        <!-- Removed the <small> tag that displayed the label text -->
+                                        <small><?php echo htmlspecialchars($productStatusLabels[$row['Product_Status'] ?? 0] ?? 'Unknown Status'); ?></small>
                                     </td>
                                     <td style="text-align: center;"><a class="buttonView" href="read-one-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">View</a></td>
                                     <td style="text-align: center;"><a class="buttonEdit" href="update-readymade-form.php?id=<?= htmlspecialchars($row["ReadyMadeOrder_ID"]) ?>" target="_parent">Edit</a></td>

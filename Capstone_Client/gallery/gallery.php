@@ -677,10 +677,19 @@ try {
         <div class="modal-content">
             <span class="close-modal" id="closeModal">&times;</span>
             <h2>Action Restricted</h2>
-            <p>Your ID verification status is either <strong>Unverified</strong> or <strong>Invalid</strong>. Please verify your ID to proceed with customization.</p>
-            <p>Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
-            <button id="closeModalButton" class="btn">Close</button>
-        </div>
+        <p>Your ID verification status is either <strong>Unverified</strong> or <strong>Invalid</strong>. Please verify your ID to proceed with this action.</p>
+    <p style="color:red; font-style: italic; font-size:12px;">Note: Go to your <a class="underline" style="color:red; font-style: none; " href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
+    <style>
+.underline {
+  color: red;
+  text-decoration: none;
+}
+
+.underline:hover {
+  text-decoration: underline;
+  color: red; /* Optional: Keep the same color on hover */
+}
+</style>
     </div>
     </div>
 </main>
@@ -719,34 +728,171 @@ try {
     <script src="../static/Javascript-files/customization.js"></script>
     <script src="../static/Javascript-files/gallery.js"></script>
     <script src="../static/Javascript-files/jQuery.js"></script>
-    <script>
-        const idVerificationStatus = "<?php
+    <?php
+        try {
+            // Debug session
+            error_log("Session User ID: " . $_SESSION['user_id']);
+            
             $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
             $stmt->bindParam(':user_id', $_SESSION['user_id']);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            echo $user['ID_Verification_Status'];
-        ?>";
+            
+            // Debug database result
+            error_log("Database Result: " . print_r($user, true));
+            
+            $verificationStatus = $user['ID_Verification_Status'] ?? 'Unverified';
+            error_log("Final Verification Status: " . $verificationStatus);
+        } catch (PDOException $e) {
+            $verificationStatus = 'Unverified';
+            error_log("Database error: " . $e->getMessage());
+        }
+    ?>
+    <script>
+        window.idVerificationStatus = "<?php echo addslashes($verificationStatus); ?>";
+        console.log("PHP Verification Status:", "<?php echo $verificationStatus; ?>");
+        console.log("Session User ID:", "<?php echo $_SESSION['user_id']; ?>");
+    </script>
+    <script>
+        // Select the button and the container
+        const toggleButton = document.getElementById("toggle-button");
+        const customizedContainer = document.querySelector(".customized-container");
+        const submitButton = document.getElementById("submit-button");
 
-            // Select the button and the container
-            const toggleButton = document.getElementById("toggle-button");
-            const customizedContainer = document.querySelector(".customized-container");
+        // Add click event listener to toggle the container and button text
+        toggleButton.addEventListener("click", function () {
+            if (customizedContainer.style.display === "none" || customizedContainer.style.display === "") {
+                // Show the container and change button text
+                customizedContainer.style.display = "grid";
+                toggleButton.textContent = "Stop Customizing";
+            } else {
+                // Hide the container and change button text back
+                customizedContainer.style.display = "none";
+                toggleButton.textContent = "Start Customizing";
+            }
+        });
 
-            // Add click event listener to toggle the container and button text
-            toggleButton.addEventListener("click", function () {
-                if (customizedContainer.style.display === "none" || customizedContainer.style.display === "") {
-                    // Show the container and change button text
-                    customizedContainer.style.display = "grid";
-                    toggleButton.textContent = "Stop Customizing";
-                } else {
-                    // Hide the container and change button text back
-                    customizedContainer.style.display = "none";
-                    toggleButton.textContent = "Start Customizing";
+        // ID Verification Modal Functionality
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("idVerificationModal");
+            const closeModal = document.getElementById("closeModal");
+            const closeModalButton = document.getElementById("closeModalButton");
+            const modalContent = modal.querySelector(".modal-content p");
+
+            // Initialize idVerificationStatus if not already defined
+            if (typeof window.idVerificationStatus === 'undefined') {
+                window.idVerificationStatus = 'Unverified';
+            }
+
+            // Debug log
+            console.log("ID Verification Status:", window.idVerificationStatus);
+
+            // Update the modal message dynamically
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    Your ID verification status is <strong>${window.idVerificationStatus}</strong>. 
+                    Please verify your ID to proceed with customization. 
+                    Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.
+                `;
+            }
+
+            // Show modal when toggle button is clicked if ID is not verified
+            if (toggleButton) {
+                toggleButton.addEventListener("click", function (e) {
+                    if (window.idVerificationStatus !== "Valid") {
+                        e.preventDefault();
+                        console.log("Showing Modal...");
+                        if (modal) {
+                            modal.style.display = "flex";
+                        }
+                    }
+                });
+            }
+
+            // Handle submit button click
+            if (submitButton) {
+                submitButton.addEventListener("click", function (e) {
+                    if (window.idVerificationStatus !== "Valid") {
+                        e.preventDefault();
+                        console.log("Showing Modal...");
+                        if (modal) {
+                            modal.style.display = "flex";
+                        }
+                    }
+                });
+            }
+
+            // Close the modal when the close button is clicked
+            if (closeModal) {
+                closeModal.addEventListener("click", function () {
+                    if (modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+
+            if (closeModalButton) {
+                closeModalButton.addEventListener("click", function () {
+                    if (modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+
+            // Close modal when clicking outside
+            window.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    modal.style.display = "none";
                 }
             });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Function to handle image preview and replacement
+            function handleImageUpload(input, previewId) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    const preview = document.getElementById(previewId);
+                    
+                    // Clear existing preview
+                    preview.innerHTML = '';
+                    
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '150px';
+                        preview.appendChild(img);
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
 
+            // Set up event listeners for all image upload inputs
+            const imageInputs = {
+                'fileFurnitureImage': 'furniture-image-preview',
+                'fileColorImage': 'color-image-preview',
+                'fileTextureImage': 'texture-image-preview',
+                'fileWoodImage': 'wood-image-preview',
+                'fileFoamImage': 'foam-image-preview',
+                'fileCoverImage': 'cover-image-preview',
+                'fileDesignImage': 'design-image-preview',
+                'fileTileImage': 'tiles-image-preview',
+                'fileMetalImage': 'metal-image-preview'
+            };
 
-
+            // Add event listeners for each image input
+            Object.entries(imageInputs).forEach(([inputId, previewId]) => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('change', function() {
+                        handleImageUpload(this, previewId);
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

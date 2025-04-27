@@ -220,62 +220,95 @@ if (!$product) {
 </div>
 
 <!-- Modal for ID Verification Warning -->
-<div id="idVerificationModal" class="modal" style="display: none;">
+<div id="idVerificationModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" id="closeModal">&times;</span>
+      
         <h2>Action Restricted</h2>
         <p>Your ID verification status is either <strong>Unverified</strong> or <strong>Invalid</strong>. Please verify your ID to proceed with this action.</p>
-        <p>Go to your <a href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
-        <button id="closeModalButton" class="btn">Close</button>
+    <p style="color:red; font-style: italic; font-size:12px;">Note: Go to your <a class="underline" style="color:red; font-style: none; " href="../profile/profile.php">Profile</a> to check your ID verification status.</p>
+    <style>
+.underline {
+  color: red;
+  text-decoration: none;
+}
+
+.underline:hover {
+  text-decoration: underline;
+  color: red; /* Optional: Keep the same color on hover */
+}
+</style>
+ <button id="closeModalButton" class="btn">Close</button>
     </div>
 </div>
 
 <style>
-/* Modal Styles */
-.modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
 
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-}
+    .modal.active {
+        display: flex;
+    }
 
-.close-modal {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
-    cursor: pointer;
-}
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        /* position: relative; */
+        text-align: center;
+        margin: auto;
+        /* transform: translateY(0); */
+    }
 
-.btn {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
+    .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 20px;
+        cursor: pointer;
+    }
 
-.btn:hover {
-    background-color: #0056b3;
-}
+    .btn {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Button Styles */
+    .single-product-buy-btn,
+    .single-product-preorder-btn,
+    .single-product-cart-btn {
+        cursor: pointer;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    .single-product-buy-btn:disabled,
+    .single-product-preorder-btn:disabled,
+    .single-product-cart-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 </style>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -312,57 +345,125 @@ if (!$product) {
         });
     </script>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const buyNowButton = document.getElementById("buy-now");
-    const preOrderButton = document.getElementById("pre-order");
-    const addToCartButton = document.getElementById("add-to-cart");
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("DOM Content Loaded");
+            
+            const buyNowButton = document.getElementById("buy-now");
+            const preOrderButton = document.getElementById("pre-order");
+            const addToCartButton = document.getElementById("add-to-cart");
+            const modal = document.getElementById("idVerificationModal");
+            const closeModal = document.getElementById("closeModal");
+            const closeModalButton = document.getElementById("closeModalButton");
+            const modalContent = modal.querySelector(".modal-content p");
 
-    // Fetch the user's ID verification status from the server
-    let idVerificationStatus = "<?php
-        $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
-        $stmt->bindParam(':user_id', $_SESSION['user_id']);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo $user['ID_Verification_Status'];
-    ?>";
+            console.log("Buttons and Modal Elements:", {
+                buyNowButton,
+                preOrderButton,
+                addToCartButton,
+                modal,
+                closeModal,
+                closeModalButton,
+                modalContent
+            });
 
-    // Enable buttons only if the ID verification status is "Valid"
-    if (idVerificationStatus === "Valid") {
-        if (buyNowButton) buyNowButton.disabled = false;
-        if (preOrderButton) preOrderButton.disabled = false;
-        if (addToCartButton) addToCartButton.disabled = false;
-    }
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("idVerificationModal");
-    const closeModal = document.getElementById("closeModal");
-    const closeModalButton = document.getElementById("closeModalButton");
+            // Fetch the user's ID verification status from the server
+            let idVerificationStatus = "<?php
+                $stmt = $pdo->prepare('SELECT ID_Verification_Status FROM tbl_user_info WHERE User_ID = :user_id');
+                $stmt->bindParam(':user_id', $_SESSION['user_id']);
+                $stmt->execute();
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                echo $user['ID_Verification_Status'];
+            ?>";
+            
+            console.log("ID Verification Status:", idVerificationStatus);
 
-    const buttons = [document.getElementById("buy-now"), document.getElementById("pre-order"), document.getElementById("add-to-cart")];
+            // Update the modal message dynamically
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    Your ID verification status is <strong>${idVerificationStatus}</strong>. 
+                    Please verify your ID to proceed with this action. 
+                    
+                `;
+            }
 
-    buttons.forEach(button => {
-        if (button) {
-            button.addEventListener("click", function (e) {
-                if (button.disabled) {
-                    e.preventDefault();
-                    modal.style.display = "flex";
+            // Function to show the modal
+            function showIdVerificationModal() {
+                console.log("Showing ID verification modal");
+                if (modal) {
+                    modal.classList.add('active');
+                    console.log("Modal class added");
+                }
+            }
+
+            // Function to hide the modal
+            function hideIdVerificationModal() {
+                console.log("Hiding ID verification modal");
+                if (modal) {
+                    modal.classList.remove('active');
+                    console.log("Modal class removed");
+                }
+            }
+
+            // Show modal automatically if ID is not verified
+            if (idVerificationStatus !== "Valid") {
+                console.log("ID not verified, showing modal automatically");
+                showIdVerificationModal();
+            }
+
+            // Add click event listeners to the buttons that exist
+            if (buyNowButton) {
+                buyNowButton.addEventListener("click", function(e) {
+                    console.log("Buy Now button clicked");
+                    if (idVerificationStatus !== "Valid") {
+                        e.preventDefault();
+                        showIdVerificationModal();
+                    }
+                });
+            }
+            if (preOrderButton) {
+                preOrderButton.addEventListener("click", function(e) {
+                    console.log("Pre-order button clicked");
+                    if (idVerificationStatus !== "Valid") {
+                        e.preventDefault();
+                        showIdVerificationModal();
+                    }
+                });
+            }
+            if (addToCartButton) {
+                addToCartButton.addEventListener("click", function(e) {
+                    console.log("Add to Cart button clicked");
+                    if (idVerificationStatus !== "Valid") {
+                        e.preventDefault();
+                        showIdVerificationModal();
+                    }
+                });
+            }
+
+            // Enable buttons only if the ID verification status is "Valid"
+            if (idVerificationStatus === "Valid") {
+                console.log("Enabling buttons because ID is valid");
+                if (buyNowButton) buyNowButton.disabled = false;
+                if (preOrderButton) preOrderButton.disabled = false;
+                if (addToCartButton) addToCartButton.disabled = false;
+            }
+
+            // Close the modal when the close button is clicked
+            if (closeModal) {
+                closeModal.addEventListener("click", hideIdVerificationModal);
+            }
+
+            if (closeModalButton) {
+                closeModalButton.addEventListener("click", hideIdVerificationModal);
+            }
+
+            // Close modal when clicking outside
+            window.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    hideIdVerificationModal();
                 }
             });
-        }
-    });
-
-    // Close the modal
-    closeModal.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
-
-    closeModalButton.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
-});
-</script>
+        });
+    </script>
 </body>
 
 </html>

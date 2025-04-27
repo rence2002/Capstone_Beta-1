@@ -32,27 +32,32 @@ $profilePicPath = htmlspecialchars($profilePicPath);
 
 // Get the ID and order type from the URL
 if (!isset($_GET['id']) || !isset($_GET['order_type'])) {
-    echo "Progress ID and Order Type not specified.";
+    $_SESSION['error'] = "Progress ID and Order Type are required.";
+    header("Location: read-all-progress-form.php");
     exit();
 }
 
 $id = $_GET['id'];
-// We still need orderType from the URL to pass to the update script,
-// even though we fetch data primarily from tbl_progress now.
 $orderType = $_GET['order_type'];
 
+// Validate order type
+$validOrderTypes = ['ready_made', 'pre_order', 'custom'];
+if (!in_array($orderType, $validOrderTypes)) {
+    $_SESSION['error'] = "Invalid Order Type specified.";
+    header("Location: read-all-progress-form.php");
+    exit();
+}
+
 // Simplified query to fetch directly from tbl_progress and join user info
-// REMOVED p.Order_Status from SELECT
 $query = "
     SELECT
         p.Progress_ID AS ID,
-        p.Product_Name, -- Directly from tbl_progress
+        p.Product_Name,
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
-        p.Order_Type, -- Fetching this to confirm consistency, but using URL param mainly
-        -- p.Order_Status, -- REMOVED
+        p.Order_Type,
         p.Product_Status,
-        p.Quantity, -- Fetch Quantity
-        p.Total_Price, -- Fetch Total_Price
+        p.Quantity,
+        p.Total_Price,
         p.Date_Added AS Request_Date,
         p.LastUpdate AS Last_Update,
         p.Progress_Pic_10,
@@ -66,22 +71,28 @@ $query = "
         p.Progress_Pic_90,
         p.Progress_Pic_100,
         p.Stop_Reason,
-        p.Tracking_Number, -- Fetch Tracking Number
-        p.User_ID, -- Keep User_ID for potential use or consistency
-        p.Product_ID -- Keep Product_ID for the hidden field
+        p.Tracking_Number,
+        p.User_ID,
+        p.Product_ID,
+        pi.Price AS Base_Price,
+        c.Total_Price AS Custom_Price
     FROM tbl_progress p
     JOIN tbl_user_info u ON p.User_ID = u.User_ID
-    WHERE p.Progress_ID = :id
+    JOIN tbl_prod_info pi ON p.Product_ID = pi.Product_ID
+    LEFT JOIN tbl_customizations c ON p.Product_ID = c.Product_ID
+    WHERE p.Progress_ID = :id AND p.Order_Type = :order_type
 ";
 
 // Prepare and execute the query
 $stmt = $pdo->prepare($query);
 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+$stmt->bindParam(':order_type', $orderType, PDO::PARAM_STR);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
-    echo "Progress record not found for ID: " . htmlspecialchars($id);
+    $_SESSION['error'] = "Progress record not found for ID: " . htmlspecialchars($id);
+    header("Location: read-all-progress-form.php");
     exit();
 }
 
@@ -186,19 +197,34 @@ $productStatusLabels = [
                 <!-- update-progress-rec.php will need modification to function correctly. -->
 
                 <table class="table table-bordered">
-                    <tr><th>User</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['User_Name']) ?>" readonly></td></tr>
-                    <tr><th>Product Name</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['Product_Name']) ?>" readonly></td></tr>
-                    <tr><th>Quantity</th><td><input type="text" class="form-control" value="<?= htmlspecialchars($row['Quantity']) ?>" readonly></td></tr> <!-- Added Quantity -->
-                    <tr><th>Total Price</th><td><input type="text" class="form-control" value="₱ <?= number_format((float)$row['Total_Price'], 2, '.', ',') ?>" readonly></td></tr> <!-- Added Total Price -->
-
-                    <!-- REMOVED Order Status Dropdown Row -->
-                    <!-- <tr>
-                        <th>Order Status</th>
+                    <tr>
+                        <th>Product Name</th>
+                        <td><?= htmlspecialchars($row['Product_Name']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>User Name</th>
+                        <td><?= htmlspecialchars($row['User_Name']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Quantity</th>
                         <td>
-                            <select name="Order_Status" class="form-control" required> ... </select>
+                            <input type="number" name="Quantity" class="form-control" value="<?= htmlspecialchars($row['Quantity']) ?>" min="1" required>
                         </td>
-                    </tr> -->
-
+                    </tr>
+                    <tr>
+                        <th>Total Price</th>
+                        <td>
+                            <input type="number" name="Total_Price" class="form-control" 
+                                value="<?= $orderType === 'custom' ? htmlspecialchars($row['Custom_Price'] ?? $row['Total_Price']) : htmlspecialchars($row['Total_Price']) ?>" 
+                                min="0" step="0.01"
+                                <?= $orderType !== 'custom' ? 'disabled' : '' ?>>
+                            <small class="text-muted">
+                                <?= $orderType === 'custom' 
+                                    ? 'Enter the total price for the order' 
+                                    : 'Price is automatically calculated for non-custom products' ?>
+                            </small>
+                        </td>
+                    </tr>
                     <tr>
                         <th>Product Status</th>
                         <td>
@@ -343,6 +369,25 @@ $productStatusLabels = [
         // Call the function on page load to set the initial state based on the pre-selected value
         document.addEventListener('DOMContentLoaded', toggleTrackingNumber);
 
+        // Add price calculation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.querySelector('input[name="Quantity"]');
+            const totalPriceInput = document.querySelector('input[name="Total_Price"]');
+            const orderType = '<?= $row['Order_Type'] ?>';
+
+            // Only calculate price for non-custom products
+            if (orderType !== 'custom') {
+                function calculateTotalPrice() {
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    // Get the base price from the product info
+                    const basePrice = <?= $row['Order_Type'] === 'custom' ? '0' : 'parseFloat("' . $row['Base_Price'] . '")' ?>;
+                    totalPriceInput.value = (quantity * basePrice).toFixed(2);
+                }
+
+                quantityInput.addEventListener('input', calculateTotalPrice);
+                calculateTotalPrice(); // Calculate initial total price
+            }
+        });
     </script>
 </body>
 </html>

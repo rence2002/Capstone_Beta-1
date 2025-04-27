@@ -55,7 +55,8 @@ if (isset($_GET['id'])) {
                 u.Last_Name,
                 p.Product_Name,
                 p.Category AS Furniture_Type, -- Use Category as Furniture Type for consistency
-                p.GLB_File_URL
+                p.GLB_File_URL,
+                orq.Payment_Reference_Number
                 -- Removed orq.Order_Status AS Request_Status
             FROM tbl_order_request orq
             JOIN tbl_user_info u ON orq.User_ID = u.User_ID
@@ -189,6 +190,7 @@ if (isset($_GET['id'])) {
         <tr><th>Order Type</th><td><?= ucwords(str_replace('_', ' ', htmlspecialchars($orderType))) ?></td></tr>
         <tr><th>Processing Status</th><td><?= htmlspecialchars($processedStatus) ?></td></tr>
         <tr><th>Payment Status</th><td><?= ucwords(str_replace('_', ' ', htmlspecialchars($paymentStatus))) ?></td></tr>
+        <tr><th>Payment Reference Number</th><td><?= htmlspecialchars($orderRequest['Payment_Reference_Number'] ?? 'Not provided') ?></td></tr>
         <tr><th>Total Price</th><td>₱ <?= htmlspecialchars($totalPrice) ?></td></tr>
         <tr><th>Request Date</th><td><?= htmlspecialchars($requestDate) ?></td></tr>
     </table>

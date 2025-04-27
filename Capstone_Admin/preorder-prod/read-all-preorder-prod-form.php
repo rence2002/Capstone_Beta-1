@@ -81,6 +81,14 @@ $stmt = $pdo->prepare($baseQuery);
 $stmt->execute($queryParams);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Add this function before the HTML section
+function calculatePercentage($status) {
+    // Ensure status is treated as a number
+    $status = (int) $status;
+    // Basic percentage calculation, assuming status is already 0-100
+    return max(0, min(100, $status));
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -100,6 +108,26 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         /* Minor adjustments for table readability */
         .table th, .table td { vertical-align: middle; text-align: center; }
         .table .progress { margin: auto; } /* Center progress bar */
+        /* Add specific styles if needed */
+        .status-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px; /* Adjust height as needed */
+            position: relative; /* Needed for text overlay */
+        }
+        .status-bar-fill {
+            background-color: #4CAF50; /* Green for progress */
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 20px; /* Match height */
+            font-size: 12px;
+            transition: width 0.5s ease-in-out;
+        }
+        .product-status-bar { background-color: #2196F3; } /* Blue for product status */
+        /* Optional: Style for completed status */
+        td.completed-action { color: #777; font-style: italic; }
     </style>
 </head>
 
@@ -169,10 +197,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div id="preorder-list">
                 <table width="100%" border="1" cellspacing="5">
                     <tr>
-                        <th>User Name</th>
-                        <th>Product Name</th>
-                        <th>Total Price</th>
-                        <th>Product Status</th>
+                        <th>USER NAME</th>
+                        <th>RODUCT NAME</th>
+                        <th>TOTAL PRICE</th>
+                        <th>PRODUCT STATUS</th>
                         <th colspan="3" style="text-align: center;">ACTIONS</th>
                     </tr>
 
@@ -183,14 +211,12 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($row["Product_Name"]) ?></td>
                                 <td>₱<?= number_format($row["Total_Price"], 2, '.', ',') ?></td>
                                 <td>
-                                    <div class="progress" style="height: 20px; min-width: 150px;">
-                                        <div class="progress-bar bg-info" role="progressbar"
-                                             style="width: <?= $row["Product_Status"] ?>%;"
-                                             aria-valuenow="<?= $row["Product_Status"] ?>"
-                                             aria-valuemin="0" aria-valuemax="100">
-                                            <?= $row["Product_Status"] ?>%
+                                    <div class="status-bar">
+                                        <div class="status-bar-fill product-status-bar" style="width: <?php echo calculatePercentage($row["Product_Status"]); ?>%;" title="<?php echo htmlspecialchars($productStatusLabels[$row["Product_Status"]] ?? 'Unknown Status'); ?>">
+                                            <?php echo calculatePercentage($row["Product_Status"]); ?>%
                                         </div>
                                     </div>
+                                    <small><?php echo htmlspecialchars($productStatusLabels[$row["Product_Status"]] ?? 'Unknown Status'); ?></small>
                                 </td>
                                 <td style="text-align: center;">
                                     <a class="buttonView" href="../preorder-prod/read-one-preorder-prod-form.php?id=<?= htmlspecialchars($row['Progress_ID']) ?>&order_type=pre_order" target="_parent">View</a>

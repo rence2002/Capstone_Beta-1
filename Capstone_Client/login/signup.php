@@ -303,10 +303,14 @@ function old_value($field, $data, $default = '') {
         const profilePicPreview = document.getElementById('profilePicPreview');
         const validIDInput = document.getElementById('validID');
         const validIDPreview = document.getElementById('validIDPreview');
+        const termsButton = document.getElementById('signupTermsButton');
+        const termsModal = document.getElementById('signupTermsModal');
+        const modalClose = document.getElementById('signupModalClose');
+        const modalAgreeCheckbox = document.getElementById('signupModalAgreeCheckbox');
 
         // --- State ---
         let currentStep = 1;
-        const totalSteps = steps.length; // More dynamic way to get total steps
+        const totalSteps = steps.length;
 
         // --- Functions ---
 
@@ -318,9 +322,8 @@ function old_value($field, $data, $default = '') {
             prevButton.classList.toggle('hidden', step === 1);
             nextButton.textContent = step === totalSteps ? 'Sign Up' : 'Next';
             nextButton.type = step === totalSteps ? 'submit' : 'button';
-            // Disable submit button on last step until terms are agreed
             nextButton.disabled = (step === totalSteps && !termsCheckbox.checked);
-            window.scrollTo(0, 0); // Scroll to top
+            window.scrollTo(0, 0);
         }
 
         // Function to display/clear AJAX email error
@@ -329,14 +332,13 @@ function old_value($field, $data, $default = '') {
                 emailAjaxError.textContent = message;
             }
             if (emailInput) {
-                // Add/remove 'is-invalid' class based on whether there's an error message
                 emailInput.classList.toggle('is-invalid', !!message);
             }
         }
 
-        // Basic client-side validation for the fields within a specific step
+        // Function to validate step fields
         function validateStepFields(step) {
-            const currentStepElement = document.getElementById(step${step});
+            const currentStepElement = document.getElementById(`step${step}`);
             if (!currentStepElement) return false;
 
             const inputs = currentStepElement.querySelectorAll('input[required], select[required], textarea[required]');
@@ -344,42 +346,35 @@ function old_value($field, $data, $default = '') {
 
             inputs.forEach(input => {
                 let isFieldValid = true;
-                input.classList.remove('is-invalid'); // Reset validation state
-                // Clear previous AJAX error for email specifically when re-validating
-                if (input.id === 'email') setEmailAjaxError('');
+                input.classList.remove('is-invalid');
 
-                // Check specific validation rules
-                if (input.type === 'file') {
-                    isFieldValid = input.files.length > 0;
-                    if (!isFieldValid) input.closest('.form-group')?.classList.add('is-invalid'); // Mark parent group
-                } else if (input.type === 'email') {
+                if (input.id === 'email') {
+                    setEmailAjaxError('');
                     isFieldValid = input.value.trim() !== '' && /^\S+@\S+\.\S+$/.test(input.value);
-                    if (!isFieldValid) setEmailAjaxError('Please enter a valid email address.'); // Use specific error display
                 } else if (input.id === 'password') {
                     isFieldValid = input.value.length >= 8;
                 } else if (input.id === 'confirm-password') {
                     isFieldValid = input.value === document.getElementById('password').value && input.value !== '';
-                } else { // General required check for text inputs etc.
+                } else if (input.type === 'file') {
+                    isFieldValid = input.files.length > 0;
+                } else {
                     isFieldValid = input.value.trim() !== '';
                 }
 
                 if (!isFieldValid) {
                     isStepValid = false;
-                    if (input.type !== 'file' && input.type !== 'email') { // Add class directly unless handled specifically
-                         input.classList.add('is-invalid');
-                    }
-                    // Optionally display inline error messages here if needed
+                    input.classList.add('is-invalid');
                 }
             });
+
             return isStepValid;
         }
 
-        // Function to check email existence via Fetch API
+        // Function to check email existence
         async function checkEmailExists(email) {
-            nextButton.disabled = true; // Disable button during check
+            nextButton.disabled = true;
             nextButton.classList.add('is-loading');
-            nextButton.textContent = 'Checking'; // Provide feedback
-            setEmailAjaxError(''); // Clear previous error
+            setEmailAjaxError('');
 
             try {
                 const formData = new FormData();
@@ -388,59 +383,43 @@ function old_value($field, $data, $default = '') {
                 const response = await fetch('check_email.php', {
                     method: 'POST',
                     body: formData,
-                    headers: { // Indicate that we expect JSON back
+                    headers: {
                         'Accept': 'application/json'
                     }
                 });
 
-                // Check if response is ok (status 200-299)
                 if (!response.ok) {
-                    // Try to parse error message from server if available, otherwise use generic
-                    let errorMsg = HTTP error! Status: ${response.status};
-                    try {
-                        const errorData = await response.json();
-                        errorMsg = errorData.message || errorMsg;
-                    } catch (parseError) { /* Ignore if response isn't JSON */ }
-                    throw new Error(errorMsg);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                const result = await response.json(); // Parse the JSON response
+                const result = await response.json();
 
-                if (result.error) { // Check for application-level errors reported by PHP
-                    setEmailAjaxError(result.message || 'An unknown error occurred.');
-                    return false; // Indicate failure
-                } else if (result.exists) { // Check if email exists
+                if (result.error || result.exists) {
                     setEmailAjaxError(result.message || 'This email is already registered.');
-                    return false; // Indicate failure (email taken)
-                } else {
-                    // Email does not exist and no errors
-                    return true; // Indicate success (email available)
+                    return false;
                 }
+                return true;
 
             } catch (error) {
                 console.error('Error checking email:', error);
-                setEmailAjaxError(Could not check email. ${error.message || 'Please try again.'});
-                return false; // Indicate failure
+                setEmailAjaxError(`Could not check email. ${error.message || 'Please try again.'}`);
+                return false;
             } finally {
-                // Re-enable button and restore text regardless of outcome
                 nextButton.disabled = false;
                 nextButton.classList.remove('is-loading');
-                // Restore text based on current step (might have changed if check was very fast)
                 nextButton.textContent = currentStep === totalSteps ? 'Sign Up' : 'Next';
-                // Re-apply disabled state if on last step and terms not checked
-                 if (currentStep === totalSteps) {
+                if (currentStep === totalSteps) {
                     nextButton.disabled = !termsCheckbox.checked;
-                 }
+                }
             }
         }
 
         // Function to handle file preview
         function previewImage(fileInput, previewElement) {
-             // ... (existing previewImage logic) ...
             const file = fileInput.files[0];
             if (file && previewElement) {
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = function(e) {
                     previewElement.src = e.target.result;
                     previewElement.style.display = 'block';
                 }
@@ -457,47 +436,34 @@ function old_value($field, $data, $default = '') {
         prevButton.addEventListener('click', () => {
             if (currentStep > 1) {
                 currentStep--;
-                setEmailAjaxError(''); // Clear potential email error when going back
+                setEmailAjaxError('');
                 showStep(currentStep);
             }
         });
 
-        // Next / Submit Button (MODIFIED LOGIC)
+        // Next / Submit Button
         nextButton.addEventListener('click', async (event) => {
-            if (nextButton.type === 'button') { // Handle "Next" clicks
+            if (nextButton.type === 'button') {
                 event.preventDefault();
-
-                // 1. Validate fields in the current step first
                 const isStepValid = validateStepFields(currentStep);
 
                 if (!isStepValid) {
-                    console.log(Step ${currentStep} client validation failed.);
-                    return; // Stop if basic validation fails
+                    return;
                 }
 
-                // 2. If on Step 2 and basic validation passed, check email via AJAX
                 if (currentStep === 2) {
                     const isEmailAvailable = await checkEmailExists(emailInput.value);
                     if (isEmailAvailable) {
-                        // Email is OK, proceed to next step
                         currentStep++;
                         showStep(currentStep);
                     }
-                    // If email check fails (taken or error), do nothing more (error shown by checkEmailExists)
-                } else {
-                    // For steps other than 2, just proceed if validation passed
-                    if (currentStep < totalSteps) {
-                        currentStep++;
-                        showStep(currentStep);
-                    }
+                } else if (currentStep < totalSteps) {
+                    currentStep++;
+                    showStep(currentStep);
                 }
-            } else if (nextButton.type === 'submit') { // Handle "Sign Up" click
-                // Final check for terms agreement before allowing form submission
-                if (!termsCheckbox.checked) {
-                    event.preventDefault();
-                    alert("Please agree to the Terms and Conditions before signing up.");
-                }
-                // If terms are checked, the form will submit naturally
+            } else if (!termsCheckbox.checked) {
+                event.preventDefault();
+                alert("Please agree to the Terms and Conditions before signing up.");
             }
         });
 
@@ -509,9 +475,35 @@ function old_value($field, $data, $default = '') {
             validIDInput.addEventListener('change', () => previewImage(validIDInput, validIDPreview));
         }
 
-        // --- Initialization ---
+        // Terms Modal
+        if (termsButton && termsModal && modalClose && modalAgreeCheckbox) {
+            termsButton.addEventListener('click', () => {
+                termsModal.style.display = 'block';
+            });
 
-        // Determine Initial Step Based on Server-Side Errors (if any)
+            modalClose.addEventListener('click', () => {
+                termsModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === termsModal) {
+                    termsModal.style.display = 'none';
+                }
+            });
+
+            modalAgreeCheckbox.addEventListener('change', () => {
+                termsCheckbox.checked = modalAgreeCheckbox.checked;
+                termsCheckbox.disabled = !modalAgreeCheckbox.checked;
+                if (nextButton.type === 'submit') {
+                    nextButton.disabled = !modalAgreeCheckbox.checked;
+                }
+                if (modalAgreeCheckbox.checked) {
+                    termsModal.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Initialization ---
         <?php
             $error_fields_by_step = [
                 1 => ['firstName', 'lastName', 'middleName', 'homeAddress'],
@@ -519,177 +511,21 @@ function old_value($field, $data, $default = '') {
                 3 => ['profilePic', 'validID'],
                 4 => ['signupTerms']
             ];
-            $initial_step = 1; // Default
+            $initial_step = 1;
             if (!empty($signup_errors)) {
                 foreach ($error_fields_by_step as $step_num => $fields) {
                     foreach ($fields as $field) {
                         if (isset($signup_errors[$field])) {
                             $initial_step = $step_num;
-                            break 2; // Exit both loops
+                            break 2;
                         }
                     }
-                }
-                if (isset($signup_errors['general']) || isset($signup_errors['database'])) {
-                   // Keep initial_step = 1 or set to a specific step like 4? Defaulting to 1.
                 }
             }
             echo "currentStep = " . $initial_step . ";";
         ?>
 
-        // Show the initial step
         showStep(currentStep);
-
-    </script>
-
-<script type="module">
-    // Form Navigation Logic
-    let currentStep = 1;
-    const totalSteps = 4;
-    const steps = document.querySelectorAll('.form-step');
-    const prevButton = document.getElementById('prevButton');
-    const nextButton = document.getElementById('nextButton');
-
-    // Function to show the correct step
-    function showStep(step) {
-        steps.forEach((stepElement, index) => {
-            stepElement.classList.add('hidden');
-            if (index === step - 1) {
-                stepElement.classList.remove('hidden');
-            }
-        });
-
-        // Toggle visibility of the "Prev" button based on the current step
-        prevButton.classList.toggle('hidden', step === 1);
-        
-        // Change the "Next" button text to "Submit" if it's the last step
-        nextButton.textContent = step === totalSteps ? 'Submit' : 'Next';
-    }
-
-    // Event listener for the "Prev" button
-    prevButton.addEventListener('click', () => {
-        if (currentStep > 1) {
-            currentStep--;
-            showStep(currentStep);
-        }
-    });
-
-    // Event listener for the "Next" button
-    nextButton.addEventListener('click', () => {
-        if (currentStep < totalSteps) {
-            currentStep++;
-            showStep(currentStep);
-        } else {
-            document.getElementById('signupForm').submit();
-        }
-    });
-
-    // Initially show the first step
-    showStep(currentStep);
-
-    // Preview for Profile Picture
-    function previewProfilePic(event) {
-        var reader = new FileReader();
-        reader.onload = function () {
-            var output = document.getElementById('profilePicPreview');
-            output.src = reader.result;
-            output.style.display = 'block';
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-
-    // Preview for Valid ID
-    function previewValidID(event) {
-        var reader = new FileReader();
-        reader.onload = function () {
-            var output = document.getElementById('validIDPreview');
-            output.src = reader.result;
-            output.style.display = 'block';
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-</script>
-
-<script>
-        // Terms and Conditions Modal Logic
-        const signupTermsButton = document.getElementById('signupTermsButton');
-        const signupTermsModal = document.getElementById('signupTermsModal');
-        const signupModalClose = document.getElementById('signupModalClose');
-        const signupModalAgreeCheckbox = document.getElementById('signupModalAgreeCheckbox');
-        const signupTermsCheckbox = document.getElementById('signupTermsCheckbox');
-        const signupSubmitButton = document.getElementById('signupSubmitButton');
-
-        // Open the modal when the "Terms and Conditions" button is clicked
-        signupTermsButton.addEventListener('click', () => {
-            signupTermsModal.style.display = 'block';
-        });
-
-        // Close the modal when the "close" button is clicked
-        signupModalClose.addEventListener('click', () => {
-            signupTermsModal.style.display = 'none';
-        });
-
-        // Close the modal when clicking outside the modal content
-        window.addEventListener('click', (event) => {
-            if (event.target === signupTermsModal) {
-                signupTermsModal.style.display = 'none';
-            }
-        });
-
-        // Update the modal checkbox logic
-        signupModalAgreeCheckbox.addEventListener('change', () => {
-            if (signupModalAgreeCheckbox.checked) {
-                signupTermsCheckbox.disabled = false; // Enable the checkbox
-                signupTermsCheckbox.checked = true;  // Check the checkbox
-                signupSubmitButton.disabled = false; // Enable the "Sign up" button
-            } else {
-                signupTermsCheckbox.disabled = true; // Disable the checkbox
-                signupTermsCheckbox.checked = false; // Uncheck the checkbox
-                signupSubmitButton.disabled = true;  // Disable the "Sign up" button
-            }
-        });
-
-        // Ensure the checkbox is enabled before submission
-        signupSubmitButton.addEventListener('click', () => {
-            signupTermsCheckbox.disabled = false;
-        });
-    </script>
-
-    <script>
-        // --- Terms and Conditions Modal Logic (IIFE) ---
-        (function() {
-            // ... (existing modal logic remains the same) ...
-            const termsButton = document.getElementById('signupTermsButton');
-            const termsModal = document.getElementById('signupTermsModal');
-            const modalClose = document.getElementById('signupModalClose');
-            const modalAgreeCheckbox = document.getElementById('signupModalAgreeCheckbox');
-            const formTermsCheckbox = document.getElementById('signupTermsCheckbox');
-            const submitButton = document.getElementById('nextButton'); // Use nextButton as it becomes submit
-
-            if (!termsButton || !termsModal || !modalClose || !modalAgreeCheckbox || !formTermsCheckbox || !submitButton) {
-                console.error("Modal elements not found!");
-                return;
-            }
-
-            termsButton.addEventListener('click', () => { termsModal.style.display = 'block'; });
-            modalClose.addEventListener('click', () => { termsModal.style.display = 'none'; });
-            window.addEventListener('click', (event) => { if (event.target === termsModal) termsModal.style.display = 'none'; });
-
-            modalAgreeCheckbox.addEventListener('change', () => {
-                const isChecked = modalAgreeCheckbox.checked;
-                formTermsCheckbox.checked = isChecked;
-                formTermsCheckbox.disabled = !isChecked;
-                if (submitButton.type === 'submit') submitButton.disabled = !isChecked;
-                if (isChecked) termsModal.style.display = 'none';
-            });
-
-             termsModal.addEventListener('transitionend', () => {
-                 if (termsModal.style.display === 'none') {
-                     formTermsCheckbox.checked = modalAgreeCheckbox.checked;
-                     formTermsCheckbox.disabled = !modalAgreeCheckbox.checked;
-                      if (submitButton.type === 'submit') submitButton.disabled = !modalAgreeCheckbox.checked;
-                 }
-             });
-        })();
     </script>
 
 </body>

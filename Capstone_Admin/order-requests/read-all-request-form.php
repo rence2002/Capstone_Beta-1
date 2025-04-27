@@ -42,7 +42,9 @@ $query = "
         CONCAT(u.First_Name, ' ', u.Last_Name) AS User_Name,
         o.Order_Type,
         o.Payment_Status, -- Get the current payment status
-        o.Processed -- Keep for potential future use/filtering
+        o.Payment_Reference_Number, -- Get the payment reference number
+        o.Processed, -- Keep for potential future use/filtering
+        o.Submission_Attempts -- Added for new functionality
     FROM tbl_order_request o
     JOIN tbl_user_info u ON o.User_ID = u.User_ID
     WHERE o.Processed = 0 -- Filter for unprocessed requests
@@ -74,6 +76,44 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         /* Minor adjustments for table readability */
         .table th, .table td { vertical-align: middle; text-align: center; }
         .table select { min-width: 150px; } /* Give dropdown some space */
+        
+        /* Reset button styling */
+        .buttonReset {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #ffc107;
+            color: #000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .buttonReset:hover {
+            background-color: #e0a800;
+            color: #000;
+            text-decoration: none;
+        }
+
+        /* Success/Error message styling */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
     </style>
 </head>
 
@@ -128,6 +168,19 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="container_boxes">
     <h4>PENDING ORDER REQUESTS</h4>
 
+    <!-- Success/Error Messages -->
+    <?php if (isset($_GET['success']) && $_GET['success'] === 'attempts_reset'): ?>
+        <div class="alert alert-success">
+            Submission attempts have been reset successfully.
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-danger">
+            <?php echo htmlspecialchars(urldecode($_GET['error'])); ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Back to Dashboard -->
     <div class="button-container mb-3">
         <a href="../dashboard/dashboard.php" class="buttonBack">Back to Dashboard</a>
@@ -140,6 +193,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>USER NAME</th>
                 <th>ORDER TYPE</th>
                 <th>CURRENT PAYMENT</th>
+                <th>PAYMENT REFERENCE</th>
                 <th>SET PAYMENT (on Confirm)</th>
                 <th colspan="3" style="text-align: center;">ACTIONS</th>
             </tr>
@@ -149,6 +203,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $userName = htmlspecialchars($row["User_Name"]);
                     $orderType = htmlspecialchars($row["Order_Type"]);
                     $currentPaymentStatus = htmlspecialchars($row["Payment_Status"]);
+                    $paymentReference = htmlspecialchars($row["Payment_Reference_Number"] ?? 'Not provided');
                     $viewURL = $orderType == 'custom' 
                         ? "read-one-form-customize.php?id=$orderID" 
                         : "read-one-request-form.php?id=$orderID";
@@ -158,6 +213,16 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo $userName; ?></td>
                     <td><?php echo ucwords(str_replace('_', ' ', $orderType)); ?></td>
                     <td><?php echo ucwords(str_replace('_', ' ', $currentPaymentStatus)); ?></td>
+                    <td>
+                        <?php if (isset($row['Submission_Attempts']) && $row['Submission_Attempts'] >= 3): ?>
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span style="color: #dc3545; font-style: italic;font-size: 13px;">Max Attempts Reached</span>
+                                <a class="buttonReset" href="reset-attempts.php?id=<?php echo $orderID; ?>">Reset Attempts</a>
+                            </div>
+                        <?php else: ?>
+                            <?php echo $paymentReference; ?>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <form method="POST" action="accept-request-rec.php" id="form_<?php echo $orderID; ?>" style="margin: 0;">
                             <input type="hidden" name="id" value="<?php echo $orderID; ?>">
@@ -227,9 +292,19 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
 
-        // Removed old dropdown toggle JS
-        // Removed modal JS as modal elements were removed
-
+        // Auto-remove success notification after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const successAlert = document.querySelector('.alert-success');
+            if (successAlert) {
+                setTimeout(function() {
+                    successAlert.style.opacity = '0';
+                    successAlert.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(function() {
+                        successAlert.remove();
+                    }, 500);
+                }, 3000);
+            }
+        });
     </script>
 </body>
 </html>

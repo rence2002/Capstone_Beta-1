@@ -136,6 +136,32 @@ $productStatusText = $productStatusLabels[$productStatusValue] ?? 'Unknown Statu
         .table th { width: 25%; background-color: #f8f9fa; }
         .table td { width: 75%; }
         model-viewer { width: 100%; max-width: 400px; height: 300px; border: 1px solid #ccc; }
+        /* Progress bar styles */
+        .status-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+            position: relative;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .status-bar-fill {
+            background-color: #4CAF50;
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+            transition: width 0.5s ease-in-out;
+            white-space: nowrap;
+        }
+        .product-status-bar { background-color: #2196F3; }
+        .status-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -196,7 +222,7 @@ $productStatusText = $productStatusLabels[$productStatusValue] ?? 'Unknown Statu
                 <tr><th>Total Price:</th><td>₱<?= $totalPrice ?></td></tr>
                 <!-- Removed Preorder Status Row -->
                 <!-- <tr><th>Preorder Status:</th><td><?= ''//$orderStatusText ?></td></tr> -->
-                <tr><th>Product Status:</th><td><?= $productStatusValue ?>% - <?= $productStatusText ?></td></tr>
+             
                 <!-- Updated Date Label -->
                 <tr><th>Date Added:</th><td><?= $dateAdded ?></td></tr>
             </table>

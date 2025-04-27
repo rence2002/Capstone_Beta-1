@@ -69,8 +69,24 @@ if (!$progressRecord) {
     exit();
 }
 
-// REMOVED $productStatusLabels array definition as it's not used for a dropdown here
-// REMOVED $productStatusText variable assignment
+// Product status mapping
+$productStatusLabels = [
+    0   => 'Request Approved', // 0% - Order placed by the customer
+    10  => 'Design Approved', // 10% - Finalized by customer
+    20  => 'Material Sourcing', // 20% - Materials being gathered
+    30  => 'Cutting & Shaping', // 30% - Preparing materials
+    40  => 'Structural Assembly', // 40% - Base framework built
+    50  => 'Detailing & Refinements', // 50% - Carvings, elements added
+    60  => 'Sanding & Pre-Finishing', // 60% - Smoothening
+    70  => 'Varnishing/Painting', // 70% - Applying the final finish
+    80  => 'Drying & Curing', // 80% - Final coating sets in
+    90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+    95  => 'Ready for Shipment', // 95% - Ready for handover/shipment
+    98  => 'Order Delivered', // 98% - Confirmed delivery by logistics/customer
+    100 => 'Order Received / Complete', // 100% - Final confirmation by customer / Order cycle complete
+];
+
+
 
 ?>
 
@@ -166,6 +182,7 @@ if (!$progressRecord) {
                         <th>Total Price</th>
                         <td><input type="text" id="totalPrice" name="Total_Price" class="form-control" value="<?= htmlspecialchars(number_format((float)$progressRecord['Total_Price'], 2, '.', '')) ?>" readonly required></td>
                     </tr>
+                 
                 </table>
 
                

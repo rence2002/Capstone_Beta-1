@@ -33,12 +33,19 @@ if (!isset($_GET['id'])) {
 $customizationID = $_GET['id'];
 
 try {
-    // Fetch customization details
+    // Fetch customization details with progress data
     $query = "
-        SELECT c.*, u.First_Name, u.Last_Name, p.Product_Name
+        SELECT 
+            c.*, 
+            u.First_Name, 
+            u.Last_Name, 
+            p.Product_Name,
+            pr.Product_Status,
+            pr.Progress_ID
         FROM tbl_customizations c
         JOIN tbl_user_info u ON c.User_ID = u.User_ID
         LEFT JOIN tbl_prod_info p ON c.Product_ID = p.Product_ID
+        LEFT JOIN tbl_progress pr ON c.Product_ID = pr.Product_ID AND pr.Order_Type = 'custom'
         WHERE c.Customization_ID = :customizationID
     ";
     $stmt = $pdo->prepare($query);
@@ -96,28 +103,29 @@ try {
     $metalImage = displayImage($customization['Metal_Image_URL']);
     $metalAdditionalInfo = displayData($customization['Metal_Additional_Info']);
 
-    // Corrected: Use Product_Status instead of Order_Status
-    $productStatus = htmlspecialchars($customization['Product_Status']);
+    // Get product status from progress table
+    $productStatus = $customization['Product_Status'] ?? 0;
     $requestDate = displayData($customization['Request_Date']);
     $lastUpdate = displayData($customization['Last_Update']);
     $productID = displayData($customization['Product_ID']);
 
     // Product status labels
     $productStatusLabels = [
-        0   => 'Concept Stage',
-        10  => 'Design Approved',
-        20  => 'Material Sourcing',
-        30  => 'Cutting & Shaping',
-        40  => 'Structural Assembly',
-        50  => 'Detailing & Refinements',
-        60  => 'Sanding & Pre-Finishing',
-        70  => 'Varnishing/Painting',
-        80  => 'Drying & Curing',
-        90  => 'Final Inspection & Packaging',
-        100 => 'Completed'
+        0   => 'Request Approved',         // 0% - Order placed by the customer
+        10  => 'Design Approved',        // 10% - Finalized by customer
+        20  => 'Material Sourcing',      // 20% - Gathering necessary materials
+        30  => 'Cutting & Shaping',      // 30% - Preparing materials
+        40  => 'Structural Assembly',    // 40% - Base framework built
+        50  => 'Detailing & Refinements',// 50% - Carvings, upholstery, elements added
+        60  => 'Sanding & Pre-Finishing',// 60% - Smoothening, preparing for final coat
+        70  => 'Varnishing/Painting',    // 70% - Applying the final finish
+        80  => 'Drying & Curing',        // 80% - Final coating sets in
+        90  => 'Final Inspection & Packaging', // 90% - Quality control before handover
+        95  => 'Ready for Shipment',
+        98  => 'Order Delivered',
+        100 => 'Order Received'          // Note: Fixed typo from 'Recieved' to 'Received'
     ];
 
-    // Corrected: Use $productStatus instead of $orderStatus
     $productStatusText = $productStatusLabels[$productStatus] ?? 'Unknown Status';
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
@@ -217,7 +225,7 @@ try {
                 <tr><td>Metal Image:</td><td><?= $metalImage ?></td></tr>
                 <tr><td>Metal Additional Info:</td><td><?= $metalAdditionalInfo ?></td></tr>
                 <!-- Corrected: Display Product Status -->
-                <tr><td>Product Status:</td><td><?= $productStatus ?>% - <?= $productStatusText ?></td></tr>
+             
                 <tr><td>Request Date:</td><td><?= $requestDate ?></td></tr>
                 <tr><td>Last Update:</td><td><?= $lastUpdate ?></td></tr>
                 <tr><td>Product ID:</td><td><?= $productID ?></td></tr>
@@ -254,5 +262,33 @@ try {
             });
         });
     </script>
+    <style>
+        /* Progress bar styles */
+        .status-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+            position: relative;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .status-bar-fill {
+            background-color: #4CAF50;
+            height: 100%;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+            transition: width 0.5s ease-in-out;
+            white-space: nowrap;
+        }
+        .product-status-bar { background-color: #2196F3; }
+        .status-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
 </body>
 </html>
